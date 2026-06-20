@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+build/
+web-build/
+.expo/
+.expo-shared/
+*.tsbuildinfo
+
+# turbo
+.turbo/
+
+# testing
+coverage/
+
+# env / secrets — never commit; this is sensitive personal data infra
+.env
+.env.*
+!.env.example
+
+# native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+ios/
+android/
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+*.log
+npm-debug.log*
+pnpm-debug.log*
