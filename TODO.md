@@ -14,34 +14,34 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] `.env.example` (Supabase + DATABASE_URL, documented)
 - [x] `PLAN.md` (stack rationale, data model, layout, milestones)
 - [x] `TODO.md` (this file)
-- [ ] `@sobr/config`: design tokens (palette, spacing, radii, type scale)
-- [ ] `@sobr/config`: drink presets (incl. Nepal-local: raksi, tongba, local lager)
-- [ ] `@sobr/config`: currencies list (default USD, user-selectable)
-- [ ] `@sobr/config`: growth-stage thresholds + metadata
+- [x] `@sobr/config`: design tokens (palette, spacing, radii, type scale)
+- [x] `@sobr/config`: drink presets (incl. Nepal-local: raksi, tongba, local lager)
+- [x] `@sobr/config`: currencies list (default USD, user-selectable)
+- [x] `@sobr/config`: growth-stage thresholds + metadata
 - [ ] SVG brand assets: app icon, favicon, splash glyph (growing tree)
 - [ ] Root `README.md` with setup instructions
 
 ## M1 — `@sobr/core` (correctness-critical, fully tested)
-- [ ] Package scaffold (`@sobr/core`, tsconfig, vitest)
-- [ ] Zod schema: `Drink`
-- [ ] Zod schema: `DailyEntry` (+ status enum)
-- [ ] Zod schema: `UserSettings` (+ win_mode enum)
-- [ ] Zod schema: `FreezeGrant`
-- [ ] Inferred TS types exported from schemas
-- [ ] Date helpers: `localDateString`, `addDays`, `diffDays`, `todayInTz` (tz-safe)
-- [ ] Logic: `unitsForDrink`, `totalUnits`, `totalCost`
-- [ ] Logic: `determineStatus(mode, drinks, manualStatus, limit)`
-- [ ] Logic: `computeStreak` → current + longest (today/yesterday grace, gaps break)
-- [ ] Logic: freeze — `freezeMilestone`, `bankedFreezes` (cap 3), `freezesToAward`
-- [ ] Logic: `growthStage(totalWinDays)` (0/3/7/14/30/60)
-- [ ] Logic: monthly + all-time aggregates (wins, units, spend, avg units/drinking day)
-- [ ] Vitest: units (incl. quantity, zero-abv)
-- [ ] Vitest: win-determination (all 3 modes, boundary at limit)
-- [ ] Vitest: streak (grace day, gaps, freeze-protected, longest never decreases)
-- [ ] Vitest: freeze milestones + banking cap
-- [ ] Vitest: growth thresholds (each boundary)
-- [ ] Vitest: timezone/midnight edge cases
-- [ ] All core tests green
+- [x] Package scaffold (`@sobr/core`, tsconfig, vitest)
+- [x] Zod schema: `Drink`
+- [x] Zod schema: `DailyEntry` (+ status enum)
+- [x] Zod schema: `UserSettings` (+ win_mode enum)
+- [x] Zod schema: `FreezeGrant`
+- [x] Inferred TS types exported from schemas
+- [x] Date helpers: `localDateString`, `addDays`, `diffDays`, `todayInTz` (tz-safe)
+- [x] Logic: `unitsForDrink`, `totalUnits`, `totalCost`
+- [x] Logic: `determineStatus(mode, drinks, manualStatus, limit)`
+- [x] Logic: `computeStreak` → current + longest (today/yesterday grace, gaps break)
+- [x] Logic: freeze — `freezeMilestone`, `bankedFreezes` (cap 3), `freezesToAward`
+- [x] Logic: `growthStage(totalWinDays)` (0/3/7/14/30/60)
+- [x] Logic: monthly + all-time aggregates (wins, units, spend, avg units/drinking day)
+- [x] Vitest: units (incl. quantity, zero-abv)
+- [x] Vitest: win-determination (all 3 modes, boundary at limit)
+- [x] Vitest: streak (grace day, gaps, freeze-protected, longest never decreases)
+- [x] Vitest: freeze milestones + banking cap
+- [x] Vitest: growth thresholds (each boundary)
+- [x] Vitest: timezone/midnight edge cases
+- [x] All core tests green
 
 ## M2 — Database (`@sobr/db`)
 - [ ] Package scaffold (`@sobr/db`, drizzle-kit config)
