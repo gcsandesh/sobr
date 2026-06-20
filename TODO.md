@@ -44,15 +44,15 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] All core tests green
 
 ## M2 — Database (`@sobr/db`)
-- [ ] Package scaffold (`@sobr/db`, drizzle-kit config)
-- [ ] Drizzle schema: `user_settings`, `daily_entries`, `drinks`, `freeze_grants`
-- [ ] SQL migration: tables + constraints + indexes
-- [ ] RLS: enable + force on every table
-- [ ] RLS policies: per-user isolation (drinks via parent entry)
-- [ ] `auto-create user_settings` trigger on new auth user
-- [ ] `delete_account` security-definer routine (purges all user rows)
-- [ ] `updated_at` triggers
-- [ ] Server-side drizzle client factory (`DATABASE_URL`)
+- [x] Package scaffold (`@sobr/db`, drizzle-kit config)
+- [x] Drizzle schema: `user_settings`, `daily_entries`, `drinks`, `freeze_grants`
+- [x] SQL migration: tables + constraints + indexes
+- [x] RLS: enable + force on every table
+- [x] RLS policies: per-user isolation (drinks via parent entry)
+- [x] `auto-create user_settings` trigger on new auth user
+- [x] `delete_account` security-definer routine (purges all user rows)
+- [x] `updated_at` triggers
+- [x] Server-side drizzle client factory (`DATABASE_URL`)
 - [ ] Apply migration to a real Supabase project (requires user's project) — _user step_
 
 ## M3 — App shell + auth
