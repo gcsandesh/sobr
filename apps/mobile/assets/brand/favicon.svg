@@ -1,0 +1,10 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr">
+  <rect width="64" height="64" rx="16" fill="#0F1C16"/>
+  <path d="M32 50 L32 30" stroke="#E6B45C" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#8FBE7E">
+    <circle cx="32" cy="24" r="11"/>
+    <circle cx="23" cy="29" r="7.5"/>
+    <circle cx="41" cy="29" r="7.5"/>
+  </g>
+  <circle cx="28" cy="21" r="3" fill="#C7E3AE" opacity="0.6"/>
+</svg>

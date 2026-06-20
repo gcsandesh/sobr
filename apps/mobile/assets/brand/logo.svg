@@ -1,0 +1,14 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr logo">
+  <!-- sobr logo mark — a sprout rising through an open ring (days, counted + growth) -->
+  <defs>
+    <linearGradient id="leaf" x1="48" y1="20" x2="48" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A6CE8C"/>
+      <stop offset="1" stop-color="#74AA64"/>
+    </linearGradient>
+  </defs>
+  <path d="M48 12 A36 36 0 1 1 20 26" stroke="#E6B45C" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <path d="M48 74 L48 44" stroke="#E6B45C" stroke-width="6" stroke-linecap="round"/>
+  <path d="M48 50 C40 50 33 45 31 36 C40 35 47 40 48 50 Z" fill="url(#leaf)"/>
+  <path d="M48 46 C56 46 63 40 65 31 C56 30 49 36 48 46 Z" fill="url(#leaf)"/>
+  <circle cx="48" cy="44" r="4" fill="#C7E3AE"/>
+</svg>

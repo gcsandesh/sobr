@@ -1,0 +1,26 @@
+<svg width="1242" height="2436" viewBox="0 0 1242 2436" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr splash">
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="2436" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#16271F"/>
+      <stop offset="1" stop-color="#0F1C16"/>
+    </linearGradient>
+    <linearGradient id="sfol" x1="621" y1="980" x2="621" y2="1320" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A6CE8C"/>
+      <stop offset="1" stop-color="#74AA64"/>
+    </linearGradient>
+  </defs>
+  <rect width="1242" height="2436" fill="url(#sbg)"/>
+
+  <g transform="translate(621 1160)">
+    <path d="M0 160 L0 -40" stroke="#E6B45C" stroke-width="20" stroke-linecap="round"/>
+    <g fill="url(#sfol)">
+      <circle cx="0" cy="-90" r="92"/>
+      <circle cx="-70" cy="-50" r="64"/>
+      <circle cx="70" cy="-50" r="64"/>
+    </g>
+    <circle cx="-28" cy="-108" r="24" fill="#C7E3AE" opacity="0.55"/>
+  </g>
+
+  <text x="621" y="1470" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="120" fill="#F3EFE6" letter-spacing="2">sobr</text>
+  <text x="621" y="1545" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="40" fill="#AEBDB1" letter-spacing="6">CLEAR DAYS, COUNTED</text>
+</svg>

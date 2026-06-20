@@ -74,6 +74,8 @@ export const userSettingsSchema = z.object({
   dailyLimitUnits: z.number().min(0).max(100).default(2),
   currency: z.string().min(2).max(5).default('USD'),
   timeZone: z.string().min(1).default('UTC'),
+  /** False until first-run onboarding (pick win condition) is completed. */
+  onboarded: z.boolean().default(false),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
 });
@@ -81,7 +83,7 @@ export type UserSettings = z.infer<typeof userSettingsSchema>;
 
 /** Settings fields the user can edit. */
 export const userSettingsUpdateSchema = userSettingsSchema
-  .pick({ winMode: true, dailyLimitUnits: true, currency: true, timeZone: true })
+  .pick({ winMode: true, dailyLimitUnits: true, currency: true, timeZone: true, onboarded: true })
   .partial();
 export type UserSettingsUpdate = z.infer<typeof userSettingsUpdateSchema>;
 

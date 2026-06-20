@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "sobr",
+    "slug": "sobr",
+    "version": "0.1.0",
+    "scheme": "sobr",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "backgroundColor": "#0F1C16",
+    "splash": {
+      "backgroundColor": "#0F1C16",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sobr.app"
+    },
+    "android": {
+      "package": "com.sobr.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F1C16"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/brand/favicon.svg"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "tsconfigPaths": true
+    }
+  }
+}

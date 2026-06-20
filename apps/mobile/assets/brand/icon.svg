@@ -1,0 +1,38 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr app icon">
+  <!-- sobr — growing tree on deep charcoal-green. Placeholder; replace freely. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#16271F"/>
+      <stop offset="1" stop-color="#0F1C16"/>
+    </linearGradient>
+    <linearGradient id="foliage" x1="512" y1="180" x2="512" y2="620" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A6CE8C"/>
+      <stop offset="1" stop-color="#74AA64"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
+
+  <!-- ground arc -->
+  <path d="M232 742 Q512 700 792 742" stroke="#2C4438" stroke-width="14" stroke-linecap="round" fill="none"/>
+
+  <!-- trunk -->
+  <path d="M512 742 L512 470" stroke="#E6B45C" stroke-width="34" stroke-linecap="round"/>
+  <!-- branches -->
+  <path d="M512 560 Q452 524 430 470" stroke="#E6B45C" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M512 540 Q574 504 600 452" stroke="#E6B45C" stroke-width="22" stroke-linecap="round" fill="none"/>
+
+  <!-- foliage canopy: layered soft circles -->
+  <g fill="url(#foliage)">
+    <circle cx="512" cy="372" r="150"/>
+    <circle cx="400" cy="440" r="104"/>
+    <circle cx="624" cy="440" r="104"/>
+    <circle cx="452" cy="318" r="86"/>
+    <circle cx="576" cy="318" r="86"/>
+  </g>
+  <!-- highlight -->
+  <circle cx="470" cy="332" r="40" fill="#C7E3AE" opacity="0.55"/>
+
+  <!-- a single dusty-blue leaf (the calm "frozen" accent) -->
+  <ellipse cx="690" cy="712" rx="26" ry="13" transform="rotate(-24 690 712)" fill="#88AEC9" opacity="0.65"/>
+</svg>

@@ -16,6 +16,7 @@ create table if not exists public.user_settings (
   daily_limit_units numeric not null default 2 check (daily_limit_units >= 0),
   currency          text not null default 'USD',
   time_zone         text not null default 'UTC',
+  onboarded         boolean not null default false,
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );

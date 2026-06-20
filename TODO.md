@@ -5,7 +5,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 
 ---
 
-## M0 — Foundations
+## M0 — Foundations · [progress](PROGRESS.md#m0-foundations)
 - [x] Enable pnpm (corepack), init git, create monorepo dirs
 - [x] Root `package.json` + workspace scripts
 - [x] `pnpm-workspace.yaml`, `turbo.json`
@@ -18,10 +18,11 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] `@sobr/config`: drink presets (incl. Nepal-local: raksi, tongba, local lager)
 - [x] `@sobr/config`: currencies list (default USD, user-selectable)
 - [x] `@sobr/config`: growth-stage thresholds + metadata
-- [ ] SVG brand assets: app icon, favicon, splash glyph (growing tree)
-- [ ] Root `README.md` with setup instructions
+- [x] SVG brand assets: logo, app icon, favicon, splash (sprout-through-ring)
+- [x] Root `README.md` with setup instructions
+- [x] `PROJECT.md` context file + `PROGRESS.md` running log
 
-## M1 — `@sobr/core` (correctness-critical, fully tested)
+## M1 — `@sobr/core` (correctness-critical, fully tested) · [progress](PROGRESS.md#m1-core)
 - [x] Package scaffold (`@sobr/core`, tsconfig, vitest)
 - [x] Zod schema: `Drink`
 - [x] Zod schema: `DailyEntry` (+ status enum)
@@ -43,7 +44,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Vitest: timezone/midnight edge cases
 - [x] All core tests green
 
-## M2 — Database (`@sobr/db`)
+## M2 — Database (`@sobr/db`) · [progress](PROGRESS.md#m2-db)
 - [x] Package scaffold (`@sobr/db`, drizzle-kit config)
 - [x] Drizzle schema: `user_settings`, `daily_entries`, `drinks`, `freeze_grants`
 - [x] SQL migration: tables + constraints + indexes
@@ -55,54 +56,54 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Server-side drizzle client factory (`DATABASE_URL`)
 - [ ] Apply migration to a real Supabase project (requires user's project) — _user step_
 
-## M3 — App shell + auth
-- [ ] Expo Router app scaffold (`apps/mobile`, TS strict, web enabled)
-- [ ] NativeWind + Tailwind config bridged to `@sobr/config` tokens
-- [ ] Load Fraunces + Manrope via `expo-font`
-- [ ] Root providers: QueryClient, Supabase session, theme
-- [ ] Supabase client (`EXPO_PUBLIC_*`), auth state listener
-- [ ] Email-OTP sign-in / verify screens
-- [ ] Session routing guards (authed vs. unauthed vs. onboarding)
-- [ ] Onboarding: 2–3 intro screens (calm, non-judgmental copy)
-- [ ] Onboarding: pick win condition (zero / limit / manual) → persists to settings
+## M3 — App shell + auth · [progress](PROGRESS.md#m3-app)
+- [x] Expo Router app scaffold (`apps/mobile`, TS strict, web enabled)
+- [x] NativeWind + Tailwind config bridged to `@sobr/config` tokens
+- [x] Load Fraunces + Manrope via `expo-font`
+- [x] Root providers: QueryClient, Supabase session, theme
+- [x] Supabase client (`EXPO_PUBLIC_*`), auth state listener
+- [x] Email-OTP sign-in / verify screens
+- [x] Session routing guards (authed vs. unauthed vs. onboarding)
+- [x] Onboarding: 2–3 intro screens (calm, non-judgmental copy)
+- [x] Onboarding: pick win condition (zero / limit / manual) → persists to settings
 - [ ] Smoke-test auth + onboarding against a live Supabase project — _user step_
 
-## M4 — Daily check-in + drink logger
-- [ ] Today view: "No drinks today" (one-tap win) + "Log a drink"
-- [ ] Today summary card (status + totals), tappable to edit
-- [ ] Drink logger route `day/[date]` (any past/present day)
-- [ ] Preset picker sheet (presets from `@sobr/config`)
-- [ ] Quantity stepper (×N) per line item
-- [ ] Custom drink entry (name, volume, abv, cost)
-- [ ] Optional cost field, currency from settings
-- [ ] Running day total (units + cost), live
-- [ ] Live win/slip per mode (zero forces slip; limit shows X/limit; manual = user sets)
-- [ ] Edit / remove individual line items
-- [ ] Remove-entry action (clear a day logged by mistake)
-- [ ] Wire mutations to Supabase + optimistic cache updates
+## M4 — Daily check-in + drink logger · [progress](PROGRESS.md#m3-app)
+- [x] Today view: "No drinks today" (one-tap win) + "Log a drink"
+- [x] Today summary card (status + totals), tappable to edit
+- [x] Drink logger route `day/[date]` (any past/present day)
+- [x] Preset picker sheet (presets from `@sobr/config`)
+- [x] Quantity stepper (×N) per line item
+- [x] Custom drink entry (name, volume, abv, cost)
+- [x] Optional cost field, currency from settings
+- [x] Running day total (units + cost), live
+- [x] Live win/slip per mode (zero forces slip; limit shows X/limit; manual = user sets)
+- [x] Edit / remove individual line items
+- [x] Remove-entry action (clear a day logged by mistake)
+- [~] Wire mutations to Supabase + optimistic cache updates — _wired to Supabase; optimistic updates deferred to Phase 2_
 
-## M5 — Streaks + growth visual
-- [ ] Home: growing-tree anchor, stage from lifetime win days
-- [ ] Tree growth visual with real craft (animated, per-stage SVG)
-- [ ] Current streak + longest streak display
-- [ ] Banked freeze tokens display (cap 3)
-- [ ] "Use a freeze to protect your streak" flow on a slip day
+## M5 — Streaks + growth visual · [progress](PROGRESS.md#m3-app)
+- [x] Home: growing-tree anchor, stage from lifetime win days
+- [x] Tree growth visual with real craft (animated, per-stage SVG)
+- [x] Current streak + longest streak display
+- [x] Banked freeze tokens display (cap 3)
+- [x] "Use a freeze to protect your streak" flow on a slip day
 - [ ] Verify freeze award/use round-trips through DB
 
-## M6 — Calendar + stats
-- [ ] Month-grid calendar, color-coded (win/slip/frozen/future-disabled)
-- [ ] Per-day unit indicator dots
-- [ ] Tap a day → open drink logger for that date
-- [ ] Monthly aggregates (wins, units, spend, avg units/drinking day)
-- [ ] All-time stats (longest streak, total win days, total spent, total units)
-- [ ] SVG charts (units/spend over time)
+## M6 — Calendar + stats · [progress](PROGRESS.md#m3-app)
+- [x] Month-grid calendar, color-coded (win/slip/frozen/future-disabled)
+- [x] Per-day unit indicator dots
+- [x] Tap a day → open drink logger for that date
+- [x] Monthly aggregates (wins, units, spend, avg units/drinking day)
+- [x] All-time stats (longest streak, total win days, total spent, total units)
+- [x] SVG charts (units/spend over time)
 
-## M7 — Settings
-- [ ] Change win mode + daily limit value
-- [ ] Currency selector (default USD)
-- [ ] Time zone setting
-- [ ] Account: show email, sign out
-- [ ] Account: delete account/data (calls purge routine) with confirm
+## M7 — Settings · [progress](PROGRESS.md#m3-app)
+- [x] Change win mode + daily limit value
+- [x] Currency selector (default USD)
+- [~] Time zone setting — _captured from device at onboarding + shown; in-app editor pending_
+- [x] Account: show email, sign out
+- [x] Account: delete account/data (calls purge routine) with confirm
 - [ ] Data export (CSV/JSON) — _Phase 2; data model supports it_
 
 ## M8 — Polish, a11y, tests

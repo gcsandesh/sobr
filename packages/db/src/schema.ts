@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   check,
   date,
   integer,
@@ -31,6 +32,7 @@ export const userSettings = pgTable(
     dailyLimitUnits: numeric('daily_limit_units').notNull().default('2'),
     currency: text('currency').notNull().default('USD'),
     timeZone: text('time_zone').notNull().default('UTC'),
+    onboarded: boolean('onboarded').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
