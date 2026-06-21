@@ -2,14 +2,21 @@ import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
-import { env } from './env';
+import { env, isSupabaseConfigured } from './env';
 
 /**
  * Supabase client for the app. Uses the anon key + RLS, so it can only ever read
  * or write the signed-in user's own rows. Session is persisted in AsyncStorage
  * (web uses localStorage under the hood). No service-role key ever lives here.
+ *
+ * When env vars aren't set yet, we fall back to harmless placeholders so the
+ * module can load without throwing — the routing gate sends the user to the
+ * setup screen before any real request is ever made.
  */
-export const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
+const url = isSupabaseConfigured ? env.supabaseUrl : 'https://placeholder.supabase.co';
+const anonKey = isSupabaseConfigured ? env.supabaseAnonKey : 'placeholder-anon-key';
+
+export const supabase = createClient(url, anonKey, {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

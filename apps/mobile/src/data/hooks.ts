@@ -32,10 +32,19 @@ const keys = {
   grants: (uid: string) => ['freezeGrants', uid] as const,
 };
 
-function useUid(): string {
-  const { userId } = useSession();
-  if (!userId) throw new Error('No authenticated user');
-  return userId;
+/**
+ * The signed-in user id, or null. Never throws at render time — mutation hooks
+ * mount on screens that may briefly render before the routing gate redirects an
+ * unauthenticated user away, so the "must be signed in" check belongs in the
+ * mutation function, not the hook body.
+ */
+function useUid(): string | null {
+  return useSession().userId;
+}
+
+function requireUid(uid: string | null): string {
+  if (!uid) throw new Error('You need to be signed in to do that.');
+  return uid;
 }
 
 /* ── queries ─────────────────────────────────────────────────────────────── */
@@ -122,6 +131,7 @@ function useInvalidateAll() {
   const qc = useQueryClient();
   const uid = useUid();
   return async () => {
+    if (!uid) return;
     await Promise.all([
       qc.invalidateQueries({ queryKey: keys.allEntries(uid) }),
       qc.invalidateQueries({ queryKey: keys.grants(uid) }),
@@ -142,16 +152,17 @@ export function useSaveDay() {
       drinks: DrinkInput[];
       note?: string | null;
     }) => {
-      const entryId = await api.upsertEntryStatus(uid, input.date, input.status, input.note);
+      const u = requireUid(uid);
+      const entryId = await api.upsertEntryStatus(u, input.date, input.status, input.note);
       await api.replaceDrinks(entryId, input.drinks);
       // Recompute streak from fresh history and reconcile freeze awards.
-      const entries = await api.fetchAllEntries(uid);
-      const grants = await api.fetchFreezeGrants(uid);
+      const entries = await api.fetchAllEntries(u);
+      const grants = await api.fetchFreezeGrants(u);
       const streak = computeStreak(
         entries.map((e) => ({ entryDate: e.entryDate, status: e.status })),
         todayInTz(tz),
       );
-      await api.reconcileFreezeAwards(uid, streak.current, grants);
+      await api.reconcileFreezeAwards(u, streak.current, grants);
     },
     onSuccess: invalidate,
   });
@@ -170,8 +181,9 @@ export function useUseFreeze() {
   const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: async (date: LocalDate) => {
-      const grants = await api.fetchFreezeGrants(uid);
-      await api.useFreezeOnDay(uid, date, grants);
+      const u = requireUid(uid);
+      const grants = await api.fetchFreezeGrants(u);
+      await api.useFreezeOnDay(u, date, grants);
     },
     onSuccess: invalidate,
   });
@@ -181,8 +193,8 @@ export function useUpdateSettings() {
   const uid = useUid();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (patch: UserSettingsUpdate) => api.updateSettings(uid, patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.settings(uid) }),
+    mutationFn: (patch: UserSettingsUpdate) => api.updateSettings(requireUid(uid), patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.settings(uid ?? 'anon') }),
   });
 }
 
