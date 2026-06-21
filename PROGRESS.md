@@ -91,6 +91,21 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="launch-crash"></a>
+## Maintenance · Fix launch crash when Supabase isn't configured — ✅ done (2026-06-21)
+
+**Achieved** — the app crashed on load (web *and* native) with `supabaseUrl is required`.
+Root cause: `createClient()` ran at import time with empty env and threw before the gate
+could show the setup screen. Fixes:
+- supabase client falls back to valid placeholder url/key when env is unset, so importing
+  it never throws; the gate routes to the setup screen as intended.
+- mutation hooks no longer throw from `useUid()` during render when signed out — the
+  "must be signed in" check moved into the mutation function.
+
+**Verified:** dev server serves (`/` → 200), web bundle compiles (1442 modules, no load
+error), app type-checks. **What you need to do:** reload `pnpm web` — you should now see the
+setup screen instead of a crash.
+
 <a id="sdk54"></a>
 ## Maintenance · Expo SDK 52 → 54 + fix `pnpm web` — ✅ done (2026-06-21)
 
