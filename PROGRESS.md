@@ -91,6 +91,22 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="brand-coil"></a>
+## Brand · New logo + favicon (growth-coil mark) — ✅ done (2026-06-21)
+
+**Achieved** — adopted your tapering growth-coil mark (faint→bright with the amber "today"
+node):
+- `Logo` component re-drawn as the coil (react-native-svg) — used at sign-in, onboarding,
+  and the loading state.
+- Brand SVGs updated: `logo.svg`, `favicon.svg`, full-bleed `icon.svg`.
+- Rasterized real PNGs with resvg: **`favicon.png` (256)** and **`icon.png` (1024)**, and
+  wired them — `web.favicon` now generates a proper `favicon.ico`, and the native app icon
+  (iOS + Android adaptive) uses the mark.
+- Verified: typecheck + web export (emits favicon.ico) green.
+
+**What you need to do** — reload to see it. To replace later, drop new SVGs in `assets/brand/`
+and re-export PNGs (or just swap the PNGs).
+
 <a id="m8-home"></a>
 ## M8 · Polish — Home daily-experience — ✅ done (2026-06-21)
 

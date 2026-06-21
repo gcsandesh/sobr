@@ -1,38 +1,19 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr app icon">
-  <!-- sobr — growing tree on deep charcoal-green. Placeholder; replace freely. -->
+<svg width="1024" height="1024" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sobr app icon">
+  <!-- Full-bleed app icon (the OS applies its own corner mask). Placeholder; replace freely. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#16271F"/>
-      <stop offset="1" stop-color="#0F1C16"/>
-    </linearGradient>
-    <linearGradient id="foliage" x1="512" y1="180" x2="512" y2="620" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A6CE8C"/>
-      <stop offset="1" stop-color="#74AA64"/>
+    <linearGradient id="bgH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#16221C" />
+      <stop offset="100%" stop-color="#0E1614" />
     </linearGradient>
   </defs>
-
-  <rect width="1024" height="1024" rx="232" fill="url(#bg)"/>
-
-  <!-- ground arc -->
-  <path d="M232 742 Q512 700 792 742" stroke="#2C4438" stroke-width="14" stroke-linecap="round" fill="none"/>
-
-  <!-- trunk -->
-  <path d="M512 742 L512 470" stroke="#E6B45C" stroke-width="34" stroke-linecap="round"/>
-  <!-- branches -->
-  <path d="M512 560 Q452 524 430 470" stroke="#E6B45C" stroke-width="22" stroke-linecap="round" fill="none"/>
-  <path d="M512 540 Q574 504 600 452" stroke="#E6B45C" stroke-width="22" stroke-linecap="round" fill="none"/>
-
-  <!-- foliage canopy: layered soft circles -->
-  <g fill="url(#foliage)">
-    <circle cx="512" cy="372" r="150"/>
-    <circle cx="400" cy="440" r="104"/>
-    <circle cx="624" cy="440" r="104"/>
-    <circle cx="452" cy="318" r="86"/>
-    <circle cx="576" cy="318" r="86"/>
-  </g>
-  <!-- highlight -->
-  <circle cx="470" cy="332" r="40" fill="#C7E3AE" opacity="0.55"/>
-
-  <!-- a single dusty-blue leaf (the calm "frozen" accent) -->
-  <ellipse cx="690" cy="712" rx="26" ry="13" transform="rotate(-24 690 712)" fill="#88AEC9" opacity="0.65"/>
+  <rect width="64" height="64" fill="url(#bgH)" />
+  <path d="M36.00,36.00 C36.08,36.22 36.47,36.84 36.46,37.34 C36.45,37.85 36.31,38.52 35.95,39.03 C35.59,39.54 35.00,40.11 34.31,40.39 C33.63,40.67 32.69,40.86 31.84,40.73" fill="none" stroke="#4D6B4A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M31.84,40.73 C30.99,40.60 29.95,40.22 29.19,39.59 C28.43,38.96 27.66,38.00 27.27,36.96 C26.89,35.92 26.67,34.55 26.88,33.33 C27.09,32.11 27.65,30.69 28.51,29.64" fill="none" stroke="#5C8A57" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M28.51,29.64 C29.37,28.59 30.67,27.55 32.06,27.01 C33.45,26.47 35.24,26.18 36.84,26.41 C38.44,26.64 40.27,27.32 41.65,28.38 C43.03,29.44 44.40,31.05 45.14,32.76" fill="none" stroke="#7FB069" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M45.14,32.76 C45.88,34.48 46.31,36.69 46.11,38.67 C45.91,40.66 45.16,42.93 43.95,44.67 C42.74,46.41 40.87,48.14 38.85,49.13 C36.83,50.13 33.02,50.39 31.85,50.64" fill="none" stroke="#9ED48A" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="36.00" cy="36.00" r="2" fill="#3A4A3D" />
+  <circle cx="31.84" cy="40.73" r="2.5" fill="#5C8A57" />
+  <circle cx="28.51" cy="29.64" r="3" fill="#7FB069" />
+  <circle cx="45.14" cy="32.76" r="3.8" fill="#9ED48A" />
+  <circle cx="31.85" cy="50.64" r="5.5" fill="#E8B86D" />
 </svg>

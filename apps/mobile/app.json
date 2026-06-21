@@ -8,6 +8,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "backgroundColor": "#0F1C16",
+    "icon": "./assets/brand/icon.png",
     "splash": {
       "backgroundColor": "#0F1C16",
       "resizeMode": "contain"
@@ -19,12 +20,14 @@
     "android": {
       "package": "com.sobr.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/icon.png",
         "backgroundColor": "#0F1C16"
       }
     },
     "web": {
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "favicon": "./assets/brand/favicon.png"
     },
     "plugins": [
       "expo-router",
