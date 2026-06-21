@@ -92,7 +92,7 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 ---
 
 <a id="native-nativewind"></a>
-## Maintenance · Native runtime errors (web OK, mobile not) — 🟡 likely fix (2026-06-21)
+## Maintenance · Native runtime errors (web OK, mobile not) — ✅ done (confirmed working 2026-06-21)
 
 **Symptom:** web renders, native (Expo Go) errors. iOS/web both *bundle* fine, so it's a
 runtime issue. Most probable cause given the exact symptom: **NativeWind 4.1.x breaks on
