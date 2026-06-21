@@ -91,6 +91,25 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="env-root"></a>
+## Bugfix · App stuck on setup screen despite a configured .env — ✅ done (2026-06-21)
+
+**Symptom:** after running the SQL + filling `.env`, web *and* native still showed only the
+setup screen. **Cause:** Expo auto-loads `.env` from the **app folder** (`apps/mobile/`), but
+the documented `.env` lives at the **repo root**, so `EXPO_PUBLIC_*` never reached the bundle
+and `isSupabaseConfigured` stayed false.
+
+**Fix:** added `apps/mobile/app.config.js` that loads the repo-root `.env` (then any app-local
+override) and injects the public keys into `extra`; `env.ts` now reads from `extra` (with an
+`EXPO_PUBLIC_*` fallback). Verified with `expo config` that the root `.env` is now picked up
+(`looks configured: true`). Added `dotenv`.
+
+**What you need to do:** **restart the dev server** so the config reloads —
+- web: re-run `pnpm web`
+- native: `pnpm app --clear`
+
+You should now move past setup to the sign-in screen.
+
 <a id="brand-coil"></a>
 ## Brand · New logo + favicon (growth-coil mark) — ✅ done (2026-06-21)
 
