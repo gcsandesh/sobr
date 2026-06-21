@@ -106,12 +106,12 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Account: delete account/data (calls purge routine) with confirm
 - [ ] Data export (CSV/JSON) — _Phase 2; data model supports it_
 
-## M8 — Polish, a11y, tests
-- [ ] Micro-interactions (tree level-up, streak increment, freeze use)
+## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
+- [~] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up + win/freeze haptic + win banner done; tree level-up pending_
 - [ ] A11y audit: contrast (AA), ≥44px targets, SR labels on icon buttons
-- [ ] Empty states + first-run delight
+- [~] Empty states + first-run delight — _Home first-load state done; other screens pending_
 - [ ] Copy pass: non-judgmental tone everywhere ("slip", never "failure")
-- [ ] Loading / error / offline-ish states for queries
+- [~] Loading / error / offline-ish states for queries — _Home loading done; calendar/progress/settings pending_
 
 ## Phase 2 (post-MVP)
 - [ ] Google + Apple sign-in (Expo)

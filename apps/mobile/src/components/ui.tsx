@@ -93,8 +93,16 @@ export function Divider({ className }: { className?: string }) {
   return <View className={`h-px bg-border ${className ?? ''}`} />;
 }
 
-export function Row({ children, className }: { children: ReactNode; className?: string }) {
-  return <View className={`flex-row items-center ${className ?? ''}`}>{children}</View>;
+export function Row({
+  children,
+  className,
+  ...props
+}: ViewProps & { children: ReactNode; className?: string }) {
+  return (
+    <View className={`flex-row items-center ${className ?? ''}`} {...props}>
+      {children}
+    </View>
+  );
 }
 
 /* ── Buttons (≥44px tap targets) ─────────────────────────────────────────── */

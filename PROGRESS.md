@@ -91,6 +91,23 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="m8-home"></a>
+## M8 · Polish — Home daily-experience — ✅ done (2026-06-21)
+
+**Achieved** (first slice of M8, focused on the screen you open every day)
+- **Count-up streak number** — the big streak ticks up (ease-out) and re-animates on a
+  new win, Duolingo-style; pure RAF so it behaves identically on web + native.
+- **Calm win moment** — tapping "It was a clear day" (or protecting with a freeze) fires a
+  gentle success **haptic** (native; no-op on web) and a soft fade-in confirmation banner.
+- **Graceful first-load state** — a quietly pulsing logo + "A moment…" instead of flashing
+  zeros while data loads.
+- **Tree hero fades in**; added a "Longest · N" line and a screen-reader label on the
+  freeze indicator.
+- Verified: typecheck + web & iOS bundles green.
+
+**What you need to do** — just reload (`pnpm app` / `pnpm web`) and try logging a clear day to
+feel the count-up + haptic. Tell me how the motion feels and we'll tune timing/copy.
+
 <a id="native-nativewind"></a>
 ## Maintenance · Native runtime errors (web OK, mobile not) — ✅ done (confirmed working 2026-06-21)
 
