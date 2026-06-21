@@ -121,7 +121,10 @@ node):
 - Rasterized real PNGs with resvg: **`favicon.png` (256)** and **`icon.png` (1024)**, and
   wired them — `web.favicon` now generates a proper `favicon.ico`, and the native app icon
   (iOS + Android adaptive) uses the mark.
-- Verified: typecheck + web export (emits favicon.ico) green.
+- **Branded splash:** transparent coil `splash-icon.png` (576) wired via the
+  `expo-splash-screen` plugin on the dark background (replaced the deprecated top-level
+  `splash` key).
+- Verified: expo config valid, typecheck + web (emits favicon.ico) & iOS bundles green.
 
 **What you need to do** — reload to see it. To replace later, drop new SVGs in `assets/brand/`
 and re-export PNGs (or just swap the PNGs).

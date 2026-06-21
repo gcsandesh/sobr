@@ -9,10 +9,6 @@
     "newArchEnabled": true,
     "backgroundColor": "#0F1C16",
     "icon": "./assets/brand/icon.png",
-    "splash": {
-      "backgroundColor": "#0F1C16",
-      "resizeMode": "contain"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.sobr.app"
@@ -32,7 +28,16 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0F1C16"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
