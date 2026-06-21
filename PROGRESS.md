@@ -91,6 +91,20 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="native-nativewind"></a>
+## Maintenance · Native runtime errors (web OK, mobile not) — 🟡 likely fix (2026-06-21)
+
+**Symptom:** web renders, native (Expo Go) errors. iOS/web both *bundle* fine, so it's a
+runtime issue. Most probable cause given the exact symptom: **NativeWind 4.1.x breaks on
+the New Architecture under React 19 / RN 0.81** (web uses react-native-web and sidesteps it).
+
+**Change:** bumped `nativewind` 4.1.23 → **4.2.5** (+ react-native-css-interop 0.2.5), which
+carries the New-Arch/React-19 fixes. Verified: ios + web bundles + typecheck all green.
+
+**What you need to do:** restart the native app **with cache cleared** so the new babel/native
+deps take effect: `pnpm app --clear` (or `npx expo start -c`), then reopen in Expo Go. If an
+error remains, paste the **exact redbox title + message** — that pins the cause precisely.
+
 <a id="launch-crash"></a>
 ## Maintenance · Fix launch crash when Supabase isn't configured — ✅ done (2026-06-21)
 
