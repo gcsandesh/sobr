@@ -1,4 +1,4 @@
-import type { DailyEntryWithDrinks, Drink, EntryStatus, LocalDate } from '../schemas.js';
+import type { DailyEntryWithDrinks, Drink, EntryStatus, LocalDate } from '../schemas';
 
 let counter = 0;
 const uuid = () => {

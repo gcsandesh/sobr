@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { growthProgress, growthStage } from '../growth.js';
+import { growthProgress, growthStage } from '../growth';
 
 describe('growthStage thresholds (0/3/7/14/30/60)', () => {
   const cases: Array<[number, string]> = [

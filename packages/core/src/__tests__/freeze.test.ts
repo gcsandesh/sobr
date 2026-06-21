@@ -5,7 +5,7 @@ import {
   canUseFreeze,
   computeFreezeAward,
   milestonesUpTo,
-} from '../freeze.js';
+} from '../freeze';
 
 describe('milestonesUpTo', () => {
   it('lists 7-day milestones reached', () => {

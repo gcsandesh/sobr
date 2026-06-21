@@ -1,5 +1,5 @@
-import type { DrinkInput, EntryStatus, WinMode } from './schemas.js';
-import { totalUnits } from './units.js';
+import type { DrinkInput, EntryStatus, WinMode } from './schemas';
+import { totalUnits } from './units';
 
 /**
  * Win-condition evaluation. Returns 'win' | 'slip' only — 'freeze' is a separate,

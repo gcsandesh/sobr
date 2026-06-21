@@ -91,6 +91,30 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="sdk54"></a>
+## Maintenance · Expo SDK 52 → 54 + fix `pnpm web` — ✅ done (2026-06-21)
+
+**Achieved**
+- Upgraded to **Expo SDK 54** via Expo's own tooling (`expo install --fix`): React **19.1**,
+  React Native **0.81.5**, expo-router **6**, Reanimated **4**, react-native-web **0.21**,
+  `@types/react` **19**.
+- Fixed the web run, which was failing to bundle:
+  - **Reanimated 4 / worklets:** added `react-native-worklets` and let `babel-preset-expo`
+    inject the worklets plugin (removed the manual `react-native-reanimated/plugin`).
+  - **Module resolution:** Metro couldn't resolve the shared packages' `./x.js` import
+    extensions — switched `@sobr/core` / `@sobr/config` / `@sobr/db` to extensionless
+    relative imports (works for Metro *and* `tsc`).
+  - Added `@expo/metro-runtime` (web peer) and made Metro `watchFolders` extend Expo's
+    defaults instead of replacing them.
+  - Web favicon now uses Expo's default (its generator needs a PNG, not our SVG).
+- **Verified:** `expo export --platform web` succeeds (1379 modules), **expo-doctor 18/18**,
+  app + all packages type-check, `@sobr/core` 71 tests still green.
+
+**What you need to do** — re-run `pnpm install` (already done here), then `pnpm web`. To restore
+a custom web favicon later, drop a PNG in and point `web.favicon` at it in `app.json`.
+
+---
+
 ### Verified vs. pending (honesty check)
 - **Verified here:** `@sobr/core` (71 tests) and TypeScript across every package + the app.
 - **Pending your setup:** anything needing a live Supabase project — auth round-trip,

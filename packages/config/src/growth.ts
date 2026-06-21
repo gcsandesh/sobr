@@ -7,7 +7,7 @@
  * never visibly regresses long-term progress. Copy is gentle and encouraging.
  */
 
-import { palette } from './tokens.js';
+import { palette } from './tokens';
 
 export type GrowthStageKey =
   | 'seed'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { determineStatus, evaluateStatus } from '../win.js';
+import { determineStatus, evaluateStatus } from '../win';
 
 const beer = { volumeMl: 330, abv: 5, quantity: 1 }; // 1.65 units
 

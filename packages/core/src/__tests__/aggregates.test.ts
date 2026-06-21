@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { allTimeStats, monthlyAggregates, totalWinDays } from '../aggregates.js';
-import { mkDrink, mkEntry } from './helpers.js';
+import { allTimeStats, monthlyAggregates, totalWinDays } from '../aggregates';
+import { mkDrink, mkEntry } from './helpers';
 
 const beer = () => mkDrink({ volumeMl: 330, abv: 5, cost: 4 }); // 1.65 units, cost 4
 const wine = () => mkDrink({ volumeMl: 150, abv: 12, cost: 6, quantity: 2 }); // 3.6 units, cost 12

@@ -9,7 +9,8 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 const config = getDefaultConfig(projectRoot);
 
 // Watch the whole monorepo so changes in @sobr/* packages hot-reload.
-config.watchFolders = [workspaceRoot];
+// Extend (don't replace) Expo's defaults — expo-doctor flags a bare override.
+config.watchFolders = [...(config.watchFolders ?? []), workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),

@@ -1,4 +1,4 @@
-import type { LocalDate } from './schemas.js';
+import type { LocalDate } from './schemas';
 
 /**
  * Timezone-safe local-day helpers.

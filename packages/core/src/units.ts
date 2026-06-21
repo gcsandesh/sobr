@@ -1,4 +1,4 @@
-import type { Drink, DrinkInput } from './schemas.js';
+import type { Drink, DrinkInput } from './schemas';
 
 /**
  * UK alcohol-units formula. `abv` is a percentage number (5 = 5%).

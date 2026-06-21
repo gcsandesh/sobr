@@ -1,4 +1,4 @@
-import type { FreezeGrant } from './schemas.js';
+import type { FreezeGrant } from './schemas';
 
 /**
  * Freeze tokens — the safety net that makes streaks sustainable instead of

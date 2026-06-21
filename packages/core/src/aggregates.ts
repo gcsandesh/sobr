@@ -1,6 +1,6 @@
-import type { DailyEntryWithDrinks, LocalDate } from './schemas.js';
-import { endOfMonth, isWithin, startOfMonth } from './date.js';
-import { totalCost, totalUnits } from './units.js';
+import type { DailyEntryWithDrinks, LocalDate } from './schemas';
+import { endOfMonth, isWithin, startOfMonth } from './date';
+import { totalCost, totalUnits } from './units';
 
 /**
  * Read-time aggregates for the stats screens. All derived from entries+drinks,

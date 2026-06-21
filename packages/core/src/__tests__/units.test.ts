@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { costForDrink, roundUnits, totalCost, totalUnits, unitsForDrink } from '../units.js';
+import { costForDrink, roundUnits, totalCost, totalUnits, unitsForDrink } from '../units';
 
 describe('unitsForDrink', () => {
   it('applies the UK formula: volume_ml * abv / 1000', () => {

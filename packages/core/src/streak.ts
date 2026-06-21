@@ -1,5 +1,5 @@
-import type { EntryStatus, LocalDate } from './schemas.js';
-import { addDays, compareDates, diffDays } from './date.js';
+import type { EntryStatus, LocalDate } from './schemas';
+import { addDays, compareDates, diffDays } from './date';
 
 /**
  * Streak computation — the single most bug-prone piece (off-by-one, midnight,

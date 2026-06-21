@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeStreak, type StreakEntry } from '../streak.js';
-import type { EntryStatus, LocalDate } from '../schemas.js';
+import { computeStreak, type StreakEntry } from '../streak';
+import type { EntryStatus, LocalDate } from '../schemas';
 
 const e = (entryDate: LocalDate, status: EntryStatus): StreakEntry => ({ entryDate, status });
 

@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema.js';
+import * as schema from './schema';
 
 /**
  * Server-side Drizzle client. NEVER import this from the Expo app bundle — it

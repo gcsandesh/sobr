@@ -8,7 +8,7 @@ import {
   localDateString,
   startOfMonth,
   todayInTz,
-} from '../date.js';
+} from '../date';
 
 describe('localDateString — timezone correctness', () => {
   it('maps an instant to the correct LOCAL civil day', () => {
