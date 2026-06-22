@@ -108,9 +108,9 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 
 ## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
 - [~] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up + win/freeze haptic + win banner done; tree level-up pending_
-- [ ] A11y audit: contrast (AA), ≥44px targets, SR labels on icon buttons
+- [x] A11y audit: contrast (AA), ≥44px targets, SR labels on icon buttons — _contrast verified ≥AA; bumped steppers/chips/rows to ≥44px; radio roles added_
 - [x] Empty states + first-run delight — _Home first-load + Progress first-run empty state_
-- [ ] Copy pass: non-judgmental tone everywhere ("slip", never "failure")
+- [x] Copy pass: non-judgmental tone everywhere ("slip", never "failure") — _audited: no triggering/judgmental words in UI_
 - [x] Loading / error / offline-ish states for queries — _Notice/EmptyState; Home/Calendar/Progress retry on error_
 
 ## Phase 2 (post-MVP)

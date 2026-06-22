@@ -91,6 +91,18 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="m8-a11y"></a>
+## M8 · A11y + copy pass — ✅ done (2026-06-22)
+
+**Achieved**
+- **Copy:** audited all UI strings — no judgmental ("failure"/"relapse") or triggering
+  ("alcohol"/"consume") language; tone is consistently warm. "Slip", never "failure".
+- **Contrast:** verified the dark palette clears WCAG AA (even the faintest text, #7C8E80 on the
+  bg, is ~5:1).
+- **Tap targets (≥44px):** enlarged the logger quantity steppers (36→44), preset chips, the
+  "add custom" link, and the Settings win-mode rows + currency chips; added `radio` roles/labels.
+- Verified: typecheck + web & iOS bundles green.
+
 <a id="m8-states"></a>
 ## M8 · Error / empty / loading states — ✅ done (2026-06-22)
 

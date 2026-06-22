@@ -66,7 +66,7 @@ export default function Settings() {
               onPress={() => setMode(mode)}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
-              className="flex-row items-center justify-between py-2"
+              className="flex-row items-center justify-between py-3 min-h-[44px]"
             >
               <Txt variant="body" className={selected ? 'text-accent' : ''}>
                 {MODE_LABELS[mode]}
@@ -118,7 +118,9 @@ export default function Settings() {
               key={c.code}
               onPress={() => setCurrency(c.code)}
               accessibilityLabel={`Use ${c.name}`}
-              className={`px-4 py-2 rounded-full border ${
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              className={`px-4 min-h-[44px] justify-center rounded-full border ${
                 selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
               }`}
             >

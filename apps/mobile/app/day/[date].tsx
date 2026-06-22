@@ -170,19 +170,21 @@ export default function DayLogger() {
                       {d.volumeMl}ml · {d.abv}%
                     </Txt>
                   </View>
-                  <Row className="gap-3 items-center">
+                  <Row className="gap-2 items-center">
                     <Pressable
                       onPress={() => setQty(idx, -1)}
                       accessibilityLabel={`Remove one ${d.name}`}
-                      className="w-9 h-9 rounded-full bg-surface-raised items-center justify-center"
+                      className="w-11 h-11 rounded-full bg-surface-raised items-center justify-center active:opacity-70"
                     >
                       <Txt variant="heading">−</Txt>
                     </Pressable>
-                    <Txt variant="heading">{d.quantity}</Txt>
+                    <Txt variant="heading" className="w-6 text-center">
+                      {d.quantity}
+                    </Txt>
                     <Pressable
                       onPress={() => setQty(idx, 1)}
                       accessibilityLabel={`Add one ${d.name}`}
-                      className="w-9 h-9 rounded-full bg-surface-raised items-center justify-center"
+                      className="w-11 h-11 rounded-full bg-surface-raised items-center justify-center active:opacity-70"
                     >
                       <Txt variant="heading">+</Txt>
                     </Pressable>
@@ -219,7 +221,7 @@ export default function DayLogger() {
                   key={p.key}
                   onPress={() => addPreset(p)}
                   accessibilityLabel={`Add ${p.name}`}
-                  className="bg-surface border border-border rounded-full px-4 py-2 active:opacity-70"
+                  className="bg-surface border border-border rounded-full px-4 min-h-[44px] justify-center active:opacity-70"
                 >
                   <Txt variant="body" className="text-sm">
                     {p.glyph ? `${p.glyph} ` : ''}
@@ -233,7 +235,7 @@ export default function DayLogger() {
 
         <Pressable
           onPress={() => setShowCustom((s) => !s)}
-          className="flex-row items-center gap-2 mt-1"
+          className="flex-row items-center gap-2 mt-1 min-h-[44px]"
           accessibilityLabel="Add a custom item"
         >
           <PlusIcon color={colors.accent} />
