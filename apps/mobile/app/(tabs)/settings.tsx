@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import { Alert, Pressable, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, Switch, TextInput, View } from 'react-native';
 import type { WinMode } from '@sobr/core';
 import { CURRENCIES } from '@sobr/config';
 import { Button, Card, Divider, Row, Screen, Txt } from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
 import { useDeleteAccount, useSettings, useUpdateSettings } from '../../src/data/hooks';
+import { useReminder } from '../../src/data/useReminder';
 import { colors } from '../../src/theme';
+
+const REMINDER_TIMES = [12, 18, 20, 21, 22];
+const formatHour = (h: number) => {
+  const period = h < 12 ? 'AM' : 'PM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:00 ${period}`;
+};
 
 const MODE_LABELS: Record<WinMode, string> = {
   zero: 'A clear day',
@@ -18,6 +26,7 @@ export default function Settings() {
   const settings = useSettings();
   const update = useUpdateSettings();
   const deleteAccount = useDeleteAccount();
+  const reminder = useReminder();
 
   const s = settings.data;
   const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
@@ -131,6 +140,63 @@ export default function Settings() {
           );
         })}
       </View>
+
+      {/* Daily reminder (device-local; native only) */}
+      {Platform.OS !== 'web' && (
+        <>
+          <Txt variant="heading" className="mt-6 mb-3">
+            Daily reminder
+          </Txt>
+          <Card>
+            <Row className="justify-between">
+              <View className="flex-1 pr-3">
+                <Txt variant="body">A gentle nudge</Txt>
+                <Txt variant="bodyMuted" className="mt-1">
+                  One quiet notification a day to check in. Nothing leaves your device.
+                </Txt>
+              </View>
+              <Switch
+                value={reminder.enabled}
+                disabled={reminder.busy || !reminder.loaded}
+                onValueChange={(v) => {
+                  void reminder.toggle(v);
+                }}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor={colors.text}
+              />
+            </Row>
+            {reminder.enabled && (
+              <>
+                <Divider className="my-4" />
+                <Txt variant="label" className="mb-2">
+                  Remind me at
+                </Txt>
+                <View className="flex-row flex-wrap gap-2">
+                  {REMINDER_TIMES.map((h) => {
+                    const selected = reminder.hour === h;
+                    return (
+                      <Pressable
+                        key={h}
+                        onPress={() => reminder.setTime(h)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected }}
+                        accessibilityLabel={`Remind at ${formatHour(h)}`}
+                        className={`px-4 min-h-[44px] justify-center rounded-full border ${
+                          selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
+                        }`}
+                      >
+                        <Txt variant="body" className={`text-sm ${selected ? 'text-accent' : ''}`}>
+                          {formatHour(h)}
+                        </Txt>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+          </Card>
+        </>
+      )}
 
       {/* Account */}
       <Txt variant="heading" className="mt-6 mb-3">

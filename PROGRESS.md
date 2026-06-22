@@ -91,6 +91,20 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="reminders"></a>
+## Phase 2 · Daily reminder (local notifications) — ✅ built (2026-06-22)
+
+**Achieved** — a gentle, opt-in daily **local** notification (no servers, nothing leaves the
+device). Settings → "Daily reminder": a toggle + time chips (12/6/8/9/10). Permission is
+requested on enable; copy is warm and non-triggering ("A moment for sobr — how did today feel?").
+`useReminder` persists the preference (AsyncStorage) and (re)schedules a single repeating daily
+notification. Native-only — hidden on web (no reliable scheduled web notifications); verified
+web Settings still renders cleanly. typecheck + web/iOS bundles green.
+
+**What you need to do:** on your phone, toggle the reminder on (grant the permission prompt) and
+confirm the notification fires at the chosen time. (Remote push + smart "log before midnight"
+timing can come later.)
+
 <a id="m8-levelup"></a>
 ## M8 · Tree level-up celebration — ✅ done (2026-06-22)
 

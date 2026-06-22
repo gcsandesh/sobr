@@ -115,7 +115,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 
 ## Phase 2 (post-MVP)
 - [ ] Google + Apple sign-in (Expo)
-- [ ] Expo push reminders ("log today before midnight")
+- [x] Daily reminder (local notification, schedulable from Settings) — _native; user tests delivery on device. Push (remote) still pending._
 - [ ] CSV / JSON export UI
 - [ ] Offline tolerance: optimistic local state + sync-on-reconnect
 - [ ] Optional dedicated `apps/web` (Next.js) if web view outgrows RN Web
