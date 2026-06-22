@@ -107,7 +107,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [ ] Data export (CSV/JSON) — _Phase 2; data model supports it_
 
 ## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
-- [~] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up + win/freeze haptic + win banner done; tree level-up pending_
+- [x] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up, win/freeze haptic + banner, and tree level-up celebration_
 - [x] A11y audit: contrast (AA), ≥44px targets, SR labels on icon buttons — _contrast verified ≥AA; bumped steppers/chips/rows to ≥44px; radio roles added_
 - [x] Empty states + first-run delight — _Home first-load + Progress first-run empty state_
 - [x] Copy pass: non-judgmental tone everywhere ("slip", never "failure") — _audited: no triggering/judgmental words in UI_

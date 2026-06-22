@@ -16,10 +16,12 @@ import { roundUnits, totalUnits } from '@sobr/core';
 import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { Logo } from '../../src/components/Logo';
 import { Glow } from '../../src/components/Glow';
+import { GrowthCelebration } from '../../src/components/GrowthCelebration';
 import { Tree } from '../../src/components/Tree';
 import { SnowflakeIcon } from '../../src/components/icons';
 import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
 import { useDayEntry, useHomeStats, useSaveDay, useUseFreeze } from '../../src/data/hooks';
+import { useGrowthCelebration } from '../../src/data/useGrowthCelebration';
 import { haptics } from '../../src/lib/haptics';
 import { colors } from '../../src/theme';
 
@@ -30,6 +32,11 @@ export default function Today() {
   const saveDay = useSaveDay();
   const useFreeze = useUseFreeze();
   const [celebrate, setCelebrate] = useState<string | null>(null);
+  const growth = useGrowthCelebration(
+    stats.progress.stageIndex,
+    stats.stage,
+    !stats.isLoading && !stats.isError,
+  );
 
   const entry = todayEntry.data;
   const meta = growthMetaForKey(stats.stage);
@@ -60,6 +67,10 @@ export default function Today() {
 
   return (
     <Screen scroll>
+      {growth.celebration && (
+        <GrowthCelebration meta={growth.celebration} onDismiss={growth.dismiss} />
+      )}
+
       {/* header */}
       <Row className="justify-between mt-2 mb-4">
         <View>

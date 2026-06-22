@@ -91,6 +91,16 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="m8-levelup"></a>
+## M8 · Tree level-up celebration — ✅ done (2026-06-22)
+
+**Achieved** — the engaging payoff: when lifetime clear days cross a growth threshold,
+a calm full-screen moment shows the grown tree (with its amber glow), "Your tree grew →
+<stage>", a gentle blurb, and a success haptic. `useGrowthCelebration` persists the last
+celebrated stage (AsyncStorage) and gates on real data so it never fires on a loading flash
+or re-fires on relaunch. **Verified via headless screenshot** (forced state) — renders
+beautifully, no errors. This completes the M8 micro-interactions. typecheck + bundles green.
+
 <a id="ui-modern"></a>
 ## UI · Modern styling (gradients + glass) — ✅ done (2026-06-22)
 
