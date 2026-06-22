@@ -104,7 +104,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [~] Time zone setting — _captured from device at onboarding + shown; in-app editor pending_
 - [x] Account: show email, sign out
 - [x] Account: delete account/data (calls purge routine) with confirm
-- [ ] Data export (CSV/JSON) — _Phase 2; data model supports it_
+- [~] Data export (CSV/JSON) — _dropped: data lives in the DB and syncs on login, so a manual export isn't needed. Model still supports adding a backup file later._
 
 ## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
 - [x] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up, win/freeze haptic + banner, and tree level-up celebration_
@@ -117,7 +117,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [ ] Google + Apple sign-in (Expo)
 - [x] Daily reminder (local notification, schedulable from Settings) — _native; user tests delivery on device. Push (remote) still pending._
 - [ ] CSV / JSON export UI
-- [ ] Offline tolerance: optimistic local state + sync-on-reconnect
+- [x] Offline tolerance: optimistic local state + sync-on-reconnect — _persisted cache (instant reopen + offline reads), NetInfo online-manager (auto-resume on reconnect), optimistic save-day/use-freeze. Cross-restart write replay = future enhancement._
 - [ ] Optional dedicated `apps/web` (Next.js) if web view outgrows RN Web
 
 ---

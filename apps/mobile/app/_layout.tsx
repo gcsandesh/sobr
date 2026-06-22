@@ -6,7 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import {
   Manrope_400Regular,
@@ -14,7 +14,7 @@ import {
   Manrope_600SemiBold,
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
-import { queryClient } from '../src/lib/queryClient';
+import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
 import { isSupabaseConfigured } from '../src/lib/env';
 import { SessionProvider, useSession } from '../src/data/SessionProvider';
 import { useSettings } from '../src/data/hooks';
@@ -86,12 +86,19 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{ persister: asyncStoragePersister, maxAge: 1000 * 60 * 60 * 24 * 7 }}
+          onSuccess={() => {
+            // resend any writes that were queued while offline
+            void queryClient.resumePausedMutations();
+          }}
+        >
           <SessionProvider>
             <StatusBar style="light" />
             <Gate />
           </SessionProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

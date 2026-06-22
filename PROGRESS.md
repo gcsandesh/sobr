@@ -91,6 +91,25 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="offline"></a>
+## Phase 2 · Offline tolerance — ✅ done (2026-06-22)
+
+**Achieved**
+- **Persisted query cache** (AsyncStorage via `PersistQueryClientProvider`): reopening the app —
+  even offline — shows last-known data instantly; gcTime raised to 7 days.
+- **Network-aware** `onlineManager` wired to NetInfo (web + native): offline reads come from
+  cache, writes pause and **auto-resume on reconnect** within the session.
+- **Optimistic updates** for the core actions (save day, use freeze): the today view, calendar,
+  and home stats update instantly; rolled back on error.
+- Verified: web boots clean (headless, no pageerrors); typecheck + web/iOS bundles green.
+
+**Note / future enhancement:** replaying writes made offline *after a full app restart* needs
+serializable mutation defaults — deferred. In-session offline (e.g. airplane-mode → act →
+reconnect) works now.
+
+**What you need to do:** on device, try airplane mode → log a clear day (UI updates instantly) →
+turn connectivity back on and confirm it syncs.
+
 <a id="reminders"></a>
 ## Phase 2 · Daily reminder (local notifications) — ✅ built (2026-06-22)
 

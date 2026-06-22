@@ -1,8 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   allTimeStats,
   bankedFreezes,
   computeStreak,
+  type DailyEntryWithDrinks,
   type DrinkInput,
   type EntryStatus,
   type LocalDate,
@@ -146,10 +152,65 @@ function useInvalidateAll() {
   };
 }
 
+/**
+ * Optimistically write an entry into the cache (the today view, calendar, and
+ * all derived home stats update instantly), returning a snapshot for rollback.
+ * This is what makes logging feel instant and tolerate a flaky connection.
+ */
+type EntrySnapshot = {
+  prevAll: DailyEntryWithDrinks[] | undefined;
+  prevEntry: DailyEntryWithDrinks | null | undefined;
+};
+
+function writeOptimisticEntry(
+  qc: QueryClient,
+  uid: string,
+  date: LocalDate,
+  status: EntryStatus,
+  drinks: DrinkInput[],
+  note: string | null,
+): EntrySnapshot {
+  const prevAll = qc.getQueryData<DailyEntryWithDrinks[]>(keys.allEntries(uid));
+  const prevEntry = qc.getQueryData<DailyEntryWithDrinks | null>(keys.entry(uid, date));
+  const id = prevEntry?.id ?? `optimistic-${date}`;
+  const entry: DailyEntryWithDrinks = {
+    id,
+    userId: uid,
+    entryDate: date,
+    status,
+    note,
+    drinks: drinks.map((d, i) => ({
+      id: `opt-${date}-${i}`,
+      dailyEntryId: id,
+      presetKey: d.presetKey,
+      name: d.name,
+      volumeMl: d.volumeMl,
+      abv: d.abv,
+      cost: d.cost,
+      quantity: d.quantity,
+    })),
+  };
+  qc.setQueryData(keys.entry(uid, date), entry);
+  qc.setQueryData<DailyEntryWithDrinks[]>(keys.allEntries(uid), (old) => {
+    const list = old ? [...old] : [];
+    const idx = list.findIndex((e) => e.entryDate === date);
+    if (idx >= 0) list[idx] = entry;
+    else list.push(entry);
+    return list.sort((a, b) => (a.entryDate < b.entryDate ? -1 : 1));
+  });
+  return { prevAll, prevEntry };
+}
+
+function restoreEntry(qc: QueryClient, uid: string, date: LocalDate, snap: EntrySnapshot) {
+  qc.setQueryData(keys.allEntries(uid), snap.prevAll);
+  qc.setQueryData(keys.entry(uid, date), snap.prevEntry);
+}
+
 /** Save a day's status + drinks, then award any newly-earned freeze tokens. */
 export function useSaveDay() {
   const uid = useUid();
   const tz = useTimeZone();
+  const qc = useQueryClient();
   const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: async (input: {
@@ -170,7 +231,16 @@ export function useSaveDay() {
       );
       await api.reconcileFreezeAwards(u, streak.current, grants);
     },
-    onSuccess: invalidate,
+    onMutate: async (input) => {
+      if (!uid) return undefined;
+      await qc.cancelQueries({ queryKey: keys.allEntries(uid) });
+      await qc.cancelQueries({ queryKey: keys.entry(uid, input.date) });
+      return writeOptimisticEntry(qc, uid, input.date, input.status, input.drinks, input.note ?? null);
+    },
+    onError: (_e, input, ctx) => {
+      if (uid && ctx) restoreEntry(qc, uid, input.date, ctx);
+    },
+    onSettled: () => invalidate(),
   });
 }
 
@@ -184,12 +254,31 @@ export function useDeleteDay() {
 
 export function useUseFreeze() {
   const uid = useUid();
+  const qc = useQueryClient();
   const invalidate = useInvalidateAll();
   return useMutation({
     mutationFn: async (date: LocalDate) => {
       const u = requireUid(uid);
       const grants = await api.fetchFreezeGrants(u);
       await api.useFreezeOnDay(u, date, grants);
+    },
+    onMutate: async (date) => {
+      if (!uid) return undefined;
+      await qc.cancelQueries({ queryKey: keys.allEntries(uid) });
+      await qc.cancelQueries({ queryKey: keys.entry(uid, date) });
+      const prevEntry = qc.getQueryData<DailyEntryWithDrinks | null>(keys.entry(uid, date));
+      const drinks: DrinkInput[] = (prevEntry?.drinks ?? []).map((d) => ({
+        presetKey: d.presetKey,
+        name: d.name,
+        volumeMl: d.volumeMl,
+        abv: d.abv,
+        cost: d.cost,
+        quantity: d.quantity,
+      }));
+      return writeOptimisticEntry(qc, uid, date, 'freeze', drinks, prevEntry?.note ?? null);
+    },
+    onError: (_e, date, ctx) => {
+      if (uid && ctx) restoreEntry(qc, uid, date, ctx);
     },
     onSuccess: invalidate,
   });
