@@ -105,6 +105,8 @@ which breaks our single web+native codebase. Modernized with cross-platform styl
 - Added `expo-linear-gradient` + `expo-blur` (both web-compatible).
 - **Verified visually** via headless Chrome screenshots: sign-in and Home both render cleanly,
   no pageerrors; the glass card + glow look modern and on-brand. typecheck + web & iOS bundles green.
+- **Visual QA pass** (2026-06-22): screenshotted Calendar, Progress, Settings under the new
+  styling — all cohesive and readable (glass cards, ≥44px chips, amber "today" ring); no fixes needed.
 
 <a id="m8-a11y"></a>
 ## M8 · A11y + copy pass — ✅ done (2026-06-22)
