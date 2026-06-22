@@ -121,6 +121,16 @@ alter table public.drinks        force row level security;
 alter table public.freeze_grants enable row level security;
 alter table public.freeze_grants force row level security;
 
+-- Table privileges. RLS decides WHICH ROWS each user may touch; these GRANTs are
+-- the table-level access Postgres requires *in addition* to RLS. Without them the
+-- authenticated role gets "42501 permission denied". Only `authenticated` is
+-- granted — `anon` (signed-out) never needs to read this personal data.
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.user_settings to authenticated;
+grant select, insert, update, delete on public.daily_entries to authenticated;
+grant select, insert, update, delete on public.drinks         to authenticated;
+grant select, insert, update, delete on public.freeze_grants  to authenticated;
+
 -- user_settings: a user owns exactly their row
 drop policy if exists user_settings_select on public.user_settings;
 create policy user_settings_select on public.user_settings

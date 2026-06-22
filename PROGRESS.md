@@ -91,6 +91,26 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="dark-mode-crash"></a>
+## Bugfix · Post-splash crash (web blank + mobile 500) — ✅ done (2026-06-22)
+
+**Cause:** the app forces a dark scheme, but NativeWind's default `darkMode: 'media'` made it
+throw `Cannot manually set color scheme` (`StyleSheet.setFlag('darkMode','class')`) — a
+cross-platform NativeWind error that blanked web and crashed native. **Fix:** `darkMode: 'class'`
+in `tailwind.config.js`. Verified via headless Chrome that sign-in renders with no pageerror;
+web + iOS bundles + typecheck green. (Confirmed by user: now reaches onboarding.)
+
+<a id="db-grants"></a>
+## Bugfix · 42501 permission denied (table GRANTs) — ✅ done (2026-06-22)
+
+**Cause:** choosing a win condition wrote to `user_settings` and failed with
+`42501 permission denied`. RLS controls *which rows*, but the `authenticated` role also needs
+table-level GRANTs — the migration never issued them. **Fix:** added `GRANT … TO authenticated`
+to `0000_init.sql` and a standalone `0001_grants.sql` for existing databases.
+
+**What you need to do:** run `packages/db/migrations/0001_grants.sql` in your Supabase SQL editor
+(snippet also pasted in chat). Then retry choosing a win condition.
+
 <a id="env-root"></a>
 ## Bugfix · App stuck on setup screen despite a configured .env — ✅ done (2026-06-21)
 
