@@ -3,6 +3,9 @@
 // file remains the canonical source; Tailwind (CJS) can't import the TS ESM build.
 module.exports = {
   content: ['./app/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
+  // Class-based dark mode: the app is dark-only and forces a dark scheme, so
+  // 'media' makes NativeWind throw "Cannot manually set color scheme" on web.
+  darkMode: 'class',
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
