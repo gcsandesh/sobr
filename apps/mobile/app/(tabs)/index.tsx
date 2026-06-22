@@ -15,6 +15,7 @@ import { growthMetaForKey } from '@sobr/config';
 import { roundUnits, totalUnits } from '@sobr/core';
 import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { Logo } from '../../src/components/Logo';
+import { Glow } from '../../src/components/Glow';
 import { Tree } from '../../src/components/Tree';
 import { SnowflakeIcon } from '../../src/components/icons';
 import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
@@ -92,6 +93,9 @@ export default function Today() {
       {/* tree + streak */}
       <Animated.View entering={FadeIn.duration(500)}>
         <Card className="items-center pt-8 pb-6">
+          <View className="absolute top-2 items-center justify-center" pointerEvents="none">
+            <Glow size={300} />
+          </View>
           <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={210} />
           <AnimatedNumber value={stats.streak.current} variant="display" className="mt-2" />
           <Txt variant="label" className="-mt-1">

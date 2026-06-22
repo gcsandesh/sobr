@@ -4,13 +4,24 @@ import {
   Pressable,
   PressableProps,
   ScrollView,
+  StyleSheet,
   Text,
   TextProps,
   View,
   ViewProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme';
+
+/** Soft, low-opacity elevation — never a harsh drop shadow. */
+const softShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.22,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 5,
+} as const;
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
 
@@ -58,32 +69,53 @@ export function Screen({
     <View className={`flex-1 px-5 ${className ?? ''}`}>{children}</View>
   );
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top', 'bottom']}>
-      {scroll ? (
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {inner}
-        </ScrollView>
-      ) : (
-        inner
-      )}
-    </SafeAreaView>
+    <View className="flex-1 bg-bg">
+      {/* subtle vertical gradient gives the dark theme depth (a calm vignette) */}
+      <LinearGradient
+        colors={['#1A2D22', '#0F1C16', '#0A130F']}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+      <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+        {scroll ? (
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {inner}
+          </ScrollView>
+        ) : (
+          inner
+        )}
+      </SafeAreaView>
+    </View>
   );
 }
 
 export function Card({
   children,
   className,
+  style,
   ...props
 }: ViewProps & { children: ReactNode; className?: string }) {
   return (
     <View
-      className={`bg-surface border border-border rounded-2xl p-5 ${className ?? ''}`}
+      // default border (white hairline) is first so callers can override with
+      // border-win / border-accent etc.; bg is a translucent glass fill.
+      className={`relative overflow-hidden rounded-2xl border border-white/10 p-5 ${className ?? ''}`}
+      style={[{ backgroundColor: 'rgba(27,43,35,0.62)' }, softShadow, style]}
       {...props}
     >
+      {/* top-light sheen — the soft "glass edge" */}
+      <LinearGradient
+        colors={['rgba(255,255,255,0.07)', 'rgba(255,255,255,0)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
       {children}
     </View>
   );

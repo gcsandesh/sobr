@@ -91,6 +91,21 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="ui-modern"></a>
+## UI · Modern styling (gradients + glass) — ✅ done (2026-06-22)
+
+**Decision:** skipped `@expo/ui` — it's native-only (no web), alpha, and needs a dev build,
+which breaks our single web+native codebase. Modernized with cross-platform styling instead.
+
+**Achieved**
+- Subtle **background gradient** on every screen (calm vignette depth) via `expo-linear-gradient`.
+- **Glass cards:** translucent fill + top-light sheen + soft (non-harsh) shadow; hairline white
+  border that callers can still override (border-win etc.).
+- Soft amber **Glow** (SVG radial) behind the home tree for warmth/focus.
+- Added `expo-linear-gradient` + `expo-blur` (both web-compatible).
+- **Verified visually** via headless Chrome screenshots: sign-in and Home both render cleanly,
+  no pageerrors; the glass card + glow look modern and on-brand. typecheck + web & iOS bundles green.
+
 <a id="m8-a11y"></a>
 ## M8 · A11y + copy pass — ✅ done (2026-06-22)
 
