@@ -11,7 +11,7 @@ import {
   todayInTz,
   totalUnits,
 } from '@sobr/core';
-import { IconButton, Row, Screen, Txt } from '../../src/components/ui';
+import { IconButton, Notice, Row, Screen, Txt } from '../../src/components/ui';
 import { useAllEntries, useTimeZone } from '../../src/data/hooks';
 import { colors, statusColors } from '../../src/theme';
 
@@ -65,6 +65,17 @@ export default function Calendar() {
           </IconButton>
         </Row>
       </Row>
+
+      {entriesQ.isError && (
+        <View className="mb-4">
+          <Notice
+            tone="error"
+            title="Couldn’t load your calendar"
+            message="Pull to retry once you’re back online."
+            onRetry={() => entriesQ.refetch()}
+          />
+        </View>
+      )}
 
       <Txt variant="heading" className="mb-3">
         {monthLabel}

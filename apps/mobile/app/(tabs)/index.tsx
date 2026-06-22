@@ -17,7 +17,7 @@ import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { Logo } from '../../src/components/Logo';
 import { Tree } from '../../src/components/Tree';
 import { SnowflakeIcon } from '../../src/components/icons';
-import { Button, Card, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
+import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
 import { useDayEntry, useHomeStats, useSaveDay, useUseFreeze } from '../../src/data/hooks';
 import { haptics } from '../../src/lib/haptics';
 import { colors } from '../../src/theme';
@@ -41,6 +41,21 @@ export default function Today() {
   }
 
   if (stats.isLoading) return <LoadingHero />;
+
+  if (stats.isError) {
+    return (
+      <Screen>
+        <View className="flex-1 justify-center">
+          <Notice
+            tone="error"
+            title="Couldn’t reach your data"
+            message="Check your connection and try again — your progress is safe."
+            onRetry={stats.refetch}
+          />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen scroll>

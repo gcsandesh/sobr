@@ -91,6 +91,16 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="m8-states"></a>
+## M8 · Error / empty / loading states — ✅ done (2026-06-22)
+
+**Achieved** — failures and first-run now read calmly instead of blanking or showing silent zeros:
+- Reusable `Notice` (info/error, optional "Try again") and `EmptyState` components.
+- `useHomeStats` exposes `isError` + `refetch`; **Home** shows a gentle retry card on load failure.
+- **Calendar** shows a retry notice if its data fails; **Progress** shows a retry notice and a
+  friendly first-run empty state.
+- Verified: typecheck + web bundle green.
+
 <a id="dark-mode-crash"></a>
 ## Bugfix · Post-splash crash (web blank + mobile 500) — ✅ done (2026-06-22)
 

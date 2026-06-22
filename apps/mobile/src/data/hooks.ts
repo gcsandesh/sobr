@@ -114,6 +114,12 @@ export function useHomeStats() {
 
   return {
     isLoading: entriesQ.isLoading || grantsQ.isLoading,
+    isError: entriesQ.isError || grantsQ.isError,
+    refetch: () => {
+      void entriesQ.refetch();
+      void grantsQ.refetch();
+    },
+    hasAnyData: entries.length > 0,
     today,
     streak,
     lifetimeWins,

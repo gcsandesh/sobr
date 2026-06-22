@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
 import { formatCurrency } from '@sobr/config';
 import { addDays, roundUnits, todayInTz, totalUnits } from '@sobr/core';
-import { Card, Row, Screen, Txt } from '../../src/components/ui';
+import { Card, EmptyState, Notice, Row, Screen, Txt } from '../../src/components/ui';
 import { useAllEntries, useHomeStats, useSettings, useTimeZone } from '../../src/data/hooks';
 import { colors } from '../../src/theme';
 
@@ -32,6 +32,24 @@ export default function Progress() {
       <Txt variant="title" className="mt-2 mb-5">
         Progress
       </Txt>
+
+      {stats.isError && (
+        <View className="mb-4">
+          <Notice
+            tone="error"
+            title="Couldn’t load your stats"
+            message="Check your connection and try again."
+            onRetry={stats.refetch}
+          />
+        </View>
+      )}
+
+      {!stats.isError && !stats.isLoading && !stats.hasAnyData && (
+        <EmptyState
+          title="Your story starts soon"
+          message="Log a few days and your progress will grow here — clear days, units, and spend."
+        />
+      )}
 
       <Card>
         <Txt variant="label" className="mb-3">

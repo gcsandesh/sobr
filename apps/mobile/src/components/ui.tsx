@@ -201,3 +201,53 @@ export function StatusPill({ status }: { status: 'win' | 'slip' | 'freeze' }) {
     </View>
   );
 }
+
+/* ── Notices & empty states ──────────────────────────────────────────────── */
+
+/** A calm inline notice with an optional retry. Tone is never alarming. */
+export function Notice({
+  title,
+  message,
+  onRetry,
+  tone = 'info',
+}: {
+  title: string;
+  message?: string;
+  onRetry?: () => void;
+  tone?: 'info' | 'error';
+}) {
+  return (
+    <View
+      accessibilityRole="alert"
+      className={`rounded-2xl p-4 border ${
+        tone === 'error' ? 'border-slip bg-slip-bg' : 'border-border bg-surface'
+      }`}
+    >
+      <Txt variant="body" className={tone === 'error' ? 'text-slip' : 'text-text'}>
+        {title}
+      </Txt>
+      {message ? (
+        <Txt variant="bodyMuted" className="mt-1">
+          {message}
+        </Txt>
+      ) : null}
+      {onRetry ? <Button label="Try again" tone="secondary" className="mt-3" onPress={onRetry} /> : null}
+    </View>
+  );
+}
+
+/** Friendly first-run / no-data placeholder. */
+export function EmptyState({ title, message }: { title: string; message?: string }) {
+  return (
+    <View className="items-center py-10 px-6">
+      <Txt variant="heading" className="text-center">
+        {title}
+      </Txt>
+      {message ? (
+        <Txt variant="bodyMuted" className="text-center mt-2">
+          {message}
+        </Txt>
+      ) : null}
+    </View>
+  );
+}
