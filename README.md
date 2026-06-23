@@ -8,9 +8,10 @@ A calm, private companion for a steadier relationship with alcohol — a daily
 win/slip streak, a freeze-token safety net, and a growing tree that reflects
 long-term progress. Built mobile-first (Expo) with a web companion view.
 
-> New here? Read **[PROJECT.md](./PROJECT.md)** for the what/why, **[PLAN.md](./PLAN.md)**
-> for architecture, **[TODO.md](./TODO.md)** for the task list, and
-> **[PROGRESS.md](./PROGRESS.md)** for what's built so far.
+> **Picking up the project?** Start with **[HANDOVER.md](./HANDOVER.md)** — the single entry point
+> (status, decisions, gotchas, how to verify, where to continue). Then **[PROJECT.md](./PROJECT.md)**
+> (what/why), **[PLAN.md](./PLAN.md)** (architecture), **[TODO.md](./TODO.md)** (tasks), and
+> **[PROGRESS.md](./PROGRESS.md)** (chronological log).
 
 ## Monorepo layout
 
