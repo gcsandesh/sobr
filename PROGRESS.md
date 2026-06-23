@@ -111,13 +111,13 @@ Developer account + a dev/EAS build — to add at store-publish time).
 - supabase client set to `flowType: 'pkce'`; brand Google "G" icon; calm glass button + "or" divider.
 - Verified: typecheck + web/Android bundles green; sign-in renders cleanly (headless screenshot).
 
-**What you need to do to make it work:**
-1. In Supabase → Auth → Providers, **enable Google** (paste the Client ID + Secret from Google
-   Cloud Console).
-2. In Supabase → Auth → URL Configuration, add redirect URLs: your web origin (e.g.
-   `http://localhost:8081`) and `sobr://auth-callback`; set the Site URL.
-3. Then **Google works on web** immediately. **Native** needs a custom dev build (the `sobr://`
-   redirect doesn't work in Expo Go) — that comes with the dev/EAS build later.
+**Status (2026-06-23): ✅ Google works on web** — confirmed end-to-end by the user (provider
+enabled in Supabase, Google Cloud redirect URI + Supabase redirect URLs set). The web redirect
+uses the page origin; PKCE code exchange completes via detectSessionInUrl.
+
+**Native readiness:** added a `sobr://auth-callback` deep-link handler in the root layout
+(cold-start/background), so native Google sign-in is wired and will work as soon as you make a
+custom **dev build** (it can't run in Expo Go). Not yet tested on device.
 
 <a id="offline"></a>
 ## Phase 2 · Offline tolerance — ✅ done (2026-06-22)

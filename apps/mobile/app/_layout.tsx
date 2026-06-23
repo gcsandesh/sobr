@@ -1,6 +1,7 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
+import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +16,7 @@ import {
   Manrope_700Bold,
 } from '@expo-google-fonts/manrope';
 import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
+import { completeSessionFromUrl } from '../src/lib/auth';
 import { isSupabaseConfigured } from '../src/lib/env';
 import { SessionProvider, useSession } from '../src/data/SessionProvider';
 import { useSettings } from '../src/data/hooks';
@@ -80,6 +82,21 @@ export default function RootLayout() {
     Manrope_600SemiBold,
     Manrope_700Bold,
   });
+
+  // Native OAuth deep link: if the "sobr://auth-callback" redirect opens the app
+  // (cold start or background), turn the URL into a session. Web finishes via
+  // detectSessionInUrl, so this is native-only.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    const handle = (url: string | null) => {
+      if (url && url.includes('auth-callback')) {
+        void completeSessionFromUrl(url).catch(() => {});
+      }
+    };
+    const sub = Linking.addEventListener('url', ({ url }) => handle(url));
+    void Linking.getInitialURL().then(handle);
+    return () => sub.remove();
+  }, []);
 
   if (!fontsLoaded) return <Splash />;
 
