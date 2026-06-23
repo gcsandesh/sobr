@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import { Alert, Pressable, TextInput, View } from 'react-native';
 import { Logo } from '../../src/components/Logo';
-import { Button, Screen, Txt } from '../../src/components/ui';
+import { GoogleIcon } from '../../src/components/icons';
+import { Button, Divider, Row, Screen, Txt } from '../../src/components/ui';
+import { signInWithGoogle } from '../../src/lib/auth';
 import { supabase } from '../../src/lib/supabase';
 import { colors } from '../../src/theme';
 
@@ -30,6 +32,18 @@ export default function SignIn() {
     setLoading(false);
     if (error) return Alert.alert('That code didn’t work', error.message);
     // Gate will route onward once the session lands.
+  }
+
+  const [googleLoading, setGoogleLoading] = useState(false);
+  async function google() {
+    setGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      Alert.alert('Google sign-in failed', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
   }
 
   return (
@@ -62,6 +76,29 @@ export default function SignIn() {
             <Txt variant="caption" className="text-center mt-2">
               No passwords. We’ll email you a one-time code.
             </Txt>
+
+            <Row className="my-4">
+              <Divider className="flex-1" />
+              <Txt variant="caption" className="mx-3">
+                or
+              </Txt>
+              <Divider className="flex-1" />
+            </Row>
+
+            <Pressable
+              onPress={google}
+              disabled={googleLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Continue with Google"
+              className={`min-h-[52px] rounded-xl flex-row items-center justify-center gap-3 bg-surface-raised border border-border ${
+                googleLoading ? 'opacity-50' : 'active:opacity-80'
+              }`}
+            >
+              <GoogleIcon size={20} />
+              <Txt variant="body" className="font-semibold">
+                Continue with Google
+              </Txt>
+            </Pressable>
           </View>
         ) : (
           <View className="gap-3">

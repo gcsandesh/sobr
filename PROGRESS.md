@@ -91,6 +91,34 @@ device/browser. Mutations are wired but not yet optimistic (Phase 2).
 
 ---
 
+<a id="metro-stale"></a>
+## Note · "Unable to resolve @tanstack/react-query-persist-client" — ✅ not a code bug (2026-06-23)
+
+A reload reported the persist-client package as unresolvable. The package is installed and
+resolves fine — a **fresh Android bundle passed**. Cause: the Metro dev server was running
+before the dep was installed, and a *reload* doesn't refresh its module map. **Fix:** restart
+Metro with a cleared cache — `pnpm app --clear` (or `npx expo start -c`).
+
+<a id="google-signin"></a>
+## Phase 2 · Google sign-in — ✅ built (web-ready) (2026-06-23)
+
+**Decision:** Google now; **Apple deferred** to "Future enhancements" (needs a paid Apple
+Developer account + a dev/EAS build — to add at store-publish time).
+
+**Achieved** — "Continue with Google" on the sign-in screen via Supabase OAuth (PKCE):
+- `signInWithGoogle()` — web navigates to the provider (detectSessionInUrl finishes it); native
+  opens an in-app auth session and exchanges the code (`expo-web-browser` + `expo-auth-session`).
+- supabase client set to `flowType: 'pkce'`; brand Google "G" icon; calm glass button + "or" divider.
+- Verified: typecheck + web/Android bundles green; sign-in renders cleanly (headless screenshot).
+
+**What you need to do to make it work:**
+1. In Supabase → Auth → Providers, **enable Google** (paste the Client ID + Secret from Google
+   Cloud Console).
+2. In Supabase → Auth → URL Configuration, add redirect URLs: your web origin (e.g.
+   `http://localhost:8081`) and `sobr://auth-callback`; set the Site URL.
+3. Then **Google works on web** immediately. **Native** needs a custom dev build (the `sobr://`
+   redirect doesn't work in Expo Go) — that comes with the dev/EAS build later.
+
 <a id="offline"></a>
 ## Phase 2 · Offline tolerance — ✅ done (2026-06-22)
 

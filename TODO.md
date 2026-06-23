@@ -114,11 +114,21 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Loading / error / offline-ish states for queries — _Notice/EmptyState; Home/Calendar/Progress retry on error_
 
 ## Phase 2 (post-MVP)
-- [ ] Google + Apple sign-in (Expo)
+- [~] Google sign-in (Expo) — _in progress; works on web once the Supabase Google provider is enabled. Native needs a custom dev build._
 - [x] Daily reminder (local notification, schedulable from Settings) — _native; user tests delivery on device. Push (remote) still pending._
-- [ ] CSV / JSON export UI
+- [~] CSV / JSON export UI — _dropped: data lives in the DB and syncs on login._
 - [x] Offline tolerance: optimistic local state + sync-on-reconnect — _persisted cache (instant reopen + offline reads), NetInfo online-manager (auto-resume on reconnect), optimistic save-day/use-freeze. Cross-restart write replay = future enhancement._
 - [ ] Optional dedicated `apps/web` (Next.js) if web view outgrows RN Web
+
+---
+
+## Future enhancements (when published to the App Store / Play Store)
+- [ ] **Apple sign-in** — add once there's a paid Apple Developer account + a dev/EAS build
+  (Apple requires it; "Sign in with Apple" is also mandatory for App Store apps that offer Google).
+- [ ] Native Google sign-in via dev build (nicer native sheet) — current flow is the
+  Supabase web-redirect, which works on web today.
+- [ ] Remote push notifications (smart "log before midnight" nudges).
+- [ ] Data backup/export file (CSV/JSON) — model already supports it.
 
 ---
 

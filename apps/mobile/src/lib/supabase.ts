@@ -21,7 +21,9 @@ export const supabase = createClient(url, anonKey, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    // URL-based session detection only matters on web magic-link redirects.
+    // PKCE is the secure OAuth flow for native; exchangeCodeForSession depends on it.
+    flowType: 'pkce',
+    // URL-based session detection handles the web OAuth/magic-link redirect.
     detectSessionInUrl: Platform.OS === 'web',
   },
 });
