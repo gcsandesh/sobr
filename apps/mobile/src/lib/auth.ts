@@ -8,11 +8,17 @@ import { supabase } from './supabase';
 WebBrowser.maybeCompleteAuthSession();
 
 /**
- * Where the OAuth provider sends the user back. On web this is the page origin;
- * on native it's the app's "sobr://auth-callback" deep link. Both must be added
- * to the Supabase project's allowed redirect URLs.
+ * Where the OAuth provider sends the user back, per platform — both must be in the
+ * Supabase project's allowed redirect URLs:
+ *   - web: the page origin (e.g. http://localhost:8081). detectSessionInUrl then
+ *     exchanges the ?code on load — no extra route needed.
+ *   - native: the "sobr://auth-callback" deep link (needs a custom dev build).
  */
-const redirectTo = AuthSession.makeRedirectUri({ scheme: 'sobr', path: 'auth-callback' });
+const nativeRedirect = AuthSession.makeRedirectUri({ scheme: 'sobr', path: 'auth-callback' });
+const getRedirectTo = () =>
+  Platform.OS === 'web' && typeof window !== 'undefined'
+    ? window.location.origin
+    : nativeRedirect;
 
 /** Turn the redirect URL (PKCE code, or implicit tokens) into a Supabase session. */
 export async function completeSessionFromUrl(url: string): Promise<void> {
@@ -40,6 +46,7 @@ export async function completeSessionFromUrl(url: string): Promise<void> {
  *    (Native needs a custom dev build — the "sobr://" redirect doesn't work in Expo Go.)
  */
 export async function signInWithGoogle(): Promise<void> {
+  const redirectTo = getRedirectTo();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true },
