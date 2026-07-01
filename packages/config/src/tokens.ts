@@ -1,39 +1,40 @@
 /**
  * sobr design tokens — the single source of visual truth shared by every surface.
  *
- * Dark-first, calm, nature/growth. Closer to a wellness app than a dashboard.
- * Slips use a warm terracotta, never an alarm-red: the UI must never feel punitive.
+ * Light-first, calm, nature/growth. Mostly white, with moss green as the primary
+ * accent — modern, clean, minimalistic. Slips use a warm terracotta, never an
+ * alarm-red: the UI must never feel punitive.
  *
- * Contrast targets (against `background` #0F1C16): text.primary, text.secondary,
+ * Contrast targets (against `background` #FFFFFF): text.primary, text.secondary,
  * and each status color are chosen to clear WCAG AA for their use (body / large text).
  */
 
 export const palette = {
-  // Deep charcoal-green backgrounds, lightening as surfaces stack.
-  background: '#0F1C16',
-  surface: '#16271F',
-  surfaceRaised: '#1E3328',
-  surfaceOverlay: '#243B2F',
-  border: '#2C4438',
-  borderStrong: '#3A5648',
+  // Mostly white, with a faint sage-tinted surface for cards/raised layers.
+  background: '#FFFFFF',
+  surface: '#F5F8F5',
+  surfaceRaised: '#EBF2EA',
+  surfaceOverlay: '#DFEBDE',
+  border: '#E1E8E0',
+  borderStrong: '#C7D6C4',
 
-  // Warm off-white text on dark, stepping down to muted sage.
-  textPrimary: '#F3EFE6',
-  textSecondary: '#AEBDB1',
+  // Deep charcoal-green text on white, stepping down to muted sage-grey.
+  textPrimary: '#16241C',
+  textSecondary: '#4A5A4F',
   textMuted: '#7C8E80',
-  textInverse: '#10201A',
+  textInverse: '#F6FAF5',
 
   // Status colors — calm, never harsh.
-  win: '#8FBE7E', // soft moss — a good day
-  winSoft: '#2A3F2C', // moss tint for fills/backgrounds
-  slip: '#D08B66', // muted terracotta — a slip, not a failure
-  slipSoft: '#3C2C24', // terracotta tint
-  frozen: '#88AEC9', // dusty blue — streak protected
-  frozenSoft: '#26333D', // blue tint
+  win: '#3E8E5B', // moss green — a good day (also the primary accent)
+  winSoft: '#E3F2E4', // moss tint for fills/backgrounds
+  slip: '#C0704A', // muted terracotta — a slip, not a failure
+  slipSoft: '#F7E9E1', // terracotta tint
+  frozen: '#4A7FA6', // dusty blue — streak protected
+  frozenSoft: '#E4EEF5', // blue tint
 
-  // Single accent: warm amber/gold for streaks + highlights. Used sparingly.
-  accent: '#E6B45C',
-  accentSoft: '#3A2F1C',
+  // Single accent: the same moss green, used sparingly for streaks + highlights.
+  accent: '#3E8E5B',
+  accentSoft: '#E3F2E4',
 
   // Misc
   white: '#FFFFFF',
@@ -133,8 +134,8 @@ export const lineHeights = {
 /** Soft elevation — diffuse, low-opacity, never harsh drop shadows. */
 export const shadows = {
   none: 'none',
-  soft: '0 8px 24px rgba(0,0,0,0.25)',
-  raised: '0 12px 32px rgba(0,0,0,0.32)',
+  soft: '0 8px 24px rgba(22,36,28,0.08)',
+  raised: '0 12px 32px rgba(22,36,28,0.12)',
 } as const;
 
 /** Minimum interactive target — accessibility (≥44px). */

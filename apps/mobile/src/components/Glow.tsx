@@ -7,8 +7,8 @@ import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
  */
 export function Glow({
   size = 320,
-  color = '#E6B45C',
-  opacity = 0.16,
+  color = '#3E8E5B',
+  opacity = 0.14,
 }: {
   size?: number;
   color?: string;

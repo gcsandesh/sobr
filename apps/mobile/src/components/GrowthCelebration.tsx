@@ -26,10 +26,10 @@ export function GrowthCelebration({
     <Modal transparent visible animationType="fade" onRequestClose={onDismiss}>
       <View
         className="flex-1 items-center justify-center px-8"
-        style={{ backgroundColor: 'rgba(8,16,12,0.86)' }}
+        style={{ backgroundColor: 'rgba(255,255,255,0.94)' }}
       >
         <View className="absolute items-center justify-center" pointerEvents="none">
-          <Glow size={380} opacity={0.24} />
+          <Glow size={380} color="#3E8E5B" opacity={0.18} />
         </View>
         <Animated.View entering={FadeIn.duration(450)} className="items-center w-full">
           <Tree stage={meta.key} progress={0.4} size={200} />

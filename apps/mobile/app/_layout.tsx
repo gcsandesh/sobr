@@ -112,7 +112,7 @@ export default function RootLayout() {
           }}
         >
           <SessionProvider>
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
             <Gate />
           </SessionProvider>
         </PersistQueryClientProvider>

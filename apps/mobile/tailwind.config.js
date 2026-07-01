@@ -3,30 +3,30 @@
 // file remains the canonical source; Tailwind (CJS) can't import the TS ESM build.
 module.exports = {
   content: ['./app/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'],
-  // Class-based dark mode: the app is dark-only and forces a dark scheme, so
-  // 'media' makes NativeWind throw "Cannot manually set color scheme" on web.
+  // Class-based dark mode: the app forces a scheme explicitly, so 'media' makes
+  // NativeWind throw "Cannot manually set color scheme" on web.
   darkMode: 'class',
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
-        bg: '#0F1C16',
-        surface: '#16271F',
-        'surface-raised': '#1E3328',
-        overlay: '#243B2F',
-        border: '#2C4438',
-        'border-strong': '#3A5648',
-        text: '#F3EFE6',
-        'text-muted': '#AEBDB1',
+        bg: '#FFFFFF',
+        surface: '#F5F8F5',
+        'surface-raised': '#EBF2EA',
+        overlay: '#DFEBDE',
+        border: '#E1E8E0',
+        'border-strong': '#C7D6C4',
+        text: '#16241C',
+        'text-muted': '#4A5A4F',
         'text-faint': '#7C8E80',
-        win: '#8FBE7E',
-        'win-bg': '#2A3F2C',
-        slip: '#D08B66',
-        'slip-bg': '#3C2C24',
-        frozen: '#88AEC9',
-        'frozen-bg': '#26333D',
-        accent: '#E6B45C',
-        'accent-bg': '#3A2F1C',
+        win: '#3E8E5B',
+        'win-bg': '#E3F2E4',
+        slip: '#C0704A',
+        'slip-bg': '#F7E9E1',
+        frozen: '#4A7FA6',
+        'frozen-bg': '#E4EEF5',
+        accent: '#3E8E5B',
+        'accent-bg': '#E3F2E4',
       },
       fontFamily: {
         display: ['Fraunces_600SemiBold'],

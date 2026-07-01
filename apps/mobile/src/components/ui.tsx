@@ -16,11 +16,11 @@ import { colors } from '../theme';
 
 /** Soft, low-opacity elevation — never a harsh drop shadow. */
 const softShadow = {
-  shadowColor: '#000',
-  shadowOpacity: 0.22,
+  shadowColor: '#16241C',
+  shadowOpacity: 0.08,
   shadowRadius: 18,
-  shadowOffset: { width: 0, height: 10 },
-  elevation: 5,
+  shadowOffset: { width: 0, height: 8 },
+  elevation: 2,
 } as const;
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
@@ -70,10 +70,10 @@ export function Screen({
   );
   return (
     <View className="flex-1 bg-bg">
-      {/* subtle vertical gradient gives the dark theme depth (a calm vignette) */}
+      {/* barely-there vertical tint — keeps the white calm instead of stark */}
       <LinearGradient
-        colors={['#1A2D22', '#0F1C16', '#0A130F']}
-        locations={[0, 0.5, 1]}
+        colors={['#F7FBF6', '#FFFFFF', '#FFFFFF']}
+        locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
@@ -102,20 +102,12 @@ export function Card({
 }: ViewProps & { children: ReactNode; className?: string }) {
   return (
     <View
-      // default border (white hairline) is first so callers can override with
-      // border-win / border-accent etc.; bg is a translucent glass fill.
-      className={`relative overflow-hidden rounded-2xl border border-white/10 p-5 ${className ?? ''}`}
-      style={[{ backgroundColor: 'rgba(27,43,35,0.62)' }, softShadow, style]}
+      // default border is a faint hairline so callers can override with
+      // border-win / border-accent etc.; bg is solid white for a clean, flat card.
+      className={`relative overflow-hidden rounded-2xl border border-border bg-bg p-5 ${className ?? ''}`}
+      style={[softShadow, style]}
       {...props}
     >
-      {/* top-light sheen — the soft "glass edge" */}
-      <LinearGradient
-        colors={['rgba(255,255,255,0.07)', 'rgba(255,255,255,0)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={StyleSheet.absoluteFill}
-        pointerEvents="none"
-      />
       {children}
     </View>
   );
@@ -149,7 +141,7 @@ const BTN_BG: Record<BtnTone, string> = {
   danger: 'bg-slip-bg border border-slip',
 };
 const BTN_TX: Record<BtnTone, string> = {
-  primary: 'text-[#10201A]',
+  primary: 'text-white',
   secondary: 'text-text',
   ghost: 'text-text-muted',
   win: 'text-win',
@@ -186,7 +178,7 @@ export function Button({
       } ${className ?? ''}`}
     >
       {loading ? (
-        <ActivityIndicator color={tone === 'primary' ? '#10201A' : colors.text} />
+        <ActivityIndicator color={tone === 'primary' ? '#FFFFFF' : colors.text} />
       ) : (
         <Text className={`font-semibold text-base ${BTN_TX[tone]}`}>{label}</Text>
       )}

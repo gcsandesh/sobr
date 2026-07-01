@@ -17,6 +17,10 @@ import { palette } from '../theme';
  * calm, living quality without per-frame SVG animation. Real craft, not an icon swap.
  */
 
+// Warm bark brown for trunk/branches — kept distinct from the green canopy/accent
+// so the silhouette reads clearly against the tree's own foliage.
+const TRUNK_COLOR = '#8B6F47';
+
 const STAGE_INDEX: Record<GrowthStageKey, number> = {
   seed: 0,
   sprout: 1,
@@ -109,7 +113,7 @@ export function Tree({
           {/* ground */}
           <Path
             d="M40 168 Q100 150 160 168"
-            stroke={palette.border}
+            stroke={palette.borderStrong}
             strokeWidth={5}
             strokeLinecap="round"
             fill="none"
@@ -121,7 +125,7 @@ export function Tree({
               <Ellipse cx={100} cy={166} rx={26} ry={9} fill={palette.surfaceRaised} />
               <Path
                 d="M100 166 L100 146"
-                stroke={palette.accent}
+                stroke={TRUNK_COLOR}
                 strokeWidth={4}
                 strokeLinecap="round"
               />
@@ -132,7 +136,7 @@ export function Tree({
               {/* trunk */}
               <Path
                 d={`M100 168 L100 ${top}`}
-                stroke={palette.accent}
+                stroke={TRUNK_COLOR}
                 strokeWidth={idx >= 3 ? 8 : 5}
                 strokeLinecap="round"
               />
@@ -140,14 +144,14 @@ export function Tree({
                 <>
                   <Path
                     d="M100 120 Q82 104 76 86"
-                    stroke={palette.accent}
+                    stroke={TRUNK_COLOR}
                     strokeWidth={5}
                     strokeLinecap="round"
                     fill="none"
                   />
                   <Path
                     d="M100 112 Q120 98 126 82"
-                    stroke={palette.accent}
+                    stroke={TRUNK_COLOR}
                     strokeWidth={5}
                     strokeLinecap="round"
                     fill="none"

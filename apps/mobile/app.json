@@ -5,9 +5,9 @@
     "version": "0.1.0",
     "scheme": "sobr",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "backgroundColor": "#0F1C16",
+    "backgroundColor": "#FFFFFF",
     "icon": "./assets/brand/icon.png",
     "ios": {
       "supportsTablet": true,
@@ -36,7 +36,7 @@
           "image": "./assets/brand/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#0F1C16"
+          "backgroundColor": "#FFFFFF"
         }
       ]
     ],
