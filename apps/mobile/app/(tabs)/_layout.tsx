@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { CalendarIcon, ChartIcon, GearIcon, HomeLeafIcon } from '../../src/components/icons';
+import { ChartIcon, GearIcon, HomeLeafIcon } from '../../src/components/icons';
 import { colors } from '../../src/theme';
 
 export default function TabsLayout() {
@@ -23,15 +23,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Today',
+          title: 'Home',
           tabBarIcon: ({ color }) => <HomeLeafIcon color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: 'Calendar',
-          tabBarIcon: ({ color }) => <CalendarIcon color={color} />,
         }}
       />
       <Tabs.Screen

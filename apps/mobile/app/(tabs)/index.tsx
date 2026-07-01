@@ -12,15 +12,22 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { growthMetaForKey } from '@sobr/config';
-import { roundUnits, totalUnits } from '@sobr/core';
+import { type LocalDate, roundUnits, totalUnits } from '@sobr/core';
 import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { Logo } from '../../src/components/Logo';
 import { Glow } from '../../src/components/Glow';
 import { GrowthCelebration } from '../../src/components/GrowthCelebration';
+import { MonthCalendar } from '../../src/components/MonthCalendar';
 import { Tree } from '../../src/components/Tree';
 import { SnowflakeIcon } from '../../src/components/icons';
 import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
-import { useDayEntry, useHomeStats, useSaveDay, useUseFreeze } from '../../src/data/hooks';
+import {
+  useAllEntries,
+  useDayEntry,
+  useHomeStats,
+  useSaveDay,
+  useUseFreeze,
+} from '../../src/data/hooks';
 import { useGrowthCelebration } from '../../src/data/useGrowthCelebration';
 import { haptics } from '../../src/lib/haptics';
 import { colors } from '../../src/theme';
@@ -28,19 +35,21 @@ import { colors } from '../../src/theme';
 export default function Today() {
   const router = useRouter();
   const stats = useHomeStats();
-  const todayEntry = useDayEntry(stats.today);
+  const entriesQ = useAllEntries();
   const saveDay = useSaveDay();
   const useFreeze = useUseFreeze();
   const [celebrate, setCelebrate] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<LocalDate | null>(null);
   const growth = useGrowthCelebration(
     stats.progress.stageIndex,
     stats.stage,
     !stats.isLoading && !stats.isError,
   );
 
-  const entry = todayEntry.data;
   const meta = growthMetaForKey(stats.stage);
   const greeting = greetingForHour();
+  const activeDate = selectedDate ?? stats.today;
+  const dayEntry = useDayEntry(activeDate);
 
   function celebrateWin(message: string) {
     haptics.success();
@@ -75,7 +84,7 @@ export default function Today() {
       <Row className="justify-between mt-2 mb-4">
         <View>
           <Txt variant="label">{greeting}</Txt>
-          <Txt variant="title">Today</Txt>
+          <Txt variant="title">sobr</Txt>
         </View>
         <Row
           className="gap-1"
@@ -129,36 +138,57 @@ export default function Today() {
         </Card>
       </Animated.View>
 
-      {/* today's check-in */}
+      {/* embedded calendar */}
       <Txt variant="heading" className="mt-6 mb-3">
-        How was today?
+        Your days
       </Txt>
+      <Card>
+        {entriesQ.isError ? (
+          <Notice
+            tone="error"
+            title="Couldn’t load your calendar"
+            message="Pull to retry once you’re back online."
+            onRetry={() => entriesQ.refetch()}
+          />
+        ) : (
+          <MonthCalendar
+            entries={entriesQ.data ?? []}
+            today={stats.today}
+            selected={activeDate}
+            onSelect={setSelectedDate}
+          />
+        )}
+      </Card>
 
-      {entry ? (
+      {/* day detail — the selected date's check-in, right below the calendar */}
+      <Txt variant="heading" className="mt-6 mb-3">
+        {dateHeading(activeDate, stats.today)}
+      </Txt>
+      {dayEntry.data ? (
         <Card>
           <Row className="justify-between">
-            <StatusPill status={entry.status} />
-            <Txt variant="caption">{entry.drinks.length > 0 ? 'logged' : ''}</Txt>
+            <StatusPill status={dayEntry.data.status} />
+            <Txt variant="caption">{dayEntry.data.drinks.length > 0 ? 'logged' : ''}</Txt>
           </Row>
           <Txt variant="body" className="mt-3">
-            {entry.status === 'win'
-              ? 'A clear win today. Nicely done.'
-              : entry.status === 'freeze'
-                ? 'Protected with a freeze — your streak stays safe.'
-                : 'Logged. Tomorrow’s a fresh page.'}
+            {dayEntry.data.status === 'win'
+              ? 'A clear win. Nicely done.'
+              : dayEntry.data.status === 'freeze'
+                ? 'Protected with a freeze — the streak stayed safe.'
+                : 'Logged — a fresh page follows.'}
           </Txt>
-          {entry.drinks.length > 0 && (
+          {dayEntry.data.drinks.length > 0 && (
             <Txt variant="bodyMuted" className="mt-1">
-              {roundUnits(totalUnits(entry.drinks))} units logged
+              {roundUnits(totalUnits(dayEntry.data.drinks))} units logged
             </Txt>
           )}
           <Button
-            label="Edit today"
+            label="Edit this day"
             tone="secondary"
             className="mt-4"
-            onPress={() => router.push(`/day/${stats.today}`)}
+            onPress={() => router.push(`/day/${activeDate}`)}
           />
-          {entry.status === 'slip' && stats.bankedFreezes > 0 && (
+          {activeDate === stats.today && dayEntry.data.status === 'slip' && stats.bankedFreezes > 0 && (
             <Button
               label="Protect with a freeze"
               tone="win"
@@ -174,22 +204,32 @@ export default function Today() {
         </Card>
       ) : (
         <View className="gap-3">
-          <Button
-            label="It was a clear day"
-            tone="win"
-            loading={saveDay.isPending}
-            onPress={() =>
-              saveDay.mutate(
-                { date: stats.today, status: 'win', drinks: [] },
-                { onSuccess: () => celebrateWin('A clear day — nicely done.') },
-              )
-            }
-          />
-          <Button
-            label="Log today"
-            tone="secondary"
-            onPress={() => router.push(`/day/${stats.today}`)}
-          />
+          {activeDate === stats.today ? (
+            <>
+              <Button
+                label="It was a clear day"
+                tone="win"
+                loading={saveDay.isPending}
+                onPress={() =>
+                  saveDay.mutate(
+                    { date: stats.today, status: 'win', drinks: [] },
+                    { onSuccess: () => celebrateWin('A clear day — nicely done.') },
+                  )
+                }
+              />
+              <Button
+                label="Log today"
+                tone="secondary"
+                onPress={() => router.push(`/day/${activeDate}`)}
+              />
+            </>
+          ) : (
+            <Button
+              label="Log this day"
+              tone="secondary"
+              onPress={() => router.push(`/day/${activeDate}`)}
+            />
+          )}
         </View>
       )}
     </Screen>
@@ -226,4 +266,16 @@ function greetingForHour(): string {
   if (h < 12) return 'Good morning';
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function dateHeading(date: LocalDate, today: LocalDate): string {
+  if (date === today) return 'How was today?';
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
+  const label = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  return label;
 }

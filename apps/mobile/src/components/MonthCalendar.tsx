@@ -1,42 +1,51 @@
 import { useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import {
   addDays,
+  type DailyEntryWithDrinks,
   endOfMonth,
   enumerateDates,
   isAfter,
   type LocalDate,
   startOfMonth,
-  todayInTz,
   totalUnits,
 } from '@sobr/core';
-import { IconButton, Notice, Row, Screen, Txt } from '../../src/components/ui';
-import { useAllEntries, useTimeZone } from '../../src/data/hooks';
-import { colors, statusColors } from '../../src/theme';
+import { IconButton, Row, Txt } from './ui';
+import { colors, statusColors } from '../theme';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-export default function Calendar() {
-  const router = useRouter();
-  const tz = useTimeZone();
-  const today = todayInTz(tz);
-  const entriesQ = useAllEntries();
-
+/**
+ * A month-grid calendar, extracted so it can be embedded on Home (with an
+ * inline day-detail panel) instead of living on its own tab. Color-coded by
+ * status, future days disabled, the selected day gets its own ring so it
+ * reads distinctly from "today".
+ */
+export function MonthCalendar({
+  entries,
+  today,
+  selected,
+  onSelect,
+}: {
+  entries: DailyEntryWithDrinks[];
+  today: LocalDate;
+  selected: LocalDate | null;
+  onSelect: (date: LocalDate) => void;
+}) {
   const [anchor, setAnchor] = useState<LocalDate>(today);
 
   const byDate = useMemo(() => {
     const m = new Map<string, { status: 'win' | 'slip' | 'freeze'; hasDrinks: boolean }>();
-    for (const e of entriesQ.data ?? []) {
+    for (const e of entries) {
       m.set(e.entryDate, { status: e.status, hasDrinks: totalUnits(e.drinks) > 0 });
     }
     return m;
-  }, [entriesQ.data]);
+  }, [entries]);
 
   const monthStart = startOfMonth(anchor);
   const monthEnd = endOfMonth(anchor);
   const days = enumerateDates(monthStart, monthEnd);
-  const leadPad = weekdayOf(monthStart); // 0..6 (Sun..Sat)
+  const leadPad = weekdayOf(monthStart);
 
   const monthLabel = new Date(`${monthStart}T00:00:00Z`).toLocaleDateString(undefined, {
     month: 'long',
@@ -45,9 +54,9 @@ export default function Calendar() {
   });
 
   return (
-    <Screen scroll>
-      <Row className="justify-between mt-2 mb-5">
-        <Txt variant="title">Calendar</Txt>
+    <View>
+      <Row className="justify-between mb-3">
+        <Txt variant="heading">{monthLabel}</Txt>
         <Row className="gap-2">
           <IconButton
             accessibilityLabel="Previous month"
@@ -66,21 +75,6 @@ export default function Calendar() {
         </Row>
       </Row>
 
-      {entriesQ.isError && (
-        <View className="mb-4">
-          <Notice
-            tone="error"
-            title="Couldn’t load your calendar"
-            message="Pull to retry once you’re back online."
-            onRetry={() => entriesQ.refetch()}
-          />
-        </View>
-      )}
-
-      <Txt variant="heading" className="mb-3">
-        {monthLabel}
-      </Txt>
-
       <Row className="mb-2">
         {WEEKDAYS.map((d, i) => (
           <View key={i} className="flex-1 items-center">
@@ -97,12 +91,13 @@ export default function Calendar() {
           const info = byDate.get(d);
           const future = isAfter(d, today);
           const isToday = d === today;
+          const isSelected = d === selected;
           const sc = info ? statusColors[info.status] : null;
           return (
             <Pressable
               key={d}
               disabled={future}
-              onPress={() => router.push(`/day/${d}`)}
+              onPress={() => onSelect(d)}
               accessibilityLabel={`${d}${info ? `, ${info.status}` : ''}`}
               style={{ width: `${100 / 7}%`, aspectRatio: 1, padding: 3 }}
             >
@@ -111,8 +106,8 @@ export default function Calendar() {
                 style={{
                   backgroundColor: sc ? sc.bg : colors.card,
                   opacity: future ? 0.35 : 1,
-                  borderWidth: isToday ? 1.5 : 0,
-                  borderColor: colors.accent,
+                  borderWidth: isSelected ? 2 : isToday ? 1.5 : 0,
+                  borderColor: isSelected ? colors.accent : colors.borderStrong,
                 }}
               >
                 <Txt
@@ -139,12 +134,12 @@ export default function Calendar() {
         })}
       </View>
 
-      <Row className="gap-4 mt-6 flex-wrap">
+      <Row className="gap-4 mt-4 flex-wrap">
         <Legend color={statusColors.win.fg} label="Win" />
         <Legend color={statusColors.slip.fg} label="Slip" />
         <Legend color={statusColors.freeze.fg} label="Frozen" />
       </Row>
-    </Screen>
+    </View>
   );
 }
 
