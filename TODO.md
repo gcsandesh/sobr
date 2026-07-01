@@ -120,6 +120,13 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Offline tolerance: optimistic local state + sync-on-reconnect — _persisted cache (instant reopen + offline reads), NetInfo online-manager (auto-resume on reconnect), optimistic save-day/use-freeze. Cross-restart write replay = future enhancement._
 - [ ] Optional dedicated `apps/web` (Next.js) if web view outgrows RN Web
 
+## Phase 3 — redesign: light theme + merged Home · [progress](PROGRESS.md#redesign-light-theme)
+- [x] Retheme to a light, minimal white + moss-green palette (tokens, tailwind, ui.tsx, Tree, Glow, GrowthCelebration, splash/status bar)
+- [x] Merge Calendar into Home: embedded month grid + inline day-detail panel below (Calendar tab removed)
+- [x] Split OTP sign-in into two routes (sign-in email entry → verify code entry)
+- [x] Split onboarding into three routes (welcome → how-it-works → win-condition) with a shared progress indicator
+- [ ] More page/feature questions — _user is being consulted incrementally; revisit next session_
+
 ---
 
 ## Future enhancements (when published to the App Store / Play Store)

@@ -6,6 +6,48 @@ its task groups here.
 
 ---
 
+<a id="redesign-light-theme"></a>
+## Phase 3 · Redesign — light theme + merged Home — ✅ done (2026-07-01)
+
+**Decision:** moved from the dark charcoal-green theme to a light, minimal white +
+moss-green palette, and merged the standalone Calendar tab into Home with an inline
+day-detail panel, per direction from the user during a page-planning session.
+
+**Achieved**
+- **Retheme:** `packages/config/src/tokens.ts` (single source of truth) and its
+  `tailwind.config.js` mirror now define a white background with moss-green as the
+  primary accent (kept: calm terracotta for slips, dusty blue for frozen — never
+  alarm colors). Updated `ui.tsx` (Screen gradient, Card, Button, Notice), `Tree.tsx`
+  (added a distinct warm-brown trunk color so it doesn't blend into the green canopy),
+  `Glow.tsx` and `GrowthCelebration.tsx` (overlay + accent color), `app.json`
+  (`userInterfaceStyle`, splash/background colors), and the status bar style
+  (light → dark icons).
+- **Home + Calendar merge:** extracted the month-grid calendar into a reusable
+  `MonthCalendar` component and embedded it on Home, directly below the tree/streak
+  card. Tapping any past or present date shows that day's check-in (status,
+  units/drinks, edit/log actions) in a detail panel beneath the grid — no navigation
+  away. Today is selected by default so the original quick-win flow is unchanged.
+  The standalone Calendar tab is gone (`(tabs)/calendar.tsx` deleted); the tab bar is
+  now Home · Progress · Settings.
+- **OTP sign-in split:** `(auth)/sign-in.tsx` (email entry) and a new
+  `(auth)/verify.tsx` (code entry) replace the old single-screen local-state toggle,
+  so "wrong email?" is a natural `router.back()`.
+- **Onboarding split:** `(onboarding)/index.tsx` now just redirects to the first real
+  step; `welcome.tsx` → `how-it-works.tsx` → `win-condition.tsx` are separate routes
+  with a shared `OnboardingProgress` dot indicator, navigated via `router.push`/`back`.
+- Verified: `@sobr/core` 71/71 tests, app typecheck clean, web + iOS `expo export`
+  clean, `expo-doctor` 18/18. Visually confirmed via headless Chrome screenshots
+  (sign-in, verify, Home with embedded calendar + day-detail panel, date selection,
+  Settings, all three onboarding steps) — clean, white, green-accented, matches the
+  "modern, clean, minimalistic" brief.
+
+**What you need to do** — reload (`pnpm web` / `pnpm app --clear`) and look around;
+tell me if the green/white balance or any specific screen needs tuning. More
+page/feature questions are still being worked through incrementally — this covers
+what was decided so far.
+
+---
+
 <a id="m0-foundations"></a>
 ## M0 · Foundations — ✅ done (2026-06-21)
 

@@ -7,7 +7,7 @@
 > [PROGRESS.md](./PROGRESS.md) (chronological log with "what the user must do" per step).
 > Detailed change history lives in `git log` (one commit per feature).
 
-Last updated: 2026-06-23.
+Last updated: 2026-07-01.
 
 ---
 
@@ -22,9 +22,15 @@ notifications fully).
 Health at handover: **`@sobr/core` 71/71 tests pass**, all four workspaces + the app
 type-check, web bundles clean, `expo-doctor` passes.
 
-What works end-to-end on **web**: email-OTP + Google auth, onboarding, daily check-in, drink
-logger, streaks + freeze tokens + growth tree (with level-up celebration), calendar, stats,
+What works end-to-end on **web**: email-OTP + Google auth (now a two-step sign-in → verify
+flow), a three-step onboarding, daily check-in, drink logger, streaks + freeze tokens + growth
+tree (with level-up celebration), an embedded calendar + day-detail panel on Home, stats,
 settings, offline persistence. Reminders are local-notification based (native).
+
+**Visual direction (2026-07-01):** the app moved from the original dark charcoal-green theme to
+a **light, minimal white + moss-green** palette per product direction — see §3 and the
+`redesign-light-theme` entry in PROGRESS.md. The standalone Calendar tab was folded into Home
+(tab bar is now Home · Progress · Settings).
 
 ---
 
@@ -53,7 +59,7 @@ a freeze protects the streak. Win condition is configurable per user: **zero** (
 | --- | --- | --- |
 | Monorepo | pnpm workspaces + Turborepo | Shared logic/schema never drift. |
 | Frontend | **One Expo Router app** (web+iOS+Android) | Web is an authed companion — no SEO/SSR — so a separate Next.js app wasn't worth a 2nd UI codebase. Reversible: packages stay shareable. |
-| Styling | **NativeWind v4.2.5**, `darkMode: 'class'` | Tailwind for RN, works web+native. See gotchas for the version/darkMode requirements. |
+| Styling | **NativeWind v4.2.5**, `darkMode: 'class'` | Tailwind for RN, works web+native. Theme is **light** (white + moss-green, since 2026-07-01); `darkMode: 'class'` is kept because `'media'` has historically crashed on this NativeWind/RN combo (see gotchas) — the app never applies a `dark` class, so it's inert. |
 | Tokens | `@sobr/config` (mirrored in `tailwind.config.js`) | Tailwind (CJS) can't import the TS ESM tokens, so the palette is mirrored — keep them in sync. |
 | Data/cache | TanStack Query (+ persistence) | Offline tolerance. |
 | Backend | **Supabase** (Postgres + Auth + RLS) | Bundled auth + row-isolation beats Neon + bolt-on auth for sensitive per-user data. |
@@ -121,8 +127,9 @@ grants were added). Apply via the Supabase SQL editor or `pnpm --filter @sobr/db
 ## 6. Gotchas & fixes already discovered (READ — these will bite again)
 
 1. **NativeWind must be ≥ 4.2.x AND `darkMode: 'class'`.** 4.1.x crashes on the New Architecture
-   under React 19 (web blanks / native errors). The app forces a dark scheme, so the default
-   `darkMode: 'media'` throws *"Cannot manually set color scheme"* — `darkMode: 'class'` fixes it.
+   under React 19 (web blanks / native errors). `darkMode: 'media'` has thrown *"Cannot manually
+   set color scheme"* on this stack before — `darkMode: 'class'` avoids it. (The app is
+   light-themed now and never applies a `dark` class, so this is purely defensive.)
 2. **The canonical `.env` is at the REPO ROOT**, loaded by `apps/mobile/app.config.js` (Expo only
    auto-loads the app-folder `.env`). **Restart the dev server after editing `.env`**
    (`pnpm web` / `pnpm app --clear`).
@@ -212,7 +219,9 @@ Because there's no device/CI here, work is verified by:
 **Done (see PROGRESS.md for the full log):** M0 foundations · M1 tested core · M2 DB+RLS+grants ·
 M3 app shell+auth · M4 logger · M5 streaks+tree · M6 calendar+stats · M7 settings · **M8 polish**
 (micro-interactions incl. tree level-up, a11y, error/empty states, copy) · modern UI · daily
-reminders · offline tolerance · Google sign-in (web).
+reminders · offline tolerance · Google sign-in (web) · **Phase 3 redesign** (light white+green
+theme, Calendar merged into Home with a day-detail panel, two-step OTP sign-in, three-step
+onboarding).
 
 **Left / future (TODO.md → Future enhancements):**
 - **Test the native app on a device** (needs a dev build) — only the user can.
