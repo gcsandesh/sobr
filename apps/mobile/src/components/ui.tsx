@@ -211,6 +211,137 @@ export function IconButton({
   );
 }
 
+/* ── Sections, list rows, chips, avatar ──────────────────────────────────── */
+
+/** A modern section header: bold title with an optional right-side caption. */
+export function SectionHeader({
+  title,
+  caption,
+  className,
+}: {
+  title: string;
+  caption?: string;
+  className?: string;
+}) {
+  return (
+    <Row className={`justify-between items-baseline mb-3 ${className ?? ''}`}>
+      <Txt variant="heading">{title}</Txt>
+      {caption ? <Txt variant="caption">{caption}</Txt> : null}
+    </Row>
+  );
+}
+
+/**
+ * A settings-style list row: an icon bubble, title (+ optional subtitle), and a
+ * right-side element (defaults to a chevron when pressable). ≥44px tall.
+ */
+export function ListRow({
+  icon,
+  title,
+  subtitle,
+  right,
+  onPress,
+  destructive = false,
+  accessibilityLabel,
+}: {
+  icon?: ReactNode;
+  title: string;
+  subtitle?: string;
+  right?: ReactNode;
+  onPress?: PressableProps['onPress'];
+  destructive?: boolean;
+  accessibilityLabel?: string;
+}) {
+  const body = (
+    <Row className="min-h-[52px] py-2">
+      {icon ? (
+        <View
+          className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${
+            destructive ? 'bg-slip-bg' : 'bg-surface-raised'
+          }`}
+        >
+          {icon}
+        </View>
+      ) : null}
+      <View className="flex-1 pr-2">
+        <Txt variant="body" className={destructive ? 'text-slip' : ''}>
+          {title}
+        </Txt>
+        {subtitle ? (
+          <Txt variant="caption" className="mt-0.5">
+            {subtitle}
+          </Txt>
+        ) : null}
+      </View>
+      {right}
+    </Row>
+  );
+  if (!onPress) return body;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      className="active:opacity-70"
+    >
+      {body}
+    </Pressable>
+  );
+}
+
+/** A selectable pill chip — the repeated pattern for times, zones, currencies. */
+export function Chip({
+  label,
+  selected = false,
+  onPress,
+  accessibilityLabel,
+}: {
+  label: string;
+  selected?: boolean;
+  onPress?: PressableProps['onPress'];
+  accessibilityLabel?: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel ?? label}
+      className={`px-4 min-h-[44px] justify-center rounded-full border ${
+        selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
+      } active:opacity-70`}
+    >
+      <Txt variant="body" className={`text-sm ${selected ? 'text-accent font-semibold' : ''}`}>
+        {label}
+      </Txt>
+    </Pressable>
+  );
+}
+
+/** Initials avatar on a soft green disc — used on the Profile screen + headers. */
+export function Avatar({ name, size = 72 }: { name: string | null; size?: number }) {
+  const initials = (name ?? '?')
+    .split(/[@\s._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]!.toUpperCase())
+    .join('');
+  return (
+    <View
+      className="items-center justify-center rounded-full bg-accent"
+      style={{ width: size, height: size }}
+      accessibilityLabel={`Avatar for ${name ?? 'you'}`}
+    >
+      <Text
+        className="font-display text-white"
+        style={{ fontSize: size * 0.36, lineHeight: size * 0.46 }}
+      >
+        {initials || '?'}
+      </Text>
+    </View>
+  );
+}
+
 /* ── Status pill ─────────────────────────────────────────────────────────── */
 
 export function StatusPill({ status }: { status: 'win' | 'slip' | 'freeze' }) {
