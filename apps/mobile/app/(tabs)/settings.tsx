@@ -1,14 +1,33 @@
 import { useState } from 'react';
-import { Alert, Platform, Pressable, Switch, TextInput, View } from 'react-native';
+import { Alert, Platform, Switch, TextInput, View } from 'react-native';
 import type { WinMode } from '@sobr/core';
 import { CURRENCIES } from '@sobr/config';
-import { Button, Card, Divider, Row, Screen, Txt } from '../../src/components/ui';
+import {
+  BellIcon,
+  GlobeIcon,
+  LogOutIcon,
+  SparkIcon,
+  TargetIcon,
+  WalletIcon,
+} from '../../src/components/icons';
+import {
+  Button,
+  Card,
+  Chip,
+  Divider,
+  ListRow,
+  Row,
+  Screen,
+  SectionHeader,
+  Txt,
+} from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
-import { useDeleteAccount, useSettings, useUpdateSettings } from '../../src/data/hooks';
-import { useReminder } from '../../src/data/useReminder';
+import { useDeleteAccount, useSettings, useUpdateSettings, deviceTimeZone } from '../../src/data/hooks';
+import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
 import { colors } from '../../src/theme';
 
 const REMINDER_TIMES = [12, 18, 20, 21, 22];
+const MOTIVATION_TIMES = [8, 9, 12, 17, 19];
 const formatHour = (h: number) => {
   const period = h < 12 ? 'AM' : 'PM';
   const hour12 = h % 12 === 0 ? 12 : h % 12;
@@ -21,22 +40,35 @@ const MODE_LABELS: Record<WinMode, string> = {
   manual: 'I’ll decide each day',
 };
 
+/** Common IANA zones offered alongside the device zone. */
+const COMMON_ZONES = [
+  'Asia/Kathmandu',
+  'Asia/Kolkata',
+  'Asia/Dubai',
+  'Asia/Singapore',
+  'Asia/Tokyo',
+  'Australia/Sydney',
+  'Europe/London',
+  'Europe/Berlin',
+  'America/New_York',
+  'America/Los_Angeles',
+  'UTC',
+];
+
 export default function Settings() {
   const { email, signOut } = useSession();
   const settings = useSettings();
   const update = useUpdateSettings();
   const deleteAccount = useDeleteAccount();
-  const reminder = useReminder();
+  const notif = useNotificationPrefs();
 
   const s = settings.data;
   const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
+  const [showZones, setShowZones] = useState(false);
 
-  function setMode(winMode: WinMode) {
-    update.mutate({ winMode });
-  }
-  function setCurrency(currency: string) {
-    update.mutate({ currency });
-  }
+  const device = deviceTimeZone();
+  const zones = [device, ...COMMON_ZONES.filter((z) => z !== device)];
+
   function saveLimit() {
     update.mutate({ dailyLimitUnits: Number(limit) || 2 });
   }
@@ -47,173 +79,179 @@ export default function Settings() {
       'This permanently removes your account and all your data. This can’t be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteAccount.mutate(),
-        },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteAccount.mutate() },
       ],
     );
   }
 
   return (
     <Screen scroll>
-      <Txt variant="title" className="mt-2 mb-5">
+      <Txt variant="title" className="mt-2 mb-6">
         Settings
       </Txt>
 
-      {/* Win condition */}
-      <Txt variant="heading" className="mb-3">
-        What counts as a win
-      </Txt>
-      <Card className="gap-2">
-        {(Object.keys(MODE_LABELS) as WinMode[]).map((mode) => {
-          const selected = s?.winMode === mode;
-          return (
-            <Pressable
+      {/* ── Preferences ─────────────────────────────────────────────── */}
+      <SectionHeader title="Preferences" />
+      <Card className="mb-6">
+        <ListRow
+          icon={<TargetIcon color={colors.accent} />}
+          title="What counts as a win"
+          subtitle={s ? MODE_LABELS[s.winMode] : '—'}
+        />
+        <View className="flex-row flex-wrap gap-2 mb-2">
+          {(Object.keys(MODE_LABELS) as WinMode[]).map((mode) => (
+            <Chip
               key={mode}
-              onPress={() => setMode(mode)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              className="flex-row items-center justify-between py-3 min-h-[44px]"
-            >
-              <Txt variant="body" className={selected ? 'text-accent' : ''}>
-                {MODE_LABELS[mode]}
-              </Txt>
-              <View
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  borderColor: selected ? colors.accent : colors.border,
-                  backgroundColor: selected ? colors.accent : 'transparent',
-                }}
-              />
-            </Pressable>
-          );
-        })}
+              label={MODE_LABELS[mode]}
+              selected={s?.winMode === mode}
+              onPress={() => update.mutate({ winMode: mode })}
+            />
+          ))}
+        </View>
         {s?.winMode === 'limit' && (
-          <>
-            <Divider className="my-2" />
-            <Row className="justify-between items-center">
-              <Txt variant="label">Daily limit (units)</Txt>
-              <Row className="gap-2">
-                <TextInput
-                  value={limit}
-                  onChangeText={setLimit}
-                  onEndEditing={saveLimit}
-                  keyboardType="decimal-pad"
-                  maxLength={4}
-                  className="bg-bg border border-border rounded-lg px-3 py-2 text-text font-sans w-16 text-center"
-                  placeholderTextColor={colors.textFaint}
-                />
-                <Button label="Save" tone="secondary" onPress={saveLimit} />
-              </Row>
+          <Row className="justify-between items-center mb-2">
+            <Txt variant="label">Daily limit (units)</Txt>
+            <Row className="gap-2">
+              <TextInput
+                value={limit}
+                onChangeText={setLimit}
+                onEndEditing={saveLimit}
+                keyboardType="decimal-pad"
+                maxLength={4}
+                className="bg-surface border border-border rounded-lg px-3 py-2 text-text font-sans w-16 text-center"
+                placeholderTextColor={colors.textFaint}
+              />
+              <Button label="Save" tone="secondary" onPress={saveLimit} />
             </Row>
-          </>
+          </Row>
+        )}
+
+        <Divider className="my-3" />
+
+        <ListRow
+          icon={<WalletIcon color={colors.accent} />}
+          title="Currency"
+          subtitle={s?.currency ?? 'USD'}
+        />
+        <View className="flex-row flex-wrap gap-2 mb-2">
+          {CURRENCIES.map((c) => (
+            <Chip
+              key={c.code}
+              label={`${c.symbol} ${c.code}`}
+              selected={s?.currency === c.code}
+              onPress={() => update.mutate({ currency: c.code })}
+              accessibilityLabel={`Use ${c.name}`}
+            />
+          ))}
+        </View>
+
+        <Divider className="my-3" />
+
+        <ListRow
+          icon={<GlobeIcon color={colors.accent} />}
+          title="Time zone"
+          subtitle={`${s?.timeZone ?? 'UTC'} — decides when your day rolls over`}
+          onPress={() => setShowZones((v) => !v)}
+          accessibilityLabel="Change time zone"
+        />
+        {showZones && (
+          <View className="flex-row flex-wrap gap-2 mb-2">
+            {zones.map((z) => (
+              <Chip
+                key={z}
+                label={z === device ? `${z} (device)` : z}
+                selected={s?.timeZone === z}
+                onPress={() => update.mutate({ timeZone: z })}
+              />
+            ))}
+          </View>
         )}
       </Card>
 
-      {/* Currency */}
-      <Txt variant="heading" className="mt-6 mb-3">
-        Currency
-      </Txt>
-      <View className="flex-row flex-wrap gap-2">
-        {CURRENCIES.map((c) => {
-          const selected = s?.currency === c.code;
-          return (
-            <Pressable
-              key={c.code}
-              onPress={() => setCurrency(c.code)}
-              accessibilityLabel={`Use ${c.name}`}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              className={`px-4 min-h-[44px] justify-center rounded-full border ${
-                selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
-              }`}
-            >
-              <Txt variant="body" className={`text-sm ${selected ? 'text-accent' : ''}`}>
-                {c.symbol} {c.code}
-              </Txt>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Daily reminder (device-local; native only) */}
+      {/* ── Notifications (device-local; native only) ───────────────── */}
       {Platform.OS !== 'web' && (
         <>
-          <Txt variant="heading" className="mt-6 mb-3">
-            Daily reminder
-          </Txt>
-          <Card>
+          <SectionHeader title="Notifications" caption="stays on this device" />
+          <Card className="mb-6">
             <Row className="justify-between">
               <View className="flex-1 pr-3">
-                <Txt variant="body">A gentle nudge</Txt>
-                <Txt variant="bodyMuted" className="mt-1">
-                  One quiet notification a day to check in. Nothing leaves your device.
-                </Txt>
+                <ListRow
+                  icon={<BellIcon color={colors.accent} />}
+                  title="Daily check-in"
+                  subtitle="One quiet nudge a day to reflect and log."
+                />
               </View>
               <Switch
-                value={reminder.enabled}
-                disabled={reminder.busy || !reminder.loaded}
-                onValueChange={(v) => {
-                  void reminder.toggle(v);
-                }}
+                value={notif.checkinEnabled}
+                disabled={notif.busy || !notif.loaded}
+                onValueChange={(v) => void notif.toggleCheckin(v)}
                 trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor={colors.text}
+                thumbColor="#FFFFFF"
               />
             </Row>
-            {reminder.enabled && (
-              <>
-                <Divider className="my-4" />
-                <Txt variant="label" className="mb-2">
-                  Remind me at
-                </Txt>
-                <View className="flex-row flex-wrap gap-2">
-                  {REMINDER_TIMES.map((h) => {
-                    const selected = reminder.hour === h;
-                    return (
-                      <Pressable
-                        key={h}
-                        onPress={() => reminder.setTime(h)}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        accessibilityLabel={`Remind at ${formatHour(h)}`}
-                        className={`px-4 min-h-[44px] justify-center rounded-full border ${
-                          selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
-                        }`}
-                      >
-                        <Txt variant="body" className={`text-sm ${selected ? 'text-accent' : ''}`}>
-                          {formatHour(h)}
-                        </Txt>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </>
+            {notif.checkinEnabled && (
+              <View className="flex-row flex-wrap gap-2 mb-2">
+                {REMINDER_TIMES.map((h) => (
+                  <Chip
+                    key={h}
+                    label={formatHour(h)}
+                    selected={notif.checkinHour === h}
+                    onPress={() => void notif.setCheckinHour(h)}
+                    accessibilityLabel={`Check in at ${formatHour(h)}`}
+                  />
+                ))}
+              </View>
+            )}
+
+            <Divider className="my-3" />
+
+            <Row className="justify-between">
+              <View className="flex-1 pr-3">
+                <ListRow
+                  icon={<SparkIcon color={colors.accent} />}
+                  title="Daily motivation"
+                  subtitle="A warm note each day — a different one every day of the week."
+                />
+              </View>
+              <Switch
+                value={notif.motivationEnabled}
+                disabled={notif.busy || !notif.loaded}
+                onValueChange={(v) => void notif.toggleMotivation(v)}
+                trackColor={{ false: colors.border, true: colors.accent }}
+                thumbColor="#FFFFFF"
+              />
+            </Row>
+            {notif.motivationEnabled && (
+              <View className="flex-row flex-wrap gap-2 mb-2">
+                {MOTIVATION_TIMES.map((h) => (
+                  <Chip
+                    key={h}
+                    label={formatHour(h)}
+                    selected={notif.motivationHour === h}
+                    onPress={() => void notif.setMotivationHour(h)}
+                    accessibilityLabel={`Motivation at ${formatHour(h)}`}
+                  />
+                ))}
+              </View>
             )}
           </Card>
         </>
       )}
 
-      {/* Account */}
-      <Txt variant="heading" className="mt-6 mb-3">
-        Account
-      </Txt>
-      <Card className="gap-1">
-        <Txt variant="label">Signed in as</Txt>
-        <Txt variant="body">{email ?? '—'}</Txt>
-        <Txt variant="caption" className="mt-1">
-          Time zone · {s?.timeZone ?? 'UTC'}
-        </Txt>
+      {/* ── Account ─────────────────────────────────────────────────── */}
+      <SectionHeader title="Account" />
+      <Card className="mb-3">
+        <ListRow title="Signed in as" subtitle={email ?? '—'} />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<LogOutIcon color={colors.textMuted} />}
+          title="Sign out"
+          onPress={() => void signOut()}
+        />
       </Card>
-      <Button label="Sign out" tone="secondary" className="mt-3" onPress={() => signOut()} />
       <Button
         label="Delete account & data"
         tone="danger"
-        className="mt-2"
         loading={deleteAccount.isPending}
         onPress={confirmDelete}
       />
