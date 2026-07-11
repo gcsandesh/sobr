@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
   FadeIn,
@@ -110,33 +111,53 @@ export default function Today() {
         </Animated.View>
       )}
 
-      {/* tree + streak */}
+      {/* hero: tree + streak on a soft green wash */}
       <Animated.View entering={FadeIn.duration(500)}>
-        <Card className="items-center pt-8 pb-6">
+        <Card className="items-center pt-8 pb-5 overflow-hidden">
+          <LinearGradient
+            colors={['#EDF6EC', '#FFFFFF']}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
           <View className="absolute top-2 items-center justify-center" pointerEvents="none">
             <Glow size={300} />
           </View>
-          <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={210} />
+          <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={200} />
           <AnimatedNumber value={stats.streak.current} variant="display" className="mt-2" />
           <Txt variant="label" className="-mt-1">
             day streak
           </Txt>
-          <Txt variant="bodyMuted" className="mt-4 text-center px-2">
+          <Txt variant="bodyMuted" className="mt-3 text-center px-2">
             {meta.label} · {meta.blurb}
           </Txt>
+
+          {/* progress to the next stage */}
           {stats.progress.winDaysToNext !== null && (
-            <Txt variant="caption" className="mt-2">
-              {stats.progress.winDaysToNext} more clear{' '}
-              {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} to grow further
-            </Txt>
-          )}
-          {stats.streak.longest > 0 && (
-            <Txt variant="caption" className="mt-1">
-              Longest · {stats.streak.longest}
-            </Txt>
+            <View className="w-full mt-5 px-2">
+              <View
+                className="h-2 rounded-full bg-surface-raised overflow-hidden"
+                accessibilityLabel={`${Math.round(stats.progress.progressToNext * 100)}% to the next stage`}
+              >
+                <View
+                  className="h-2 rounded-full bg-accent"
+                  style={{ width: `${Math.max(4, stats.progress.progressToNext * 100)}%` }}
+                />
+              </View>
+              <Txt variant="caption" className="mt-2 text-center">
+                {stats.progress.winDaysToNext} more clear{' '}
+                {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} to grow further
+              </Txt>
+            </View>
           )}
         </Card>
       </Animated.View>
+
+      {/* stat pills */}
+      <Row className="gap-3 mt-3">
+        <StatPill value={String(stats.lifetimeWins)} label="clear days" />
+        <StatPill value={String(stats.streak.longest)} label="longest" />
+        <StatPill value={`${stats.bankedFreezes}/3`} label="freezes" />
+      </Row>
 
       {/* embedded calendar */}
       <Txt variant="heading" className="mt-6 mb-3">
@@ -233,6 +254,20 @@ export default function Today() {
         </View>
       )}
     </Screen>
+  );
+}
+
+/** A compact stat on a soft card — the row under the hero. */
+function StatPill({ value, label }: { value: string; label: string }) {
+  return (
+    <Card className="flex-1 items-center py-3 px-2">
+      <Txt variant="heading" className="text-accent">
+        {value}
+      </Txt>
+      <Txt variant="caption" className="mt-0.5">
+        {label}
+      </Txt>
+    </Card>
   );
 }
 
