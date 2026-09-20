@@ -36,6 +36,7 @@ const keys = {
   allEntries: (uid: string) => ['entries', 'all', uid] as const,
   entry: (uid: string, date: string) => ['entry', uid, date] as const,
   grants: (uid: string) => ['freezeGrants', uid] as const,
+  dayPhotos: (entryId: string) => ['dayPhotos', entryId] as const,
 };
 
 /**
@@ -51,6 +52,12 @@ function useUid(): string | null {
 function requireUid(uid: string | null): string {
   if (!uid) throw new Error('You need to be signed in to do that.');
   return uid;
+}
+
+/** Photos hang off a day's entry row, so the day must be logged first. */
+function requireEntry(entryId: string | undefined): string {
+  if (!entryId) throw new Error('Log this day first, then add a photo.');
+  return entryId;
 }
 
 /* ── queries ─────────────────────────────────────────────────────────────── */
@@ -290,6 +297,48 @@ export function useUpdateSettings() {
   return useMutation({
     mutationFn: (patch: UserSettingsUpdate) => api.updateSettings(requireUid(uid), patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.settings(uid ?? 'anon') }),
+  });
+}
+
+/* ── day photos ──────────────────────────────────────────────────────────── */
+
+/**
+ * Photos for one day. Disabled until the day actually has an entry row — a day
+ * with no entry has no id to hang photos off, and querying with `undefined`
+ * would just error.
+ *
+ * `staleTime` is under the signed-URL TTL so a cached entry can never hand a
+ * screen an already-expired link.
+ */
+export function useDayPhotos(entryId: string | undefined) {
+  return useQuery({
+    queryKey: keys.dayPhotos(entryId ?? 'none'),
+    queryFn: () => api.fetchDayPhotos(entryId as string),
+    enabled: !!entryId,
+    staleTime: 50 * 60 * 1000,
+  });
+}
+
+export function useAddDayPhoto(entryId: string | undefined) {
+  const uid = useUid();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (picked: { uri: string; mimeType?: string | null }) =>
+      api.addDayPhoto({
+        userId: requireUid(uid),
+        entryId: requireEntry(entryId),
+        uri: picked.uri,
+        mimeType: picked.mimeType,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.dayPhotos(entryId ?? 'none') }),
+  });
+}
+
+export function useDeleteDayPhoto(entryId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (photo: { id: string; objectPath: string }) => api.deleteDayPhoto(photo),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.dayPhotos(entryId ?? 'none') }),
   });
 }
 

@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "backgroundColor": "#FFFFFF",
+    "backgroundColor": "#F0F5F3",
     "icon": "./assets/brand/icon.png",
     "ios": {
       "supportsTablet": true,
@@ -17,7 +17,7 @@
       "package": "com.sobr.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/icon.png",
-        "backgroundColor": "#0F1C16"
+        "backgroundColor": "#1F6F6B"
       }
     },
     "web": {
@@ -36,7 +36,14 @@
           "image": "./assets/brand/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#FFFFFF"
+          "backgroundColor": "#F0F5F3"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "sobr uses your photos so you can attach memories to a tracked day.",
+          "cameraPermission": "sobr uses your camera so you can capture a moment for a tracked day."
         }
       ]
     ],

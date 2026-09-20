@@ -30,6 +30,10 @@ function mapSettings(r: Record<string, unknown>): UserSettings {
     currency: String(r.currency),
     timeZone: String(r.time_zone),
     onboarded: Boolean(r.onboarded),
+    // default ON to match the column defaults, so a row written before the
+    // email migration doesn't read back as opted-out
+    emailReminders: r.email_reminders === undefined ? true : Boolean(r.email_reminders),
+    emailWeekly: r.email_weekly === undefined ? true : Boolean(r.email_weekly),
     createdAt: r.created_at ? String(r.created_at) : undefined,
     updatedAt: r.updated_at ? String(r.updated_at) : undefined,
   };
@@ -96,7 +100,15 @@ export async function updateSettings(
   if (patch.currency !== undefined) row.currency = patch.currency;
   if (patch.timeZone !== undefined) row.time_zone = patch.timeZone;
   if (patch.onboarded !== undefined) row.onboarded = patch.onboarded;
-  const { error } = await supabase.from('user_settings').update(row).eq('user_id', userId);
+  if (patch.emailReminders !== undefined) row.email_reminders = patch.emailReminders;
+  if (patch.emailWeekly !== undefined) row.email_weekly = patch.emailWeekly;
+
+  // Upsert, not update: a plain UPDATE against a missing row "succeeds" with
+  // zero rows changed, which made onboarding silently fail to stick for any
+  // account created before the on_auth_user_created trigger existed.
+  const { error } = await supabase
+    .from('user_settings')
+    .upsert({ user_id: userId, ...row }, { onConflict: 'user_id' });
   if (error) throw error;
 }
 
@@ -184,6 +196,139 @@ export async function replaceDrinks(entryId: string, drinks: DrinkInput[]): Prom
 export async function deleteEntry(entryId: string): Promise<void> {
   const { error } = await supabase.from('daily_entries').delete().eq('id', entryId);
   if (error) throw error; // drinks cascade-delete
+}
+
+/* ── day photos ──────────────────────────────────────────────────────────── */
+
+export const DAY_PHOTOS_BUCKET = 'day-photos';
+
+/** How long a minted signed URL stays valid. Matches the query cache staleness
+ *  below, so a screen never renders a link that expired while it was open. */
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
+
+export type DayPhoto = {
+  id: string;
+  dailyEntryId: string;
+  objectPath: string;
+  caption: string | null;
+  createdAt: string;
+  /** Short-lived signed URL, minted per fetch — never persisted. */
+  url: string;
+};
+
+/**
+ * Photos for one day, newest last, each with a fresh signed URL.
+ *
+ * URLs are signed in a single batch call rather than per row: one round trip
+ * instead of N, which matters on a day with a handful of photos.
+ */
+/**
+ * Object-name entropy. Expo Go warns "WebCrypto API is not supported", and
+ * `crypto.randomUUID` is missing on some RN runtimes — so fall back rather than
+ * throw a TypeError deep inside an upload. This names a storage object; it is
+ * not a security token, and the DB's unique(object_path) is the real guard.
+ */
+function randomId(): string {
+  const c = globalThis.crypto;
+  if (c && typeof c.randomUUID === 'function') return c.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+export async function fetchDayPhotos(entryId: string): Promise<DayPhoto[]> {
+  const { data, error } = await supabase
+    .from('day_photos')
+    .select('*')
+    .eq('daily_entry_id', entryId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+
+  const rows = data ?? [];
+  if (rows.length === 0) return [];
+
+  const paths = rows.map((r) => String(r.object_path));
+  const { data: signed, error: signErr } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
+  if (signErr) throw signErr;
+
+  const urlByPath = new Map((signed ?? []).map((s) => [s.path ?? '', s.signedUrl]));
+  return rows.map((r) => ({
+    id: String(r.id),
+    dailyEntryId: String(r.daily_entry_id),
+    objectPath: String(r.object_path),
+    caption: (r.caption as string | null) ?? null,
+    createdAt: String(r.created_at),
+    url: urlByPath.get(String(r.object_path)) ?? '',
+  }));
+}
+
+/**
+ * Upload one picked image and record it against the day.
+ *
+ * The object key starts with the owner's uid because every storage policy
+ * checks that first path segment — the path *is* the authorization.
+ *
+ * On failure after the bytes land, the orphaned object is removed before
+ * rethrowing: a storage object with no row is invisible to the app and would
+ * silently consume quota forever.
+ */
+export async function addDayPhoto(params: {
+  userId: string;
+  entryId: string;
+  uri: string;
+  mimeType?: string | null;
+}): Promise<DayPhoto> {
+  const { userId, entryId, uri } = params;
+  const mime = params.mimeType?.startsWith('image/') ? params.mimeType : 'image/jpeg';
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+  const objectPath = `${userId}/${entryId}/${randomId()}.${ext}`;
+
+  // RN's fetch can read a file:// URI into an ArrayBuffer, which avoids pulling
+  // the whole image through a base64 string (~33% larger, and it doubles peak
+  // memory on big photos).
+  const body = await (await fetch(uri)).arrayBuffer();
+
+  const { error: upErr } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .upload(objectPath, body, { contentType: mime, upsert: false });
+  if (upErr) throw upErr;
+
+  const { data, error } = await supabase
+    .from('day_photos')
+    .insert({ daily_entry_id: entryId, user_id: userId, object_path: objectPath })
+    .select()
+    .single();
+  if (error) {
+    await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([objectPath]);
+    throw error;
+  }
+
+  const { data: signed } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .createSignedUrl(objectPath, SIGNED_URL_TTL_SECONDS);
+
+  return {
+    id: String(data.id),
+    dailyEntryId: entryId,
+    objectPath,
+    caption: null,
+    createdAt: String(data.created_at),
+    url: signed?.signedUrl ?? '',
+  };
+}
+
+/**
+ * Remove a photo. The row goes first: if the object delete fails we are left
+ * with an orphaned object (invisible, costs storage) rather than a row pointing
+ * at nothing (a permanent broken thumbnail the user cannot clear).
+ */
+export async function deleteDayPhoto(photo: {
+  id: string;
+  objectPath: string;
+}): Promise<void> {
+  const { error } = await supabase.from('day_photos').delete().eq('id', photo.id);
+  if (error) throw error;
+  await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([photo.objectPath]);
 }
 
 /* ── freeze grants ───────────────────────────────────────────────────────── */

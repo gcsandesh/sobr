@@ -33,6 +33,8 @@ export const userSettings = pgTable(
     currency: text('currency').notNull().default('USD'),
     timeZone: text('time_zone').notNull().default('UTC'),
     onboarded: boolean('onboarded').notNull().default(false),
+    emailReminders: boolean('email_reminders').notNull().default(true),
+    emailWeekly: boolean('email_weekly').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -89,7 +91,25 @@ export const freezeGrants = pgTable('freeze_grants', {
   }),
 });
 
+/**
+ * Photos attached to a tracked day. `objectPath` points into the private
+ * `day-photos` storage bucket (`<user_id>/<entry_id>/<uuid>.<ext>`); no URL is
+ * stored, since the bucket is private and signed URLs expire.
+ */
+export const dayPhotos = pgTable('day_photos', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  dailyEntryId: uuid('daily_entry_id')
+    .notNull()
+    .references(() => dailyEntries.id, { onDelete: 'cascade' }),
+  // denormalised from the parent entry so RLS + storage policies avoid a join
+  userId: uuid('user_id').notNull(),
+  objectPath: text('object_path').notNull().unique(),
+  caption: text('caption'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type UserSettingsRow = typeof userSettings.$inferSelect;
 export type DailyEntryRow = typeof dailyEntries.$inferSelect;
 export type DrinkRow = typeof drinks.$inferSelect;
 export type FreezeGrantRow = typeof freezeGrants.$inferSelect;
+export type DayPhotoRow = typeof dayPhotos.$inferSelect;
