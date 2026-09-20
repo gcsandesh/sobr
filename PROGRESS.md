@@ -6,6 +6,80 @@ its task groups here.
 
 ---
 
+<a id="phase4-polish"></a>
+## Phase 4b · Skill-driven polish + dev unblocks — ✅ done (2026-07-14)
+
+**Achieved**
+- **frontend-design skill pass** (`.claude/frontend-design_SKILL.md`): committed to one
+  bold, memorable surface instead of evenly-timid styling — the Home hero is now a
+  **forest-at-dusk card** (deep green gradient, amplified glow, oversized warm-off-white
+  Fraunces streak numeral, moss progress bar) while the rest of the app stays quiet
+  white. Header flipped to an editorial greeting headline ("Good evening" in Fraunces,
+  "sobr" as a whisper above it). **Staggered page-load reveal** on Home (header → hero →
+  stat pills → calendar → day panel, 80ms steps).
+- **Progress tab restyle:** gradient rounded bars + weekday initials under the 14-day
+  chart; v2 SectionHeaders.
+- **Drink logger polish:** icon status badge on the day banner, SectionHeaders.
+- **About screen** (`/about`): app info + version, privacy and notifications explainers,
+  linked from Settings → About.
+- **Dev-only auth bypass:** `EXPO_PUBLIC_SKIP_AUTH=1` in the root `.env` (dev builds
+  only — double-gated on `__DEV__`) jumps straight to the tabs so screens can be tested
+  in Expo Go, where Google sign-in can't run. Documented in `.env.example`.
+- **Google sign-in temporarily disabled:** the button + divider are commented out in
+  `(auth)/sign-in.tsx` (flow stays wired in `src/lib/auth.ts`; web was verified
+  earlier). Re-enabling is deliberately the last TODO item — after a dev/EAS build
+  exists.
+- Verified: 71/71 core tests, typecheck clean, web + iOS exports clean, in-browser
+  screenshots of the new hero + stagger (no console errors).
+
+**What you need to do**
+1. Commit the working tree when happy (you asked to own commits).
+2. To browse the app in Expo Go: add `EXPO_PUBLIC_SKIP_AUTH=1` to `.env`, run
+   `pnpm app --clear`; remove the line to restore real auth.
+3. Check the Supabase email template includes `{{ .Token }}` so the OTP code is
+   visible in the email (a link-only template looks like "OTP doesn't work").
+
+---
+
+<a id="phase4-engagement"></a>
+## Phase 4 · Modern UI + engagement — ✅ done (2026-07-11)
+
+**Goal:** make the daily ritual feel light and rewarding — never a burden — with a
+more modern look and gentle motivation that arrives on its own.
+
+**Achieved**
+- **Design-system v2** (`ui.tsx` + `icons.tsx`): `SectionHeader`, `ListRow` (icon
+  bubble + title/subtitle + press affordance), `Chip` (selectable pill — now the one
+  pattern for times/zones/currencies/win modes), initials `Avatar`, and eight new
+  line icons. Tab bar dropped its hairline border for a soft floating shadow.
+- **Profile screen** (new tab): avatar + display name derived from the email,
+  member-since, a 2×2 stats grid (current/longest streak, clear days, freezes), the
+  **growth journey** rendered as an achievement track (achieved stages checked in
+  green, current stage marked "you are here"), a freeze explainer, sign out.
+- **Settings redesign:** grouped modern sections — Preferences (win mode, currency,
+  **new time-zone editor**: device zone + common IANA zones, tap the row to expand),
+  Notifications, Account. Everything on the v2 kit; functional parity kept.
+- **Motivational notifications** (opt-in, device-local, no servers): alongside the
+  existing daily check-in there's now **"Daily motivation"** — one warm note per day
+  with different copy for each weekday (seven weekly local triggers, so nothing
+  repeats two days in a row). Copy is growth-framed and non-triggering. Both
+  schedules are applied atomically by `notifications.ts`; `useNotificationPrefs`
+  (AsyncStorage) replaces `useReminder` and turns toggles back off if permission is
+  denied.
+- **Home hero:** soft green gradient wash behind the tree, a progress bar toward the
+  next growth stage, and a stat-pill row (clear days · longest · freezes).
+- Verified: 71/71 core tests, typecheck clean, web + iOS exports clean, in-browser
+  checks of Home, Profile, and Settings (incl. the time-zone expander) with no
+  console errors.
+
+**What you need to do**
+1. Reload (`pnpm web` / `pnpm app --clear`) and look around — Home hero, the new
+   Profile tab, and the redesigned Settings.
+2. On your phone (dev build), enable **both** notification toggles and confirm the
+   check-in arrives at the chosen hour and the motivation note varies day to day.
+
+---
+
 <a id="redesign-light-theme"></a>
 ## Phase 3 · Redesign — light theme + merged Home — ✅ done (2026-07-01)
 

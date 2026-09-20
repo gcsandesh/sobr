@@ -7,7 +7,7 @@
 > [PROGRESS.md](./PROGRESS.md) (chronological log with "what the user must do" per step).
 > Detailed change history lives in `git log` (one commit per feature).
 
-Last updated: 2026-07-01.
+Last updated: 2026-07-11.
 
 ---
 
@@ -29,8 +29,14 @@ settings, offline persistence. Reminders are local-notification based (native).
 
 **Visual direction (2026-07-01):** the app moved from the original dark charcoal-green theme to
 a **light, minimal white + moss-green** palette per product direction — see §3 and the
-`redesign-light-theme` entry in PROGRESS.md. The standalone Calendar tab was folded into Home
-(tab bar is now Home · Progress · Settings).
+`redesign-light-theme` entry in PROGRESS.md. The standalone Calendar tab was folded into Home.
+
+**Phase 4 (2026-07-11):** design-system v2 (ListRow/Chip/SectionHeader/Avatar + new icons),
+a **Profile tab** (avatar, stats grid, growth-journey achievement track), redesigned grouped
+**Settings** with a time-zone editor, a redesigned Home hero (gradient wash, stage progress bar,
+stat pills), and **opt-in motivational notifications** — a daily check-in plus a rotating
+"daily motivation" note (7 weekly local triggers, different copy per weekday, no servers).
+Tab bar is now Home · Progress · Profile · Settings. See `phase4-engagement` in PROGRESS.md.
 
 ---
 
@@ -257,3 +263,83 @@ Paste this to the next agent:
 > `--clear`). The MVP is complete and working on web; the main remaining work needs a native dev
 > build (see TODO → Future enhancements). Pick up from the top of `TODO.md`'s unchecked items, or
 > ask the user which direction to take next.
+
+---
+
+## Appendix — Auth: email + password (no verification)
+
+**What it is now.** `apps/mobile/app/(auth)/sign-in.tsx` is one screen with a Sign in /
+Create account toggle, calling `supabase.auth.signUp` / `signInWithPassword`. A session is
+issued immediately, so `auth.uid()` is real and every RLS policy works untouched.
+
+**Why the OTP flow was dropped.** Supabase's built-in mailer only delivers to pre-authorized
+addresses, and lifting that needs a verified domain plus custom SMTP — so email sign-in could
+not complete on a device at all. Password auth sends no mail. The old `verify.tsx` screen was
+deleted; `packages/db/email/auth-code.html` is kept because password *reset* will need it.
+
+**Required dashboard step (one time).** Authentication → Providers → Email →
+**Confirm email OFF**. With it on, sign-up returns a user but no session; the screen detects
+exactly that case and says so instead of failing silently.
+
+**Google sign-in** stays wired in `src/lib/auth.ts` but is no longer referenced by the
+sign-in screen — re-adding it means re-adding UI, not uncommenting. It is last on TODO.
+
+---
+
+## Appendix — Missing GRANTs (the bug behind "nothing saves")
+
+`0001_grants.sql` had never been applied to the live project. `authenticated` held only
+TRUNCATE/REFERENCES/TRIGGER on `user_settings`, `daily_entries`, `drinks` and `freeze_grants`
+— no SELECT/INSERT/UPDATE/DELETE. Postgres checks GRANTs *before* RLS, so every read and
+write failed regardless of policy, session or onboarding state.
+
+It presented as "Plant my tree does nothing": settings could not be read (so the Gate kept
+routing to onboarding) and could not be written (so onboarding could never complete).
+
+It stayed invisible for so long because supabase-js rejects with plain objects, not `Error`
+instances — `e instanceof Error` was false, so the UI fell through to a generic "check your
+connection". `apps/mobile/src/lib/errorMessage.ts` now extracts `message`/`hint` from
+whatever is thrown; use it for any user-facing error rather than `instanceof Error`.
+
+Re-apply with `node packages/db/apply-day-photos.mjs` style scripts, or check with:
+`select table_name, privilege_type from information_schema.role_table_grants
+ where grantee='authenticated' and table_schema='public'`.
+
+---
+
+## Appendix — Email sign-in: getting a 6-digit OTP instead of a magic link
+
+**Symptom.** The sign-in email contains only a "Log In" link, and that link points at
+`localhost:3000` (the project's Site URL), which is a dead address on a phone. The app's
+OTP screen is fine — the *email* just never contains a code.
+
+**Cause.** Supabase's default **Magic Link** email template renders only
+`{{ .ConfirmationURL }}`. GoTrue always generates a 6-digit OTP alongside it, but the
+template doesn't show it.
+
+**Permanent fix (Supabase dashboard — one time).**
+The template body lives in the repo at **`packages/db/email/auth-code.html`** — copy that
+file's contents into the dashboard under Authentication → Emails.
+
+Paste the *same* body into **every** slot: Confirm signup · Magic Link · Invite user ·
+Change email address · Reset password. It leads with `{{ .Token }}` (the 6-digit code the
+app's verify screen wants) and keeps `{{ .ConfirmationURL }}` as a secondary button. Those
+are the only two variables it uses, and GoTrue provides both in every slot — so it needs no
+per-slot edits, and no revisiting when a new flow starts sending mail.
+
+It follows the same house rules as the reminder/weekly mail (no `<img>`, tables not
+flex/grid, inline styles only) and mirrors `app.email_shell()` from
+`packages/db/migrations/0002_email.sql`, so auth mail matches the rest.
+
+Optionally set Authentication → URL Configuration → Site URL to something real (or add
+`sobr://auth-callback` to Redirect URLs) so the link isn't a dead end either.
+
+**There is no in-app link fallback.** An earlier version of this appendix claimed
+`signInWithEmailLink()` in `apps/mobile/src/lib/auth.ts` accepted a pasted magic link, and
+that the verify screen exposed it under "Got a link instead of a code?". Neither exists —
+`auth.ts` exports only `completeSessionFromUrl` and `signInWithGoogle`, and the verify
+screen is code-only. **Until the template above is applied, email sign-in cannot complete
+on a device.** If a link-paste fallback is ever wanted, note the client runs `flowType:
+'pkce'`, so a link's `code=` needs `exchangeCodeForSession`; the raw
+`/auth/v1/verify?token=…` URL carries a `token_hash` that `verifyOtp({ token_hash, type:
+'magiclink' })` can redeem.

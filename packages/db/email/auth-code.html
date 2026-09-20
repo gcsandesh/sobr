@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      Locked to light: the warm palette is the brand, and Apple Mail / Outlook
+      dark mode would otherwise invert the card to muddy grey-brown.
+    -->
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light only" />
+  </head>
+  <body style="margin:0;padding:0;background:#F5EAD8;">
+    <!--
+      sobr — one auth email for every Supabase template slot.
+
+      Paste this same body into ALL of: Confirm signup · Magic Link · Invite user
+      · Change email address · Reset password. It uses only {{ .Token }} and
+      {{ .ConfirmationURL }}, the two variables GoTrue provides in every slot, so
+      there is nothing here to revisit when a new flow starts sending mail.
+
+      House rules (see packages/db/migrations/0003_email_visuals.sql):
+        · no <img> — most clients block remote images, leaving holes
+        · tables, not flex/grid — Outlook
+        · inline styles only — Gmail strips <style>
+      Shell mirrors app.email_shell() so auth mail looks like reminder mail.
+    -->
+    <div
+      style="max-width:520px;margin:0 auto;padding:32px 20px;font-family:Georgia,'Times New Roman',serif;color:#201E1D;"
+    >
+      <div style="background:#FFFFFF;border-radius:16px;padding:28px;border:1px solid #E7DCC8;">
+        <div style="font-size:22px;font-weight:bold;color:#C67139;margin-bottom:4px;">sobr</div>
+        <div style="font-size:13px;color:#82796A;margin-bottom:20px;">Clear days, counted.</div>
+
+        <div style="font-size:19px;margin-bottom:14px;">Your sign-in code</div>
+        <div style="font-size:15px;line-height:22px;color:#4A443C;margin-bottom:22px;">
+          Enter this code in the app to continue.
+        </div>
+
+        <!--
+          The code is the primary path: the mobile app's verify screen takes a
+          6-digit code, not a link. Monospace so the digits align; letter-spacing
+          kept at 4px because wider values make some clients drop characters on
+          copy.
+        -->
+        <table role="presentation" align="center" style="border-collapse:collapse;margin:0 auto 22px;">
+          <tr>
+            <td
+              align="center"
+              style="background:#FBF4E8;border:1px solid #E7DCC8;border-radius:12px;padding:18px 26px;"
+            >
+              <div
+                style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:30px;font-weight:bold;letter-spacing:4px;color:#201E1D;"
+              >
+                {{ .Token }}
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div style="font-size:13px;color:#82796A;text-align:center;margin-bottom:24px;">
+          It expires in an hour and works once.
+        </div>
+
+        <div style="border-top:1px solid #E7DCC8;margin-bottom:20px;"></div>
+
+        <div style="font-size:14px;line-height:21px;color:#4A443C;margin-bottom:14px;">
+          On the same device as your browser? You can tap through instead:
+        </div>
+
+        <!-- Table-based button: Outlook ignores padding on <a>. -->
+        <table role="presentation" align="center" style="border-collapse:collapse;margin:0 auto 6px;">
+          <tr>
+            <td align="center" style="background:#C67139;border-radius:10px;">
+              <a
+                href="{{ .ConfirmationURL }}"
+                style="display:inline-block;padding:13px 30px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#FFFFFF;text-decoration:none;"
+                >Sign in to sobr</a
+              >
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="text-align:center;font-size:12px;color:#82796A;padding:16px;line-height:18px;">
+        If you didn't try to sign in, you can ignore this email — nobody gets in
+        without the code above.
+      </div>
+    </div>
+  </body>
+</html>

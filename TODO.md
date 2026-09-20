@@ -54,7 +54,10 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] `delete_account` security-definer routine (purges all user rows)
 - [x] `updated_at` triggers
 - [x] Server-side drizzle client factory (`DATABASE_URL`)
-- [ ] Apply migration to a real Supabase project (requires user's project) — _user step_
+- [x] Apply migration to a real Supabase project
+- [x] `0001_grants.sql` applied — `authenticated` had no CRUD on any app table, so every
+      read/write failed before RLS was even consulted (see HANDOVER → "Missing GRANTs")
+- [x] `0004_day_photos.sql` applied — table + RLS + private storage bucket/policies
 
 ## M3 — App shell + auth · [progress](PROGRESS.md#m3-app)
 - [x] Expo Router app scaffold (`apps/mobile`, TS strict, web enabled)
@@ -62,11 +65,15 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Load Fraunces + Manrope via `expo-font`
 - [x] Root providers: QueryClient, Supabase session, theme
 - [x] Supabase client (`EXPO_PUBLIC_*`), auth state listener
-- [x] Email-OTP sign-in / verify screens
+- [x] ~~Email-OTP sign-in / verify screens~~ → replaced by email + password (no verification):
+      sending mail needs a verified domain + custom SMTP, which blocked sign-in entirely
 - [x] Session routing guards (authed vs. unauthed vs. onboarding)
 - [x] Onboarding: 2–3 intro screens (calm, non-judgmental copy)
 - [x] Onboarding: pick win condition (zero / limit / manual) → persists to settings
-- [ ] Smoke-test auth + onboarding against a live Supabase project — _user step_
+- [x] Smoke-test auth + onboarding against a live Supabase project — verified end to end
+      (sign-up → session → onboarding → "Plant my tree" → tabs) on 2026-09-20
+- [ ] **Turn OFF Authentication → Providers → Email → Confirm email** — _user step_.
+      Until then sign-up creates a user but issues no session; the screen says so.
 
 ## M4 — Daily check-in + drink logger · [progress](PROGRESS.md#m3-app)
 - [x] Today view: "No drinks today" (one-tap win) + "Log a drink"
@@ -114,7 +121,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Loading / error / offline-ish states for queries — _Notice/EmptyState; Home/Calendar/Progress retry on error_
 
 ## Phase 2 (post-MVP)
-- [~] Google sign-in (Expo) — _in progress; works on web once the Supabase Google provider is enabled. Native needs a custom dev build._
+- [~] Google sign-in (Expo) — _built and verified on web, but **button is commented out for now** (untestable in Expo Go). Re-enabling is deliberately the LAST item — see the bottom of Future enhancements._
 - [x] Daily reminder (local notification, schedulable from Settings) — _native; user tests delivery on device. Push (remote) still pending._
 - [~] CSV / JSON export UI — _dropped: data lives in the DB and syncs on login._
 - [x] Offline tolerance: optimistic local state + sync-on-reconnect — _persisted cache (instant reopen + offline reads), NetInfo online-manager (auto-resume on reconnect), optimistic save-day/use-freeze. Cross-restart write replay = future enhancement._
@@ -125,17 +132,44 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Merge Calendar into Home: embedded month grid + inline day-detail panel below (Calendar tab removed)
 - [x] Split OTP sign-in into two routes (sign-in email entry → verify code entry)
 - [x] Split onboarding into three routes (welcome → how-it-works → win-condition) with a shared progress indicator
-- [ ] More page/feature questions — _user is being consulted incrementally; revisit next session_
+
+## Phase 4 — modern UI + engagement · [progress](PROGRESS.md#phase4-engagement)
+- [x] Design-system v2: SectionHeader, ListRow, Chip, Avatar + new line icons (user, bell, spark, globe, target, wallet, log-out, chevron)
+- [x] Tab bar: borderless floating look, 4 tabs (Home · Progress · Profile · Settings)
+- [x] Profile screen: avatar, display name, member-since, stats grid, growth-journey achievement track, sign out
+- [x] Settings redesign: grouped sections + icon rows, time-zone editor (device + common IANA zones)
+- [x] Motivational notifications: opt-in "daily motivation" (7 rotating weekday messages, local weekly triggers) alongside the daily check-in
+- [x] Home hero: soft green gradient wash, progress bar to next stage, stat-pill row
+- [x] Progress tab restyle (gradient rounded bars + weekday labels), drink-logger polish (icon status badge, section headers), About screen (privacy/notifications/version, linked from Settings)
+- [x] Dev-only auth bypass: `EXPO_PUBLIC_SKIP_AUTH=1` (+ `__DEV__` gate) jumps straight to tabs for Expo Go testing
+- [x] frontend-design skill pass: forest-at-dusk hero (the app's one bold dominant surface — dark gradient, glow, warm Fraunces numeral), editorial greeting headline, staggered page-load reveal on Home
+- [x] Google sign-in button commented out (untestable in Expo Go) — re-enable is the LAST TODO item
+- [ ] User must test both notification schedules on a device (needs dev build for full fidelity)
 
 ---
+
+## Day photos — "track memories as well"
+- [x] `day_photos` table + RLS, private `day-photos` storage bucket + object policies
+- [x] Object key is `<user_id>/<entry_id>/<id>.<ext>`; every storage policy pins the first
+      path segment to `auth.uid()`, so the path *is* the authorization
+- [x] Signed URLs minted per fetch (batched) — never persisted, since the bucket is private
+- [x] `DayPhotos` strip on the day screen: pick from library (long-press Add for camera),
+      long-press a thumbnail to remove
+- [x] Verified end to end against the live project (row + object, 1.38 MB JPEG)
+- [ ] Captions — column exists (`day_photos.caption`), no UI yet
+- [ ] Show a photo indicator on the calendar / progress views
 
 ## Future enhancements (when published to the App Store / Play Store)
 - [ ] **Apple sign-in** — add once there's a paid Apple Developer account + a dev/EAS build
   (Apple requires it; "Sign in with Apple" is also mandatory for App Store apps that offer Google).
-- [ ] Native Google sign-in via dev build (nicer native sheet) — current flow is the
-  Supabase web-redirect, which works on web today.
 - [ ] Remote push notifications (smart "log before midnight" nudges).
 - [ ] Data backup/export file (CSV/JSON) — model already supports it.
+- [ ] **LAST: re-enable Google sign-in** — the flow stays wired in `src/lib/auth.ts`
+  (`signInWithGoogle`; web was verified working), but the button is no longer in
+  `apps/mobile/app/(auth)/sign-in.tsx` — that screen was rewritten for email + password, so the
+  button + "or" divider need re-adding, not just uncommenting. Do this only once a custom
+  dev/EAS build exists so native can actually be tested (Expo Go can't run the `sobr://`
+  redirect).
 
 ---
 
