@@ -1,47 +1,58 @@
 import { useState } from 'react';
-import { Alert, Pressable, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { TextInput, View } from 'react-native';
 import { Logo } from '../../src/components/Logo';
-import { GoogleIcon } from '../../src/components/icons';
-import { Button, Divider, Row, Screen, Txt } from '../../src/components/ui';
-import { signInWithGoogle } from '../../src/lib/auth';
+import { Button, Screen, Txt } from '../../src/components/ui';
 import { supabase } from '../../src/lib/supabase';
 import { colors } from '../../src/theme';
 
 /**
- * Email entry — step one of email-OTP sign-in. Sending a code pushes to
- * `verify`, so "wrong email?" is a natural back-navigation instead of local
- * state toggling. Calm, minimal, no passwords.
+ * Email + password sign-in, one screen for both modes.
+ *
+ * Deliberately no email verification and no magic links: sending mail needs a
+ * verified domain and custom SMTP, which blocked sign-in entirely (see
+ * HANDOVER → "Email sign-in"). Password auth issues a session immediately, so
+ * `auth.uid()` is real and every RLS policy keeps working untouched.
+ *
+ * Requires Supabase → Authentication → Providers → Email → **Confirm email OFF**.
+ * With it on, sign-up returns a user but no session; `afterSignUp` detects that
+ * exact case and says so rather than failing silently.
  */
 export default function SignIn() {
-  const router = useRouter();
+  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function sendCode() {
-    if (!email.includes('@')) return Alert.alert('Enter a valid email');
+  const isSignUp = mode === 'signUp';
+
+  async function submit() {
+    setError(null);
+    const mail = email.trim();
+    if (!mail.includes('@')) return setError('That doesn’t look like an email — try again?');
+    // Supabase itself rejects < 6; check here so the error is instant and kind.
+    if (password.length < 6) return setError('Password needs at least 6 characters.');
+
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { data, error: err } = isSignUp
+      ? await supabase.auth.signUp({ email: mail, password })
+      : await supabase.auth.signInWithPassword({ email: mail, password });
     setLoading(false);
-    if (error) return Alert.alert('Could not send code', error.message);
-    router.push({ pathname: '/(auth)/verify', params: { email } });
-  }
 
-  async function google() {
-    setGoogleLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (e) {
-      Alert.alert('Google sign-in failed', e instanceof Error ? e.message : 'Please try again.');
-    } finally {
-      setGoogleLoading(false);
+    if (err) return setError(err.message);
+    if (isSignUp && !data.session) {
+      // Confirm-email is still on in the dashboard — no session was issued, so
+      // the Gate would leave us sitting here with no feedback at all.
+      return setError(
+        'Account made, but this project still requires email confirmation. Turn off Authentication → Providers → Email → Confirm email, then sign in.',
+      );
     }
+    // Gate routes onward as soon as the session lands.
   }
 
   return (
-    <Screen>
-      <View className="flex-1 justify-center">
+    <Screen scroll>
+      <View className="flex-1 justify-center py-8">
         <View className="items-center mb-10">
           <Logo size={84} />
           <Txt variant="display" className="mt-6">
@@ -60,37 +71,49 @@ export default function SignIn() {
             placeholder="you@example.com"
             placeholderTextColor={colors.textFaint}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             autoComplete="email"
             className="bg-surface border border-border rounded-xl px-4 py-4 text-text font-sans text-base"
           />
-          <Button label="Send me a code" onPress={sendCode} loading={loading} />
-          <Txt variant="caption" className="text-center mt-2">
-            No passwords. We’ll email you a one-time code.
+
+          <Txt variant="label" className="mt-1">
+            Password
           </Txt>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="At least 6 characters"
+            placeholderTextColor={colors.textFaint}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete={isSignUp ? 'new-password' : 'current-password'}
+            onSubmitEditing={submit}
+            returnKeyType="go"
+            className="bg-surface border border-border rounded-xl px-4 py-4 text-text font-sans text-base"
+          />
 
-          <Row className="my-4">
-            <Divider className="flex-1" />
-            <Txt variant="caption" className="mx-3">
-              or
+          {error && (
+            <Txt variant="body" className="text-slip text-sm">
+              {error}
             </Txt>
-            <Divider className="flex-1" />
-          </Row>
+          )}
 
-          <Pressable
-            onPress={google}
-            disabled={googleLoading}
-            accessibilityRole="button"
-            accessibilityLabel="Continue with Google"
-            className={`min-h-[52px] rounded-xl flex-row items-center justify-center gap-3 bg-surface-raised border border-border ${
-              googleLoading ? 'opacity-50' : 'active:opacity-80'
-            }`}
-          >
-            <GoogleIcon size={20} />
-            <Txt variant="body" className="font-semibold">
-              Continue with Google
-            </Txt>
-          </Pressable>
+          <Button
+            label={isSignUp ? 'Create account' : 'Sign in'}
+            onPress={submit}
+            loading={loading}
+          />
+
+          <Button
+            label={isSignUp ? 'I already have an account' : 'Create an account'}
+            tone="ghost"
+            onPress={() => {
+              setError(null);
+              setMode(isSignUp ? 'signIn' : 'signUp');
+            }}
+          />
         </View>
       </View>
     </Screen>
