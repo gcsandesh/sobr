@@ -8,13 +8,13 @@ import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
+import { Caprasimo_400Regular } from '@expo-google-fonts/caprasimo';
 import {
-  Manrope_400Regular,
-  Manrope_500Medium,
-  Manrope_600SemiBold,
-  Manrope_700Bold,
-} from '@expo-google-fonts/manrope';
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+} from '@expo-google-fonts/figtree';
 import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
 import { completeSessionFromUrl } from '../src/lib/auth';
 import { isSupabaseConfigured } from '../src/lib/env';
@@ -27,6 +27,23 @@ function Splash() {
 }
 
 /**
+ * Dev-only bypass: set EXPO_PUBLIC_SKIP_AUTH=1 in your local .env to jump straight
+ * to the tabs, skipping sign-in/onboarding entirely — handy for testing UI in
+ * Expo Go where Google sign-in can't run and email-OTP requires a real inbox.
+ * Gated on `__DEV__` too, so it's structurally impossible for this to activate in
+ * a production build even if the env var leaks into one. With no session, data
+ * queries stay disabled (by design — see useUid), so screens render their normal
+ * empty/first-run states rather than throwing.
+ *
+ * Caveat: read-only screens degrade gracefully, *writes* cannot. Onboarding's
+ * last step is a write, so `(onboarding)` is a dead end under the bypass — it
+ * surfaces "You need to be signed in to do that" and goes no further. It stays
+ * reachable on purpose (for UI work), and `app/index.tsx` keeps cold start from
+ * landing there by accident. To exercise onboarding for real, set this to 0.
+ */
+const DEV_SKIP_AUTH = __DEV__ && process.env.EXPO_PUBLIC_SKIP_AUTH === '1';
+
+/**
  * Routing gate. Sends the user to the right place based on configuration, auth,
  * and onboarding state. Calm by design — no flashes between states.
  */
@@ -37,6 +54,14 @@ function Gate() {
   const settings = useSettings();
 
   useEffect(() => {
+    if (DEV_SKIP_AUTH) {
+      // Only bounce out of the auth/setup flows — detail routes like day/[date],
+      // steady, about, and the onboarding steps must stay reachable while
+      // testing (onboarding is never *forced* here, just not blocked).
+      const g = segments[0];
+      if (g === '(auth)' || g === 'setup' || !g) router.replace('/(tabs)');
+      return;
+    }
     if (!isSupabaseConfigured) {
       if (segments[0] !== 'setup') router.replace('/setup');
       return;
@@ -68,19 +93,39 @@ function Gate() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="setup" />
-      <Stack.Screen name="day/[date]" options={{ headerShown: true, presentation: 'card' }} />
+      {/*
+        `headerBackButtonDisplayMode: 'minimal'` shows just the chevron — without
+        it the back button inherits the parent route's name and renders the raw
+        group label "(tabs)".
+      */}
+      <Stack.Screen
+        name="day/[date]"
+        options={{
+          headerShown: true,
+          presentation: 'card',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <Stack.Screen
+        name="about"
+        options={{
+          headerShown: true,
+          presentation: 'card',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <Stack.Screen name="steady" options={{ presentation: 'modal' }} />
     </Stack>
   );
 }
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Fraunces_600SemiBold,
-    Fraunces_700Bold,
-    Manrope_400Regular,
-    Manrope_500Medium,
-    Manrope_600SemiBold,
-    Manrope_700Bold,
+    Caprasimo_400Regular,
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
   });
 
   // Native OAuth deep link: if the "sobr://auth-callback" redirect opens the app
