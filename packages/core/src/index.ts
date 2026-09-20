@@ -9,4 +9,5 @@ export * from './win';
 export * from './streak';
 export * from './freeze';
 export * from './growth';
+export * from './milestones';
 export * from './aggregates';

@@ -76,6 +76,13 @@ export const userSettingsSchema = z.object({
   timeZone: z.string().min(1).default('UTC'),
   /** False until first-run onboarding (pick win condition) is completed. */
   onboarded: z.boolean().default(false),
+  /**
+   * Email delivery, sent server-side by the hourly pg_cron worker (see
+   * packages/db/migrations/0002_email.sql) — distinct from the device-local
+   * push notifications, which are stored on the device, not here.
+   */
+  emailReminders: z.boolean().default(true),
+  emailWeekly: z.boolean().default(true),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
 });
@@ -83,7 +90,15 @@ export type UserSettings = z.infer<typeof userSettingsSchema>;
 
 /** Settings fields the user can edit. */
 export const userSettingsUpdateSchema = userSettingsSchema
-  .pick({ winMode: true, dailyLimitUnits: true, currency: true, timeZone: true, onboarded: true })
+  .pick({
+    winMode: true,
+    dailyLimitUnits: true,
+    currency: true,
+    timeZone: true,
+    onboarded: true,
+    emailReminders: true,
+    emailWeekly: true,
+  })
   .partial();
 export type UserSettingsUpdate = z.infer<typeof userSettingsUpdateSchema>;
 
