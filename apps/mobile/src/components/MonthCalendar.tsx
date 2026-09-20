@@ -61,14 +61,14 @@ export function MonthCalendar({
           <IconButton
             accessibilityLabel="Previous month"
             onPress={() => setAnchor(addDays(startOfMonth(anchor), -1))}
-            className="bg-surface"
+            className="bg-surface-raised"
           >
             <Txt variant="heading">‹</Txt>
           </IconButton>
           <IconButton
             accessibilityLabel="Next month"
             onPress={() => setAnchor(addDays(endOfMonth(anchor), 1))}
-            className="bg-surface"
+            className="bg-surface-raised"
           >
             <Txt variant="heading">›</Txt>
           </IconButton>
@@ -104,7 +104,10 @@ export function MonthCalendar({
               <View
                 className="flex-1 rounded-xl items-center justify-center"
                 style={{
-                  backgroundColor: sc ? sc.bg : colors.card,
+                  // `card` is now the same warm white as the enclosing Card, so
+                  // unlogged cells need their own tint to read as tiles — kept
+                  // light (canvas tone) so colored status days stay dominant
+                  backgroundColor: sc ? sc.bg : colors.bg,
                   opacity: future ? 0.35 : 1,
                   borderWidth: isSelected ? 2 : isToday ? 1.5 : 0,
                   borderColor: isSelected ? colors.accent : colors.borderStrong,
@@ -113,11 +116,23 @@ export function MonthCalendar({
                 <Txt
                   variant="body"
                   className="text-sm"
-                  style={{ color: sc ? sc.fg : colors.textMuted }}
+                  style={{
+                    color: sc ? sc.fg : colors.textMuted,
+                    fontWeight: info ? '700' : '400',
+                  }}
                 >
                   {Number(d.slice(-2))}
                 </Txt>
-                {info?.hasDrinks && (
+                {/*
+                  A clear day earns a check; a logged day with drinks gets a dot.
+                  Without this, a win was only a faint tint and read as "nothing
+                  happened here".
+                */}
+                {info?.status === 'win' && !info.hasDrinks ? (
+                  <Txt style={{ color: sc!.fg, fontSize: 9, lineHeight: 11, fontWeight: '700' }}>
+                    ✓
+                  </Txt>
+                ) : info?.hasDrinks ? (
                   <View
                     style={{
                       width: 5,
@@ -127,7 +142,7 @@ export function MonthCalendar({
                       backgroundColor: sc ? sc.fg : colors.textFaint,
                     }}
                   />
-                )}
+                ) : null}
               </View>
             </Pressable>
           );

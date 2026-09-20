@@ -40,16 +40,14 @@ export function ChartIcon({ color, size = 24 }: IconProps) {
   );
 }
 
+/** Soft "sliders" mark — reads as calm/adjustable rather than mechanical. */
 export function GearIcon({ color, size = 24 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Circle cx={12} cy={12} r={3} stroke={color} strokeWidth={2} />
-      <Path
-        d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
+      <Path d="M4 6h6M14 6h6M4 12h11M19 12h1M4 18h6M14 18h6" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Circle cx={12} cy={6} r={2.2} fill={color} />
+      <Circle cx={17} cy={12} r={2.2} fill={color} />
+      <Circle cx={12} cy={18} r={2.2} fill={color} />
     </Svg>
   );
 }
@@ -71,6 +69,19 @@ export function PlusIcon({ color, size = 22 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path d="M12 5v14M5 12h14" stroke={color} strokeWidth={2.4} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function CloseIcon({ color, size = 20 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 6l12 12M18 6L6 18"
+        stroke={color}
+        strokeWidth={2.4}
+        strokeLinecap="round"
+      />
     </Svg>
   );
 }

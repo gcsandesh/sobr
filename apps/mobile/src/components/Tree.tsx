@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import type { GrowthStageKey } from '@sobr/core';
 import { palette } from '../theme';
 
@@ -105,31 +105,36 @@ export function Tree({
         <Svg width={size} height={size} viewBox="0 0 200 200">
           <Defs>
             <LinearGradient id="foliage" x1="100" y1="40" x2="100" y2="140">
-              <Stop offset="0" stopColor="#A6CE8C" />
+              <Stop offset="0" stopColor="#AEBF92" />
               <Stop offset="1" stopColor={palette.win} />
             </LinearGradient>
           </Defs>
 
-          {/* ground */}
-          <Path
-            d="M40 168 Q100 150 160 168"
-            stroke={palette.borderStrong}
-            strokeWidth={5}
-            strokeLinecap="round"
-            fill="none"
-          />
+          {/* ground — the seed stage draws its own soil mound instead */}
+          {idx > 0 && (
+            <Path
+              d="M40 168 Q100 150 160 168"
+              stroke={palette.borderStrong}
+              strokeWidth={5}
+              strokeLinecap="round"
+              strokeOpacity={0.5}
+              fill="none"
+            />
+          )}
 
           {idx === 0 ? (
-            // seed: a small mound + sprout
+            // seed: a soil mound with a two-leaf seedling just breaking through.
+            // Deliberately not a flat ellipse + stick — that read as a saucer.
             <>
-              <Ellipse cx={100} cy={166} rx={26} ry={9} fill={palette.surfaceRaised} />
+              <Path d="M60 169 Q100 143 140 169 Z" fill="#6E3712" />
               <Path
-                d="M100 166 L100 146"
-                stroke={TRUNK_COLOR}
+                d="M100 166 L100 137"
+                stroke="#5E8C3A"
                 strokeWidth={4}
                 strokeLinecap="round"
               />
-              <Circle cx={100} cy={142} r={6} fill={palette.win} />
+              <Path d="M100 143 C87 139 79 128 84 119 C95 120 100 131 100 143 Z" fill="#7FA855" />
+              <Path d="M100 143 C113 139 121 128 116 119 C105 120 100 131 100 143 Z" fill="#A2C878" />
             </>
           ) : (
             <>
@@ -168,7 +173,7 @@ export function Tree({
                   cx={clusters[0].cx - clusters[0].r * 0.3}
                   cy={clusters[0].cy - clusters[0].r * 0.3}
                   r={clusters[0].r * 0.28}
-                  fill="#C7E3AE"
+                  fill="#CCDBB2"
                   opacity={0.5}
                 />
               )}

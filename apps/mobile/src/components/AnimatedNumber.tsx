@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { StyleProp, TextStyle } from 'react-native';
 import { Txt } from './ui';
 
 /**
@@ -10,11 +11,13 @@ export function AnimatedNumber({
   value,
   variant = 'display',
   className,
+  style,
   duration = 750,
 }: {
   value: number;
   variant?: 'display' | 'displaySm' | 'title';
   className?: string;
+  style?: StyleProp<TextStyle>;
   duration?: number;
 }) {
   const [display, setDisplay] = useState(0);
@@ -47,7 +50,7 @@ export function AnimatedNumber({
   }, [value, duration]);
 
   return (
-    <Txt variant={variant} className={className}>
+    <Txt variant={variant} className={className} style={style}>
       {String(display)}
     </Txt>
   );

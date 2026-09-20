@@ -53,3 +53,16 @@ export const PRESET_GROUP_LABELS: Record<DrinkPreset['group'], string> = {
 export function presetByKey(key: string): DrinkPreset | undefined {
   return DRINK_PRESETS.find((p) => p.key === key);
 }
+
+/**
+ * Short label for a preset chip. The distinguishing half of "Beer — strong /
+ * craft" is the qualifier, so dropping it rendered three identical "Beer" chips;
+ * long slash-lists are trimmed to the first option to keep chips tappable.
+ * Names without a dash (Raksi, Tongba) are returned whole.
+ */
+export function presetChipLabel(name: string): string {
+  const [head, tail] = name.split('—').map((s) => s.trim());
+  if (!tail) return head ?? name;
+  const firstOption = tail.split('/')[0]!.trim();
+  return `${head} · ${firstOption}`;
+}
