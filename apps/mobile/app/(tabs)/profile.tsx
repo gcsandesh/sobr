@@ -37,10 +37,14 @@ export default function Profile() {
         <Txt variant="title" className="mt-4">
           {displayName(email)}
         </Txt>
-        <Txt variant="caption" className="mt-1">
-          {email ?? '—'}
-          {memberSince ? ` · growing since ${memberSince}` : ''}
-        </Txt>
+        {/* omit entirely when there's nothing to say — a lone em-dash reads as a bug */}
+        {(email || memberSince) && (
+          <Txt variant="caption" className="mt-1">
+            {email ?? ''}
+            {email && memberSince ? ' · ' : ''}
+            {memberSince ? `growing since ${memberSince}` : ''}
+          </Txt>
+        )}
       </View>
 
       {/* stats grid */}
@@ -49,27 +53,30 @@ export default function Profile() {
         <StatCard value={String(stats.streak.current)} label="Current streak" />
         <StatCard value={String(stats.streak.longest)} label="Longest streak" />
         <StatCard value={String(stats.lifetimeWins)} label="Clear days" />
-        <StatCard value={`${stats.bankedFreezes} / 3`} label="Freezes banked" />
+        <StatCard value={`${stats.bankedFreezes}/3`} label="Freezes banked" />
       </View>
 
       {/* growth journey */}
       <SectionHeader title="Growth journey" caption={`${stats.lifetimeWins} clear days`} />
-      <Card className="gap-0.5 mb-6">
+      <Card className="mb-6">
         {GROWTH_STAGES.map((stage, i) => {
           const achieved = stats.lifetimeWins >= stage.minWinDays;
           const isCurrent = stage.key === stats.stage;
+          const isLast = i === GROWTH_STAGES.length - 1;
           return (
-            <Row key={stage.key} className="py-2.5">
-              {/* track dot */}
+            // deliberately NOT a vertically-centered Row: the dot column has to
+            // stretch to the row's height, or a fixed-height connector falls
+            // short of the next dot whenever a row wraps
+            <View key={stage.key} className="flex-row">
               <View className="items-center mr-3" style={{ width: 24 }}>
                 <View
                   className="rounded-full items-center justify-center"
                   style={{
                     width: 24,
                     height: 24,
-                    backgroundColor: achieved ? colors.accent : colors.card,
+                    backgroundColor: achieved ? colors.accent : colors.cardRaised,
                     borderWidth: achieved ? 0 : 2,
-                    borderColor: colors.border,
+                    borderColor: achieved ? colors.accent : colors.border,
                   }}
                 >
                   {achieved && (
@@ -78,28 +85,32 @@ export default function Profile() {
                     </Txt>
                   )}
                 </View>
-                {i < GROWTH_STAGES.length - 1 && (
+                {!isLast && (
                   <View
                     style={{
-                      position: 'absolute',
-                      top: 26,
+                      flex: 1,
                       width: 2,
-                      height: 22,
+                      marginTop: 3,
+                      borderRadius: 1,
                       backgroundColor: achieved ? colors.accent : colors.border,
                     }}
                   />
                 )}
               </View>
-              <View className="flex-1">
-                <Txt variant="body" className={isCurrent ? 'text-accent font-semibold' : ''}>
+              <View className={`flex-1 ${isLast ? '' : 'pb-5'}`}>
+                <Txt
+                  variant="body"
+                  className={isCurrent ? 'font-semibold' : ''}
+                  style={isCurrent ? { color: colors.accent } : undefined}
+                >
                   {stage.label}
                   {isCurrent ? '  ·  you are here' : ''}
                 </Txt>
-                <Txt variant="caption">
+                <Txt variant="caption" className="mt-0.5">
                   {stage.minWinDays === 0 ? 'Day one' : `${stage.minWinDays} clear days`}
                 </Txt>
               </View>
-            </Row>
+            </View>
           );
         })}
       </Card>

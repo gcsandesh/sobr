@@ -1,40 +1,51 @@
 /**
  * sobr design tokens — the single source of visual truth shared by every surface.
  *
- * Light-first, calm, nature/growth. Mostly white, with moss green as the primary
- * accent — modern, clean, minimalistic. Slips use a warm terracotta, never an
- * alarm-red: the UI must never feel punitive.
+ * "Organic": cool mist background, deep teal as the single brand accent, forest
+ * green for the positive/growth state. Adapted from the Sobr.dc.html prototype's
+ * visual language (palette + Caprasimo/Figtree type) — the underlying product
+ * model (daily win/slip streak, freeze tokens) and non-triggering copy are
+ * unchanged; only the look moved. Slips stay a muted, non-alarming clay tone —
+ * the UI must never feel punitive.
  *
- * Contrast targets (against `background` #FFFFFF): text.primary, text.secondary,
+ * Contrast targets (against `background` #F0F5F3): text.primary, text.secondary,
  * and each status color are chosen to clear WCAG AA for their use (body / large text).
  */
 
 export const palette = {
-  // Mostly white, with a faint sage-tinted surface for cards/raised layers.
-  background: '#FFFFFF',
-  surface: '#F5F8F5',
-  surfaceRaised: '#EBF2EA',
-  surfaceOverlay: '#DFEBDE',
-  border: '#E1E8E0',
-  borderStrong: '#C7D6C4',
+  // Elevation ladder by LIGHTNESS: the canvas is a cool mist and raised surfaces
+  // go *lighter* toward white. Cards must never share the canvas value or the
+  // whole screen reads flat and dull.
+  background: '#F0F5F3', // canvas — cool mist
+  surface: '#FAFDFC', // cards — near-white with a green cast
+  surfaceRaised: '#E3EDE9', // sunken: inputs, chips, tab bar
+  surfaceOverlay: '#FAFDFC',
+  border: '#D5E3DE',
+  borderStrong: '#A9C3BB',
 
-  // Deep charcoal-green text on white, stepping down to muted sage-grey.
-  textPrimary: '#16241C',
-  textSecondary: '#4A5A4F',
-  textMuted: '#7C8E80',
-  textInverse: '#F6FAF5',
+  // Cool ink. The greys are green-tinted deliberately — pure neutral greys read
+  // dead against a tinted canvas.
+  textPrimary: '#16211F',
+  textSecondary: '#4A5D59',
+  textMuted: '#6F8480',
+  textInverse: '#F4FAF8',
 
-  // Status colors — calm, never harsh.
-  win: '#3E8E5B', // moss green — a good day (also the primary accent)
-  winSoft: '#E3F2E4', // moss tint for fills/backgrounds
-  slip: '#C0704A', // muted terracotta — a slip, not a failure
-  slipSoft: '#F7E9E1', // terracotta tint
-  frozen: '#4A7FA6', // dusty blue — streak protected
-  frozenSoft: '#E4EEF5', // blue tint
+  // Status colors — calm, never harsh, but saturated enough to feel alive.
+  win: '#457029', // forest green — a good day
+  winSoft: '#D9EFBE', // saturated enough that a clear day reads green at a glance
+  slip: '#B5544B', // muted brick — a slip, not a failure
+  slipSoft: '#FBE7E3',
+  // Freeze moved teal → blue: teal is now the brand accent, and a frozen day
+  // must never be mistaken for a branded/active one. Ice reads blue anyway.
+  frozen: '#3E6FA8',
+  frozenSoft: '#E1ECF7',
 
-  // Single accent: the same moss green, used sparingly for streaks + highlights.
-  accent: '#3E8E5B',
-  accentSoft: '#E3F2E4',
+  // Deep teal accent. `accent` is the text/CTA-safe tone (≈5.5:1 with white);
+  // `accentBright` is the luminous tone used only for glows, gradient stops and
+  // fills that never carry text.
+  accent: '#1F6F6B',
+  accentBright: '#2E9D95',
+  accentSoft: '#E2F2EF',
 
   // Misc
   white: '#FFFFFF',
@@ -64,6 +75,7 @@ export const colors = {
   frozenBg: palette.frozenSoft,
 
   accent: palette.accent,
+  accentBright: palette.accentBright,
   accentBg: palette.accentSoft,
 } as const;
 
@@ -99,16 +111,17 @@ export const radii = {
 } as const;
 
 /**
- * Type scale. Fraunces (warm serif/display) for headers + big numbers;
- * Manrope (clean grotesk) for UI text. Family names match the loaded font keys.
+ * Type scale. Caprasimo (chunky rounded display face) for headers + big numbers;
+ * Figtree (clean grotesk) for UI text. Family names match the loaded font keys.
+ * Caprasimo only ships one weight — its shape is already heavy, so "bold" reuses it.
  */
 export const fonts = {
-  display: 'Fraunces',
-  displayItalic: 'Fraunces-Italic',
-  body: 'Manrope',
-  bodyMedium: 'Manrope-Medium',
-  bodySemibold: 'Manrope-SemiBold',
-  bodyBold: 'Manrope-Bold',
+  display: 'Caprasimo',
+  displayItalic: 'Caprasimo',
+  body: 'Figtree',
+  bodyMedium: 'Figtree-Medium',
+  bodySemibold: 'Figtree-SemiBold',
+  bodyBold: 'Figtree-Bold',
 } as const;
 
 export const fontSizes = {
@@ -131,11 +144,11 @@ export const lineHeights = {
   relaxed: 1.65,
 } as const;
 
-/** Soft elevation — diffuse, low-opacity, never harsh drop shadows. */
+/** Soft elevation — diffuse, ink-tinted, never harsh drop shadows. */
 export const shadows = {
   none: 'none',
-  soft: '0 8px 24px rgba(22,36,28,0.08)',
-  raised: '0 12px 32px rgba(22,36,28,0.12)',
+  soft: '0 8px 24px rgba(22,33,31,0.10)',
+  raised: '0 12px 32px rgba(22,33,31,0.16)',
 } as const;
 
 /** Minimum interactive target — accessibility (≥44px). */

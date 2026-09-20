@@ -1,8 +1,15 @@
 import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChartIcon, GearIcon, HomeLeafIcon, UserIcon } from '../../src/components/icons';
 import { colors } from '../../src/theme';
 
 export default function TabsLayout() {
+  // A custom tabBarStyle.height takes over from React Navigation's own
+  // safe-area handling, so the device's bottom inset (gesture pill OR the
+  // 3-button nav bar some Android phones — e.g. Galaxy S24 Ultra — still use)
+  // has to be added back in by hand, or the bar sits under it.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -11,19 +18,21 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle: {
-          backgroundColor: colors.bg,
+          // warm white, a step lighter than the cream canvas, so the bar reads
+          // as a floating surface rather than blending into the content
+          backgroundColor: colors.card,
           borderTopWidth: 0,
-          height: 68,
-          paddingBottom: 10,
+          height: 58 + insets.bottom,
+          paddingBottom: Math.max(10, insets.bottom),
           paddingTop: 10,
           // soft floating-bar elevation instead of a hairline border
-          shadowColor: '#16241C',
+          shadowColor: '#16211F',
           shadowOpacity: 0.08,
           shadowRadius: 16,
           shadowOffset: { width: 0, height: -4 },
           elevation: 12,
         },
-        tabBarLabelStyle: { fontFamily: 'Manrope_600SemiBold', fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 11 },
       }}
     >
       <Tabs.Screen

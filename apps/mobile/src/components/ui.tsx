@@ -12,11 +12,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { HomeLeafIcon } from './icons';
 import { colors } from '../theme';
 
 /** Soft, low-opacity elevation — never a harsh drop shadow. */
 const softShadow = {
-  shadowColor: '#16241C',
+  shadowColor: '#16211F',
   shadowOpacity: 0.08,
   shadowRadius: 18,
   shadowOffset: { width: 0, height: 8 },
@@ -70,9 +71,9 @@ export function Screen({
   );
   return (
     <View className="flex-1 bg-bg">
-      {/* barely-there vertical tint — keeps the white calm instead of stark */}
+      {/* barely-there vertical tint — keeps the cream calm instead of flat */}
       <LinearGradient
-        colors={['#F7FBF6', '#FFFFFF', '#FFFFFF']}
+        colors={['#FAFDFC', '#F0F5F3', '#E3EDE9']}
         locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
@@ -102,9 +103,11 @@ export function Card({
 }: ViewProps & { children: ReactNode; className?: string }) {
   return (
     <View
-      // default border is a faint hairline so callers can override with
-      // border-win / border-accent etc.; bg is solid white for a clean, flat card.
-      className={`relative overflow-hidden rounded-2xl border border-border bg-bg p-5 ${className ?? ''}`}
+      // Cards sit on `surface` (warm white), one step LIGHTER than the cream
+      // canvas — that luminance gap is what gives the screen depth. Default
+      // border is a faint hairline so callers can override with border-win /
+      // border-accent etc.
+      className={`relative overflow-hidden rounded-2xl border border-border bg-surface p-5 ${className ?? ''}`}
       style={[softShadow, style]}
       {...props}
     >
@@ -133,16 +136,18 @@ export function Row({
 
 type BtnTone = 'primary' | 'secondary' | 'ghost' | 'win' | 'danger';
 
+// `secondary` is an accent-tinted outline, not a tan slab — a flat tan button on
+// a cream card reads as disabled rather than tappable.
 const BTN_BG: Record<BtnTone, string> = {
   primary: 'bg-accent',
-  secondary: 'bg-surface-raised border border-border',
+  secondary: 'bg-accent-bg border border-accent',
   ghost: 'bg-transparent',
   win: 'bg-win-bg border border-win',
   danger: 'bg-slip-bg border border-slip',
 };
 const BTN_TX: Record<BtnTone, string> = {
   primary: 'text-white',
-  secondary: 'text-text',
+  secondary: 'text-accent',
   ghost: 'text-text-muted',
   win: 'text-win',
   danger: 'text-slip',
@@ -307,20 +312,29 @@ export function Chip({
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={accessibilityLabel ?? label}
+      // Selected is a SOLID accent fill, not a tint: two pale fills separated
+      // only by border color made the active state easy to miss.
       className={`px-4 min-h-[44px] justify-center rounded-full border ${
-        selected ? 'border-accent bg-accent-bg' : 'border-border bg-surface'
+        selected ? 'border-accent bg-accent' : 'border-border bg-surface-raised'
       } active:opacity-70`}
     >
-      <Txt variant="body" className={`text-sm ${selected ? 'text-accent font-semibold' : ''}`}>
+      <Txt
+        variant="body"
+        className={`text-sm ${selected ? 'font-semibold' : ''}`}
+        style={selected ? { color: '#F4FAF8' } : undefined}
+      >
         {label}
       </Txt>
     </Pressable>
   );
 }
 
-/** Initials avatar on a soft green disc — used on the Profile screen + headers. */
+/**
+ * Initials avatar on a terracotta disc. With no name to derive initials from it
+ * falls back to the leaf mark rather than a bare "?", which read as an error.
+ */
 export function Avatar({ name, size = 72 }: { name: string | null; size?: number }) {
-  const initials = (name ?? '?')
+  const initials = (name ?? '')
     .split(/[@\s._-]+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -332,12 +346,16 @@ export function Avatar({ name, size = 72 }: { name: string | null; size?: number
       style={{ width: size, height: size }}
       accessibilityLabel={`Avatar for ${name ?? 'you'}`}
     >
-      <Text
-        className="font-display text-white"
-        style={{ fontSize: size * 0.36, lineHeight: size * 0.46 }}
-      >
-        {initials || '?'}
-      </Text>
+      {initials ? (
+        <Text
+          className="font-display text-white"
+          style={{ fontSize: size * 0.36, lineHeight: size * 0.46 }}
+        >
+          {initials}
+        </Text>
+      ) : (
+        <HomeLeafIcon color="#F4FAF8" size={size * 0.46} />
+      )}
     </View>
   );
 }
@@ -391,10 +409,27 @@ export function Notice({
   );
 }
 
-/** Friendly first-run / no-data placeholder. */
-export function EmptyState({ title, message }: { title: string; message?: string }) {
+/**
+ * Friendly first-run / no-data placeholder. Contained in a card so it reads as
+ * a deliberate state rather than text floating on the canvas; `icon` gives it a
+ * focal point.
+ */
+export function EmptyState({
+  title,
+  message,
+  icon,
+}: {
+  title: string;
+  message?: string;
+  icon?: ReactNode;
+}) {
   return (
-    <View className="items-center py-10 px-6">
+    <Card className="items-center py-8 px-6">
+      {icon ? (
+        <View className="w-14 h-14 rounded-full items-center justify-center mb-3 bg-accent-bg">
+          {icon}
+        </View>
+      ) : null}
       <Txt variant="heading" className="text-center">
         {title}
       </Txt>
@@ -403,6 +438,6 @@ export function EmptyState({ title, message }: { title: string; message?: string
           {message}
         </Txt>
       ) : null}
-    </View>
+    </Card>
   );
 }

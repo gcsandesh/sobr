@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Alert, Platform, Switch, TextInput, View } from 'react-native';
+import { Platform, Switch, TextInput, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import type { WinMode } from '@sobr/core';
 import { CURRENCIES } from '@sobr/config';
 import {
   BellIcon,
+  ChartIcon,
+  ChevronRightIcon,
   GlobeIcon,
   LogOutIcon,
   SparkIcon,
@@ -16,6 +19,7 @@ import {
   Chip,
   Divider,
   ListRow,
+  Notice,
   Row,
   Screen,
   SectionHeader,
@@ -24,6 +28,8 @@ import {
 import { useSession } from '../../src/data/SessionProvider';
 import { useDeleteAccount, useSettings, useUpdateSettings, deviceTimeZone } from '../../src/data/hooks';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
+import { confirmAction } from '../../src/lib/confirm';
+import { notificationsSupported } from '../../src/lib/notifications';
 import { colors } from '../../src/theme';
 
 const REMINDER_TIMES = [12, 18, 20, 21, 22];
@@ -56,6 +62,7 @@ const COMMON_ZONES = [
 ];
 
 export default function Settings() {
+  const router = useRouter();
   const { email, signOut } = useSession();
   const settings = useSettings();
   const update = useUpdateSettings();
@@ -74,14 +81,12 @@ export default function Settings() {
   }
 
   function confirmDelete() {
-    Alert.alert(
-      'Delete everything?',
-      'This permanently removes your account and all your data. This can’t be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => deleteAccount.mutate() },
-      ],
-    );
+    confirmAction({
+      title: 'Delete everything?',
+      message: 'This permanently removes your account and all your data. This can’t be undone.',
+      confirmLabel: 'Delete',
+      onConfirm: () => deleteAccount.mutate(),
+    });
   }
 
   return (
@@ -118,7 +123,7 @@ export default function Settings() {
                 onEndEditing={saveLimit}
                 keyboardType="decimal-pad"
                 maxLength={4}
-                className="bg-surface border border-border rounded-lg px-3 py-2 text-text font-sans w-16 text-center"
+                className="bg-surface-raised border border-border rounded-lg px-3 py-2 text-text font-sans w-16 text-center"
                 placeholderTextColor={colors.textFaint}
               />
               <Button label="Save" tone="secondary" onPress={saveLimit} />
@@ -169,7 +174,18 @@ export default function Settings() {
       </Card>
 
       {/* ── Notifications (device-local; native only) ───────────────── */}
-      {Platform.OS !== 'web' && (
+      {Platform.OS !== 'web' && !notificationsSupported && (
+        <>
+          <SectionHeader title="Notifications" caption="stays on this device" />
+          <Notice
+            tone="info"
+            title="Needs a dev build here"
+            message="Expo Go on Android dropped notification support in SDK 53. These will work once you run this on a custom dev build."
+          />
+          <View className="mb-6" />
+        </>
+      )}
+      {notificationsSupported && (
         <>
           <SectionHeader title="Notifications" caption="stays on this device" />
           <Card className="mb-6">
@@ -238,6 +254,46 @@ export default function Settings() {
         </>
       )}
 
+      {/* ── Email (server-side; sent even when the app is closed) ───── */}
+      <SectionHeader title="Email" caption={email ?? 'your inbox'} />
+      <Card className="mb-6">
+        <Row className="justify-between">
+          <View className="flex-1 pr-3">
+            <ListRow
+              icon={<BellIcon color={colors.accent} />}
+              title="Daily reminder"
+              subtitle="A nudge at 8pm your time, only on days you haven’t logged."
+            />
+          </View>
+          <Switch
+            value={s?.emailReminders ?? true}
+            disabled={!s || update.isPending}
+            onValueChange={(v) => update.mutate({ emailReminders: v })}
+            trackColor={{ false: colors.border, true: colors.accent }}
+            thumbColor="#FFFFFF"
+          />
+        </Row>
+
+        <Divider className="my-3" />
+
+        <Row className="justify-between">
+          <View className="flex-1 pr-3">
+            <ListRow
+              icon={<ChartIcon color={colors.accent} />}
+              title="Weekly progress"
+              subtitle="Your week in review, every Sunday evening."
+            />
+          </View>
+          <Switch
+            value={s?.emailWeekly ?? true}
+            disabled={!s || update.isPending}
+            onValueChange={(v) => update.mutate({ emailWeekly: v })}
+            trackColor={{ false: colors.border, true: colors.accent }}
+            thumbColor="#FFFFFF"
+          />
+        </Row>
+      </Card>
+
       {/* ── Account ─────────────────────────────────────────────────── */}
       <SectionHeader title="Account" />
       <Card className="mb-3">
@@ -255,6 +311,16 @@ export default function Settings() {
         loading={deleteAccount.isPending}
         onPress={confirmDelete}
       />
+
+      <SectionHeader title="About" className="mt-6" />
+      <Card>
+        <ListRow
+          title="About sobr"
+          subtitle="Privacy, notifications, and app info"
+          right={<ChevronRightIcon color={colors.textFaint} />}
+          onPress={() => router.push('/about')}
+        />
+      </Card>
 
       <Txt variant="caption" className="text-center mt-6 mb-2">
         Your data is private to you. sobr · Clear days, counted.
