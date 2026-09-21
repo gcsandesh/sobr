@@ -68,12 +68,34 @@ export type DailyEntryWithDrinks = z.infer<typeof dailyEntryWithDrinksSchema>;
 
 // ---------- User settings ----------
 
+/**
+ * A time zone the runtime can actually resolve.
+ *
+ * This is the client-side half of a two-layer guard: `time_zone` is
+ * user-writable under RLS, and the hourly email job evaluates
+ * `now() at time zone <value>` for every user. An unparseable value used to
+ * abort that whole batch, costing *every* user their mail — see
+ * migrations/0005_time_zone_guard.sql, which enforces the same rule in the
+ * database. This check is for a kind error message, not for security: a
+ * client can always PATCH the column directly.
+ */
+function isValidTimeZone(tz: string): boolean {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const userSettingsSchema = z.object({
   userId: z.string().uuid(),
   winMode: winModeSchema.default('zero'),
   dailyLimitUnits: z.number().min(0).max(100).default(2),
   currency: z.string().min(2).max(5).default('USD'),
-  timeZone: z.string().min(1).default('UTC'),
+  timeZone: z.string().min(1).refine(isValidTimeZone, {
+    message: 'Use an IANA time zone name, e.g. Asia/Kathmandu.',
+  }).default('UTC'),
   /** False until first-run onboarding (pick win condition) is completed. */
   onboarded: z.boolean().default(false),
   /**
