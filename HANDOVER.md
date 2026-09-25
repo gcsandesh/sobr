@@ -266,6 +266,38 @@ Paste this to the next agent:
 
 ---
 
+## Appendix — Building with EAS
+
+`eas.json` lives at `apps/mobile/eas.json` with three profiles: `development`
+(dev client, internal), `preview` (installable APK / internal iOS), and
+`production` (AAB, auto-incrementing version).
+
+**The one thing that will silently break a build.** `app.config.js` injects
+`supabaseUrl` / `supabaseAnonKey` into `extra` by reading the **repo-root
+`.env`** — which is gitignored, so EAS build servers never receive it. Without
+the values, `isSupabaseConfigured` is false and the app boots to the *setup*
+screen instead of sign-in, looking broken for reasons that have nothing to do
+with the build.
+
+Set them on EAS once, before the first build:
+
+```bash
+cd apps/mobile
+eas env:create --name EXPO_PUBLIC_SUPABASE_URL      --value "<url>" --visibility plaintext --scope project
+eas env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "<key>" --visibility plaintext --scope project
+```
+
+Plaintext is correct here: both are public by design, shipped inside the app
+bundle either way, and RLS is what actually protects the data. `DATABASE_URL`
+and `RESEND_API_KEY` must **never** be added — they are server-only.
+
+**Android** builds and installs with no paid account: `eas build -p android
+--profile preview` produces an APK you can sideload. **iOS on a physical
+device** needs a paid Apple Developer account for provisioning, whatever the
+profile — that is an Apple rule, not an EAS one.
+
+---
+
 ## Appendix — Auth: email + password (no verification)
 
 **What it is now.** `apps/mobile/app/(auth)/sign-in.tsx` is one screen with a Sign in /

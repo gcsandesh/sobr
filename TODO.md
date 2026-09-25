@@ -72,8 +72,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Onboarding: pick win condition (zero / limit / manual) → persists to settings
 - [x] Smoke-test auth + onboarding against a live Supabase project — verified end to end
       (sign-up → session → onboarding → "Plant my tree" → tabs) on 2026-09-20
-- [ ] **Turn OFF Authentication → Providers → Email → Confirm email** — _user step_.
-      Until then sign-up creates a user but issues no session; the screen says so.
+- [x] **Confirm email turned OFF** — verified 2026-09-25: sign-up returns a session
+      immediately, so anyone can create an account and use the app.
 
 ## M4 — Daily check-in + drink logger · [progress](PROGRESS.md#m3-app)
 - [x] Today view: "No drinks today" (one-tap win) + "Log a drink"
