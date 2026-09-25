@@ -43,6 +43,12 @@ export async function resetPasswordWithCode(params: {
   code: string;
   password: string;
 }): Promise<void> {
+  // A retry after the code was redeemed but the password save failed: the
+  // code is spent, but its session is live, so go straight to the update.
+  const { data } = await supabase.auth.getSession();
+  if (data.session?.user.email?.toLowerCase() === params.email.trim().toLowerCase()) {
+    return changePassword(params.password);
+  }
   const { error: otpError } = await supabase.auth.verifyOtp({
     email: params.email.trim(),
     token: params.code.trim(),

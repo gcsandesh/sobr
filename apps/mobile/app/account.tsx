@@ -17,7 +17,7 @@ import { useSession } from '../src/data/SessionProvider';
 import { useDeleteAccount } from '../src/data/hooks';
 import { MIN_PASSWORD, changePassword, updateDisplayName } from '../src/lib/account';
 import { confirmAction } from '../src/lib/confirm';
-import { authErrorMessage } from '../src/lib/errorMessage';
+import { authErrorMessage, errorMessage } from '../src/lib/errorMessage';
 import { haptics } from '../src/lib/haptics';
 import { colors } from '../src/theme';
 
@@ -196,6 +196,11 @@ export default function Account() {
           loading={deleteAccount.isPending}
           onPress={confirmDelete}
         />
+        {deleteAccount.isError && (
+          <Txt variant="caption" className="text-slip mt-2" accessibilityRole="alert">
+            Couldn’t delete right now: {errorMessage(deleteAccount.error)}. Nothing was removed.
+          </Txt>
+        )}
       </Screen>
     </>
   );
