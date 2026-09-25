@@ -46,34 +46,57 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? '';
 const HOOK_SECRET = Deno.env.get('SEND_EMAIL_HOOK_SECRET') ?? '';
 const FROM = Deno.env.get('EMAIL_FROM') ?? 'sobr <onboarding@resend.dev>';
 
-/** Cream/terracotta shell, matching the weekly-progress email in 0002_email.sql. */
+/** Mist/teal shell, matching the app's current palette. */
 function shell(title: string, body: string): string {
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#F5EAD8;">
-<div style="max-width:520px;margin:0 auto;padding:32px 20px;font-family:Georgia,'Times New Roman',serif;color:#201E1D;">
-  <div style="background:#FFFFFF;border-radius:16px;padding:28px;border:1px solid #E7DCC8;">
-    <div style="font-size:22px;font-weight:bold;color:#C67139;margin-bottom:4px;">sobr</div>
-    <div style="font-size:13px;color:#82796A;margin-bottom:20px;">Clear days, counted.</div>
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#F0F5F3;">
+<div style="max-width:520px;margin:0 auto;padding:32px 20px;font-family:Georgia,'Times New Roman',serif;color:#16211F;">
+  <div style="background:#FFFFFF;border-radius:16px;padding:28px;border:1px solid #D5E3DE;">
+    <div style="font-size:22px;font-weight:bold;color:#1F6F6B;margin-bottom:4px;">sobr</div>
+    <div style="font-size:13px;color:#6F8480;margin-bottom:20px;">Clear days, counted.</div>
     <div style="font-size:19px;margin-bottom:14px;">${title}</div>
     ${body}
   </div>
-  <div style="text-align:center;font-size:12px;color:#82796A;padding:16px;">
+  <div style="text-align:center;font-size:12px;color:#6F8480;padding:16px;">
     If you didn't ask for this email, you can ignore it — nothing happens without the code.
   </div>
 </div></body></html>`;
 }
 
-function codeEmail(token: string, isNewUser: boolean): { subject: string; html: string } {
+/** Per-action wording; every action carries the same 6-digit code. */
+const COPY: Partial<Record<EmailActionType, { title: string; lead: string; subject: string }>> = {
+  signup: {
+    title: 'Welcome to sobr',
+    lead: 'Welcome. Enter this code in the app to finish signing up:',
+    subject: 'is your sobr sign-up code',
+  },
+  recovery: {
+    title: 'Reset your password',
+    lead: 'Enter this code in the app, then choose a new password:',
+    subject: 'is your sobr password reset code',
+  },
+  email_change: {
+    title: 'Confirm your new email',
+    lead: 'Enter this code in the app to confirm this address:',
+    subject: 'is your sobr confirmation code',
+  },
+};
+const DEFAULT_COPY = {
+  title: 'Your sign-in code',
+  lead: 'Enter this code in the app to sign in:',
+  subject: 'is your sobr code',
+};
+
+function codeEmail(token: string, action: EmailActionType): { subject: string; html: string } {
+  const copy = COPY[action] ?? DEFAULT_COPY;
   const body = `
-    <p style="font-size:15px;line-height:1.6;color:#4A443C;margin:0 0 18px;">
-      ${isNewUser ? 'Welcome. Enter this code in the app to finish signing up:' : 'Enter this code in the app to sign in:'}
-    </p>
-    <div style="background:#FBF2E3;border-radius:12px;padding:18px;text-align:center;margin-bottom:18px;">
-      <div style="font-size:34px;font-weight:bold;letter-spacing:10px;color:#B95C22;font-family:Helvetica,Arial,sans-serif;">${token}</div>
+    <p style="font-size:15px;line-height:1.6;color:#4A5D59;margin:0 0 18px;">${copy.lead}</p>
+    <div style="background:#E2F2EF;border-radius:12px;padding:18px;text-align:center;margin-bottom:18px;">
+      <div style="font-size:34px;font-weight:bold;letter-spacing:10px;color:#1F6F6B;font-family:Helvetica,Arial,sans-serif;">${token}</div>
     </div>
-    <p style="font-size:14px;line-height:1.6;color:#82796A;margin:0;">
+    <p style="font-size:14px;line-height:1.6;color:#6F8480;margin:0;">
       The code expires in an hour and can only be used once.
     </p>`;
-  return { subject: `${token} is your sobr code`, html: shell('Your sign-in code', body) };
+  return { subject: `${token} ${copy.subject}`, html: shell(copy.title, body) };
 }
 
 Deno.serve(async (req: Request) => {
@@ -96,7 +119,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const { token, email_action_type } = payload.email_data;
-  const { subject, html } = codeEmail(token, email_action_type === 'signup');
+  const { subject, html } = codeEmail(token, email_action_type);
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
