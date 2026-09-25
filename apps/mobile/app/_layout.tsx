@@ -1,8 +1,9 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -160,6 +161,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
+        <KeyboardProvider>
         <PersistQueryClientProvider
           client={queryClient}
           persistOptions={{ persister: asyncStoragePersister, maxAge: 1000 * 60 * 60 * 24 * 7 }}
@@ -173,7 +175,43 @@ export default function RootLayout() {
             <Gate />
           </SessionProvider>
         </PersistQueryClientProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+/**
+ * Last-resort catch for a render crash anywhere below the root: a calm screen
+ * with a way back instead of a blank white app. Data is server-side, so a
+ * retry (or a restart) loses nothing.
+ */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', padding: 24 }}>
+      <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: 8 }}>
+        Something went sideways
+      </Text>
+      <Text style={{ fontSize: 16, lineHeight: 23, color: colors.textMuted, marginBottom: 20 }}>
+        sobr hit an unexpected error. Your days are safe in your account; try again, or close and
+        reopen the app.
+      </Text>
+      <Pressable
+        onPress={() => void retry()}
+        accessibilityRole="button"
+        style={{
+          backgroundColor: colors.accent,
+          borderRadius: 16,
+          minHeight: 52,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Try again</Text>
+      </Pressable>
+      {__DEV__ ? (
+        <Text style={{ marginTop: 16, fontSize: 12, color: colors.textFaint }}>{error.message}</Text>
+      ) : null}
+    </View>
   );
 }

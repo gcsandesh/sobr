@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   DRINK_PRESETS,
@@ -19,7 +20,7 @@ import {
 } from '@sobr/core';
 import { DayPhotos } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon } from '../../src/components/icons';
-import { Button, Card, Row, SectionHeader, Txt } from '../../src/components/ui';
+import { Button, CONTENT_MAX_WIDTH, Card, Row, SectionHeader, Txt } from '../../src/components/ui';
 import { useDayEntry, useDeleteDay, useSaveDay, useSettings } from '../../src/data/hooks';
 import { confirmAction } from '../../src/lib/confirm';
 import { formatDay } from '../../src/lib/dates';
@@ -142,15 +143,19 @@ export default function DayLogger() {
   const isToday = day === todayInTz(settings.data?.timeZone ?? 'UTC');
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-bg"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
+    <View className="flex-1 bg-bg">
       <Stack.Screen options={{ title: formatDay(day) }} />
-      <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
+      <KeyboardAwareScrollView
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: 170,
+          width: '100%',
+          maxWidth: CONTENT_MAX_WIDTH,
+          alignSelf: 'center',
+        }}
         keyboardShouldPersistTaps="handled"
+        // clear the sticky Save bar, which the keyboard doesn't push up
+        bottomOffset={24}
       >
         {/* status banner */}
         <Card className={status === 'win' ? 'border-win' : 'border-slip'}>
@@ -324,7 +329,7 @@ export default function DayLogger() {
         </View>
 
         <DayPhotos entryId={entryQ.data?.id} />
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* sticky actions */}
       <View className="absolute bottom-0 left-0 right-0 bg-bg border-t border-border px-5 pt-3 pb-8 gap-2">
@@ -342,7 +347,7 @@ export default function DayLogger() {
           />
         )}
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

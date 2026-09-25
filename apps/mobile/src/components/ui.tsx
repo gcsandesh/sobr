@@ -4,7 +4,7 @@ import {
   ActivityIndicator,
   Pressable,
   PressableProps,
-  ScrollView,
+  RefreshControlProps,
   StyleSheet,
   Switch,
   Text,
@@ -15,6 +15,7 @@ import {
   ViewProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CheckIcon, ChevronRightIcon, EyeIcon, HomeLeafIcon } from './icons';
 import { colors } from '../theme';
@@ -72,10 +73,13 @@ export function Screen({
   scroll = false,
   className,
   edges = ['top', 'bottom'],
+  refreshControl,
 }: {
   children: ReactNode;
   scroll?: boolean;
   className?: string;
+  /** Pull-to-refresh, for scrolling screens that show server data. */
+  refreshControl?: React.ReactElement<RefreshControlProps>;
   /** Pushed screens with a native header only need the bottom inset. */
   edges?: ('top' | 'bottom')[];
 }) {
@@ -98,14 +102,19 @@ export function Screen({
       />
       <SafeAreaView className="flex-1" edges={edges}>
         {scroll ? (
-          <ScrollView
+          // Keyboard-aware: Android is edge-to-edge on SDK 54, so the window no
+          // longer resizes for the keyboard. This scrolls the focused field
+          // into view instead of leaving it under the keys.
+          <KeyboardAwareScrollView
             className="flex-1"
             contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            bottomOffset={24}
+            refreshControl={refreshControl}
           >
             {inner}
-          </ScrollView>
+          </KeyboardAwareScrollView>
         ) : (
           inner
         )}
