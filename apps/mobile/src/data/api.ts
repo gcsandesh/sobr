@@ -90,10 +90,7 @@ export async function fetchSettings(userId: string): Promise<UserSettings | null
   return data ? mapSettings(data) : null;
 }
 
-export async function updateSettings(
-  userId: string,
-  patch: UserSettingsUpdate,
-): Promise<void> {
+export async function updateSettings(userId: string, patch: UserSettingsUpdate): Promise<void> {
   const row: Record<string, unknown> = {};
   if (patch.winMode !== undefined) row.win_mode = patch.winMode;
   if (patch.dailyLimitUnits !== undefined) row.daily_limit_units = patch.dailyLimitUnits;
@@ -317,6 +314,26 @@ export async function addDayPhoto(params: {
   };
 }
 
+/**
+ * Civil dates that have at least one photo, for the calendar's marker.
+ *
+ * Deliberately not folded into the entry fetch: entries carry drinks already,
+ * and widening that query would pull photo rows into every screen that lists
+ * days just so one of them can draw a dot.
+ */
+export async function fetchPhotoDates(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('day_photos')
+    .select('daily_entries!inner(entry_date)')
+    .eq('user_id', userId);
+  if (error) throw error;
+  const dates = (data ?? []).map((r) => {
+    const e = (r as Record<string, unknown>).daily_entries as { entry_date?: string } | null;
+    return e?.entry_date ?? '';
+  });
+  return [...new Set(dates.filter(Boolean))];
+}
+
 /** Set or clear a photo's caption. Empty input clears it rather than storing ''. */
 export async function updateDayPhotoCaption(photoId: string, caption: string): Promise<void> {
   const trimmed = caption.trim();
@@ -332,10 +349,7 @@ export async function updateDayPhotoCaption(photoId: string, caption: string): P
  * with an orphaned object (invisible, costs storage) rather than a row pointing
  * at nothing (a permanent broken thumbnail the user cannot clear).
  */
-export async function deleteDayPhoto(photo: {
-  id: string;
-  objectPath: string;
-}): Promise<void> {
+export async function deleteDayPhoto(photo: { id: string; objectPath: string }): Promise<void> {
   const { error } = await supabase.from('day_photos').delete().eq('id', photo.id);
   if (error) throw error;
   await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([photo.objectPath]);

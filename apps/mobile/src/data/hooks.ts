@@ -1,9 +1,4 @@
-import {
-  type QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   allTimeStats,
   bankedFreezes,
@@ -37,6 +32,7 @@ const keys = {
   entry: (uid: string, date: string) => ['entry', uid, date] as const,
   grants: (uid: string) => ['freezeGrants', uid] as const,
   dayPhotos: (entryId: string) => ['dayPhotos', entryId] as const,
+  photoDates: (uid: string) => ['photoDates', uid] as const,
 };
 
 /**
@@ -242,7 +238,14 @@ export function useSaveDay() {
       if (!uid) return undefined;
       await qc.cancelQueries({ queryKey: keys.allEntries(uid) });
       await qc.cancelQueries({ queryKey: keys.entry(uid, input.date) });
-      return writeOptimisticEntry(qc, uid, input.date, input.status, input.drinks, input.note ?? null);
+      return writeOptimisticEntry(
+        qc,
+        uid,
+        input.date,
+        input.status,
+        input.drinks,
+        input.note ?? null,
+      );
     },
     onError: (_e, input, ctx) => {
       if (uid && ctx) restoreEntry(qc, uid, input.date, ctx);
@@ -319,6 +322,16 @@ export function useDayPhotos(entryId: string | undefined) {
   });
 }
 
+/** Dates with at least one photo — drives the calendar marker. */
+export function usePhotoDates() {
+  const { userId } = useSession();
+  return useQuery({
+    queryKey: keys.photoDates(userId ?? 'anon'),
+    queryFn: () => api.fetchPhotoDates(userId as string),
+    enabled: !!userId,
+  });
+}
+
 export function useAddDayPhoto(entryId: string | undefined) {
   const uid = useUid();
   const qc = useQueryClient();
@@ -337,8 +350,7 @@ export function useAddDayPhoto(entryId: string | undefined) {
 export function useUpdateDayPhotoCaption(entryId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { id: string; caption: string }) =>
-      api.updateDayPhotoCaption(v.id, v.caption),
+    mutationFn: (v: { id: string; caption: string }) => api.updateDayPhotoCaption(v.id, v.caption),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.dayPhotos(entryId ?? 'none') }),
   });
 }

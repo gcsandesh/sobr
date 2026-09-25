@@ -26,11 +26,14 @@ export function MonthCalendar({
   today,
   selected,
   onSelect,
+  photoDates,
 }: {
   entries: DailyEntryWithDrinks[];
   today: LocalDate;
   selected: LocalDate | null;
   onSelect: (date: LocalDate) => void;
+  /** Dates carrying at least one photo; marked so memories are findable later. */
+  photoDates?: ReadonlySet<string>;
 }) {
   const [anchor, setAnchor] = useState<LocalDate>(today);
 
@@ -98,11 +101,13 @@ export function MonthCalendar({
               key={d}
               disabled={future}
               onPress={() => onSelect(d)}
-              accessibilityLabel={`${d}${info ? `, ${info.status}` : ''}`}
+              accessibilityLabel={`${d}${info ? `, ${info.status}` : ''}${
+                photoDates?.has(d) ? ', has a photo' : ''
+              }`}
               style={{ width: `${100 / 7}%`, aspectRatio: 1, padding: 3 }}
             >
               <View
-                className="flex-1 rounded-xl items-center justify-center"
+                className="flex-1 rounded-xl items-center justify-center overflow-hidden"
                 style={{
                   // `card` is now the same warm white as the enclosing Card, so
                   // unlogged cells need their own tint to read as tiles — kept
@@ -140,6 +145,24 @@ export function MonthCalendar({
                       borderRadius: 3,
                       marginTop: 2,
                       backgroundColor: sc ? sc.fg : colors.textFaint,
+                    }}
+                  />
+                ) : null}
+                {/*
+                  Photo marker sits in the corner rather than under the number:
+                  that slot already belongs to the ✓ / drink dot, and a day can
+                  have both a status and a photo.
+                */}
+                {photoDates?.has(d) ? (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 3,
+                      right: 3,
+                      width: 5,
+                      height: 5,
+                      borderRadius: 3,
+                      backgroundColor: colors.accent,
                     }}
                   />
                 ) : null}

@@ -160,7 +160,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Verified end to end against the live project (row + object, 1.38 MB JPEG)
 - [x] Captions — tap a thumbnail for a detail sheet with the full photo, a note field,
       and remove (remove moved off the long-press, which was undiscoverable)
-- [ ] Show a photo indicator on the calendar / progress views
+- [x] Photo indicator on the calendar — corner dot, so a day can show both a status and a photo
 
 ## Future enhancements (when published to the App Store / Play Store)
 - [ ] **Apple sign-in** — add once there's a paid Apple Developer account + a dev/EAS build
