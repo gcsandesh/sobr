@@ -334,6 +334,15 @@ export function useAddDayPhoto(entryId: string | undefined) {
   });
 }
 
+export function useUpdateDayPhotoCaption(entryId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; caption: string }) =>
+      api.updateDayPhotoCaption(v.id, v.caption),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.dayPhotos(entryId ?? 'none') }),
+  });
+}
+
 export function useDeleteDayPhoto(entryId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({

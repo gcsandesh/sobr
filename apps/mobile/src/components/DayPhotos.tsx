@@ -1,27 +1,34 @@
-import { useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { BottomSheet } from './BottomSheet';
 import { PlusIcon } from './icons';
-import { SectionHeader, Txt } from './ui';
-import { useAddDayPhoto, useDayPhotos, useDeleteDayPhoto } from '../data/hooks';
-import { confirmAction } from '../lib/confirm';
+import { Button, SectionHeader, Txt } from './ui';
+import {
+  useAddDayPhoto,
+  useDayPhotos,
+  useDeleteDayPhoto,
+  useUpdateDayPhotoCaption,
+} from '../data/hooks';
 import { errorMessage } from '../lib/errorMessage';
 import { colors } from '../theme';
 
 const THUMB = 96;
 
+type Photo = { id: string; url: string; objectPath: string; caption: string | null };
+
 /**
  * Photo strip for one tracked day — "track memories as well".
  *
  * Photos hang off the day's entry row, so this stays a prompt until the day is
- * saved: without an entry id there is nothing to attach to. Uploading also
- * needs the row to exist for the insert policy's ownership check to pass.
+ * saved: without an entry id there is nothing to attach to, and the insert
+ * policy's ownership check needs the parent row to exist.
  */
 export function DayPhotos({ entryId }: { entryId: string | undefined }) {
   const photos = useDayPhotos(entryId);
   const add = useAddDayPhoto(entryId);
-  const remove = useDeleteDayPhoto(entryId);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState<Photo | null>(null);
 
   async function pick(from: 'library' | 'camera') {
     setError(null);
@@ -52,25 +59,11 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
         : await ImagePicker.launchImageLibraryAsync(opts);
     if (res.canceled || !res.assets?.[0]) return;
 
-    const asset = res.assets[0];
     try {
-      await add.mutateAsync({ uri: asset.uri, mimeType: asset.mimeType });
+      await add.mutateAsync({ uri: res.assets[0].uri, mimeType: res.assets[0].mimeType });
     } catch (e) {
       setError(`Couldn’t add that photo — ${errorMessage(e, 'upload failed.')}`);
     }
-  }
-
-  function confirmRemove(photo: { id: string; objectPath: string }) {
-    confirmAction({
-      title: 'Remove photo?',
-      message: 'This deletes it from this day for good.',
-      confirmLabel: 'Remove',
-      onConfirm: () => {
-        remove.mutate(photo, {
-          onError: (e) => setError(`Couldn’t remove that — ${errorMessage(e, 'delete failed.')}`),
-        });
-      },
-    });
   }
 
   if (!entryId) {
@@ -84,7 +77,7 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
     );
   }
 
-  const items = photos.data ?? [];
+  const items = (photos.data ?? []) as Photo[];
 
   return (
     <View className="mt-6">
@@ -98,12 +91,20 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
           {items.map((p) => (
             <Pressable
               key={p.id}
-              onLongPress={() => confirmRemove(p)}
-              accessibilityLabel="Photo — long press to remove"
+              onPress={() => setOpen(p)}
+              accessibilityLabel={p.caption ?? 'Photo'}
               style={{ width: THUMB, height: THUMB }}
               className="rounded-xl overflow-hidden bg-surface-raised active:opacity-80"
             >
               <Image source={{ uri: p.url }} style={{ width: THUMB, height: THUMB }} />
+              {/* a captioned photo gets a quiet marker, so the strip shows which
+                  ones carry a note without room for the text itself */}
+              {p.caption ? (
+                <View
+                  className="absolute bottom-1 right-1 w-2 h-2 rounded-full"
+                  style={{ backgroundColor: colors.card }}
+                />
+              ) : null}
             </Pressable>
           ))}
 
@@ -130,11 +131,11 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
         </View>
       </ScrollView>
 
-      {items.length > 0 && (
-        <Txt variant="caption" className="mt-2">
-          Long press a photo to remove it · long press Add for the camera.
-        </Txt>
-      )}
+      <Txt variant="caption" className="mt-2">
+        {items.length > 0
+          ? 'Tap a photo to add a note or remove it · long press Add for the camera.'
+          : 'Long press Add for the camera.'}
+      </Txt>
 
       {photos.isError && (
         <Txt variant="body" className="text-slip text-sm mt-2">
@@ -146,6 +147,98 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
           {error}
         </Txt>
       )}
+
+      <PhotoSheet entryId={entryId} photo={open} onClose={() => setOpen(null)} />
     </View>
+  );
+}
+
+/**
+ * Detail sheet for one photo: the picture, a caption field, and remove.
+ *
+ * Remove lives here rather than on the thumbnail — a long-press-only delete is
+ * undiscoverable, and a destructive action hidden behind a gesture is the kind
+ * people find by accident.
+ */
+function PhotoSheet({
+  entryId,
+  photo,
+  onClose,
+}: {
+  entryId: string;
+  photo: Photo | null;
+  onClose: () => void;
+}) {
+  const save = useUpdateDayPhotoCaption(entryId);
+  const remove = useDeleteDayPhoto(entryId);
+  const [caption, setCaption] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  // Re-seed the field whenever a different photo opens; keying off photo.id
+  // avoids one photo's draft leaking into the next.
+  useEffect(() => {
+    setCaption(photo?.caption ?? '');
+    setError(null);
+  }, [photo?.id, photo?.caption]);
+
+  if (!photo) return null;
+
+  return (
+    <BottomSheet visible={!!photo} onClose={onClose} title="Photo">
+      <Image
+        source={{ uri: photo.url }}
+        style={{ width: '100%', height: 260, borderRadius: 16 }}
+        resizeMode="cover"
+      />
+
+      <Txt variant="label" className="mt-4 mb-2">
+        A note about this moment
+      </Txt>
+      <TextInput
+        value={caption}
+        onChangeText={setCaption}
+        placeholder="Where were you? Who with?"
+        placeholderTextColor={colors.textFaint}
+        multiline
+        maxLength={280}
+        className="bg-surface border border-border rounded-xl px-4 py-3 text-text font-sans text-base min-h-[80px]"
+      />
+
+      {error && (
+        <Txt variant="body" className="text-slip text-sm mt-2">
+          {error}
+        </Txt>
+      )}
+
+      <Button
+        label="Save note"
+        className="mt-4"
+        loading={save.isPending}
+        onPress={() =>
+          save.mutate(
+            { id: photo.id, caption },
+            {
+              onSuccess: onClose,
+              onError: (e) => setError(`Couldn’t save — ${errorMessage(e, 'try again.')}`),
+            },
+          )
+        }
+      />
+      <Button
+        label="Remove photo"
+        tone="ghost"
+        className="mt-2"
+        loading={remove.isPending}
+        onPress={() =>
+          remove.mutate(
+            { id: photo.id, objectPath: photo.objectPath },
+            {
+              onSuccess: onClose,
+              onError: (e) => setError(`Couldn’t remove — ${errorMessage(e, 'try again.')}`),
+            },
+          )
+        }
+      />
+    </BottomSheet>
   );
 }

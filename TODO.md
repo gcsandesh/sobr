@@ -158,7 +158,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] `DayPhotos` strip on the day screen: pick from library (long-press Add for camera),
       long-press a thumbnail to remove
 - [x] Verified end to end against the live project (row + object, 1.38 MB JPEG)
-- [ ] Captions — column exists (`day_photos.caption`), no UI yet
+- [x] Captions — tap a thumbnail for a detail sheet with the full photo, a note field,
+      and remove (remove moved off the long-press, which was undiscoverable)
 - [ ] Show a photo indicator on the calendar / progress views
 
 ## Future enhancements (when published to the App Store / Play Store)

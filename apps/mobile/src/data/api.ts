@@ -317,6 +317,16 @@ export async function addDayPhoto(params: {
   };
 }
 
+/** Set or clear a photo's caption. Empty input clears it rather than storing ''. */
+export async function updateDayPhotoCaption(photoId: string, caption: string): Promise<void> {
+  const trimmed = caption.trim();
+  const { error } = await supabase
+    .from('day_photos')
+    .update({ caption: trimmed || null })
+    .eq('id', photoId);
+  if (error) throw error;
+}
+
 /**
  * Remove a photo. The row goes first: if the object delete fails we are left
  * with an orphaned object (invisible, costs storage) rather than a row pointing
