@@ -33,7 +33,15 @@ import {
   Txt,
 } from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
-import { deviceTimeZone, useSettings, useUpdateSettings } from '../../src/data/hooks';
+import {
+  deviceTimeZone,
+  useAllEntries,
+  useHomeStats,
+  useSettings,
+  useUpdateSettings,
+} from '../../src/data/hooks';
+import { exportCsv } from '../../src/lib/exportData';
+import { errorMessage } from '../../src/lib/errorMessage';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
 import { notificationsSupported } from '../../src/lib/notifications';
 import { colors } from '../../src/theme';
@@ -84,6 +92,22 @@ export default function Settings() {
   const update = useUpdateSettings();
   const notif = useNotificationPrefs();
   const [sheet, setSheet] = useState<SheetKey>(null);
+  const entriesQ = useAllEntries();
+  const { today } = useHomeStats();
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function doExport() {
+    setExportError(null);
+    setExporting(true);
+    try {
+      await exportCsv(entriesQ.data ?? [], today);
+    } catch (e) {
+      setExportError(errorMessage(e, 'Couldn’t create the file. Try again?'));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const s = settings.data;
   const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
@@ -229,6 +253,26 @@ export default function Settings() {
           disabled={!s || update.isPending}
           onValueChange={(v) => update.mutate({ emailWeekly: v })}
         />
+      </Card>
+
+      {/* ── Your data ───────────────────────────────────────────────── */}
+      <SectionHeader
+        title="Your data"
+        caption={entriesQ.data ? `${entriesQ.data.length} days logged` : undefined}
+      />
+      <Card className="mb-6">
+        <ListRow
+          icon={<DocIcon color={colors.accent} />}
+          title={exporting ? 'Preparing your file…' : 'Export as spreadsheet'}
+          subtitle="Every day as a CSV file: status, units, spend, notes"
+          right={<RowValue />}
+          onPress={exporting || !entriesQ.data ? undefined : () => void doExport()}
+        />
+        {exportError ? (
+          <Txt variant="caption" className="text-slip mt-1" accessibilityRole="alert">
+            {exportError}
+          </Txt>
+        ) : null}
       </Card>
 
       {/* ── Help & info ─────────────────────────────────────────────── */}

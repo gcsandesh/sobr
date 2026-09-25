@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View } from 'react-native';
+import { RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { formatCurrency } from '@sobr/config';
@@ -18,10 +18,12 @@ import {
 } from '../../src/components/ui';
 import { useAllEntries, useHomeStats, useSettings, useTimeZone } from '../../src/data/hooks';
 import { colors } from '../../src/theme';
+import { useRefresh } from '../../src/data/useRefresh';
 
 const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export default function Progress() {
+  const refresh = useRefresh();
   const router = useRouter();
   const stats = useHomeStats();
   const settings = useSettings();
@@ -45,7 +47,17 @@ export default function Progress() {
   const isEmpty = !stats.isError && !stats.isLoading && !stats.hasAnyData;
 
   return (
-    <Screen scroll>
+    <Screen
+        scroll
+        refreshControl={
+          <RefreshControl
+            refreshing={refresh.refreshing}
+            onRefresh={refresh.onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+          />
+        }
+      >
       <Txt variant="title" className="mt-2 mb-6">
         Progress
       </Txt>

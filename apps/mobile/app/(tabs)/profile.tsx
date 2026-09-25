@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GROWTH_STAGES } from '@sobr/config';
 import { BookIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
@@ -15,12 +15,14 @@ import {
 import { useSession } from '../../src/data/SessionProvider';
 import { useHomeStats } from '../../src/data/hooks';
 import { colors } from '../../src/theme';
+import { useRefresh } from '../../src/data/useRefresh';
 
 /**
  * The user's own page: who they are, the numbers that matter, and the growth
  * journey so far. Celebratory, never clinical — this is the trophy room.
  */
 export default function Profile() {
+  const refresh = useRefresh();
   const router = useRouter();
   const { email, session, greetingName } = useSession();
   const stats = useHomeStats();
@@ -33,7 +35,17 @@ export default function Profile() {
     : null;
 
   return (
-    <Screen scroll>
+    <Screen
+        scroll
+        refreshControl={
+          <RefreshControl
+            refreshing={refresh.refreshing}
+            onRefresh={refresh.onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+          />
+        }
+      >
       {/* identity */}
       <View className="items-center mt-6 mb-8">
         <Pressable

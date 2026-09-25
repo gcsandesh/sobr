@@ -11,3 +11,4 @@ export * from './freeze';
 export * from './growth';
 export * from './milestones';
 export * from './aggregates';
+export * from './export';

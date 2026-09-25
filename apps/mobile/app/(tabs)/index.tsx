@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
@@ -45,6 +45,7 @@ import { haptics } from '../../src/lib/haptics';
 import { formatDay } from '../../src/lib/dates';
 import { useSession } from '../../src/data/SessionProvider';
 import { colors } from '../../src/theme';
+import { useRefresh } from '../../src/data/useRefresh';
 
 /**
  * The hero card's own mini-palette: a deep teal dusk. Deliberately darker than
@@ -64,6 +65,7 @@ const HERO = {
 } as const;
 
 export default function Today() {
+  const refresh = useRefresh();
   const router = useRouter();
   const { displayName } = useSession();
   const stats = useHomeStats();
@@ -156,7 +158,17 @@ export default function Today() {
 
   return (
     <>
-      <Screen scroll>
+      <Screen
+        scroll
+        refreshControl={
+          <RefreshControl
+            refreshing={refresh.refreshing}
+            onRefresh={refresh.onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+          />
+        }
+      >
         {growth.celebration && (
           <GrowthCelebration meta={growth.celebration} onDismiss={growth.dismiss} />
         )}

@@ -44,7 +44,8 @@ export default function ForgotPassword() {
 
   async function reset() {
     setError(null);
-    if (!/^\d{6}$/.test(code.trim())) return setError('Enter the 6-digit code from the email.');
+    // Supabase's OTP length is configurable (6–10); accept any of them.
+    if (!/^\d{6,10}$/.test(code.trim())) return setError('Enter the code from the email.');
     if (password.length < MIN_PASSWORD)
       return setError(`Your new password needs at least ${MIN_PASSWORD} characters.`);
     setLoading(true);
@@ -70,7 +71,7 @@ export default function ForgotPassword() {
         <Txt variant="title">{step === 'email' ? 'Reset your password' : 'Check your email'}</Txt>
         <Txt variant="bodyMuted" className="mt-2 mb-6">
           {step === 'email'
-            ? 'Enter the email you signed up with and we’ll send you a 6-digit code.'
+            ? 'Enter the email you signed up with and we’ll email you a short code.'
             : `We sent a code to ${email.trim()}. It can take a minute to arrive, so check spam too.`}
         </Txt>
 
@@ -91,9 +92,9 @@ export default function ForgotPassword() {
           ) : (
             <>
               <TextField
-                label="6-digit code"
+                label="Code from the email"
                 value={code}
-                onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
+                onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 10))}
                 placeholder="123456"
                 keyboardType="number-pad"
                 autoComplete="one-time-code"

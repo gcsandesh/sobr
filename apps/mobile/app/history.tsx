@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, SectionList, View } from 'react-native';
+import { Pressable, RefreshControl, SectionList, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { roundUnits, totalUnits, type DailyEntryWithDrinks } from '@sobr/core';
 import { BookIcon, ChevronRightIcon } from '../src/components/icons';
@@ -15,6 +15,7 @@ import {
 import { useAllEntries, usePhotoDates } from '../src/data/hooks';
 import { formatDay, formatMonth } from '../src/lib/dates';
 import { colors } from '../src/theme';
+import { useRefresh } from '../src/data/useRefresh';
 
 type Filter = 'all' | 'win' | 'slip' | 'notes';
 
@@ -35,6 +36,7 @@ export default function History() {
   const entriesQ = useAllEntries();
   const photoDatesQ = usePhotoDates();
   const [filter, setFilter] = useState<Filter>('all');
+  const refresh = useRefresh();
 
   const sections = useMemo(() => {
     const photoDates = new Set(photoDatesQ.data ?? []);
@@ -77,6 +79,14 @@ export default function History() {
           sections={sections}
           keyExtractor={(e) => e.id}
           stickySectionHeadersEnabled={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refresh.refreshing}
+              onRefresh={refresh.onRefresh}
+              tintColor={colors.accent}
+              colors={[colors.accent]}
+            />
+          }
           contentContainerStyle={{
             padding: 20,
             paddingBottom: 48,
