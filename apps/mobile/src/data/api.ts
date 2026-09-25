@@ -153,7 +153,11 @@ export async function fetchEntry(
   return data ? mapEntry(data) : null;
 }
 
-/** Upsert the day's status (unique on user+date) and return the entry id. */
+/**
+ * Upsert the day's status (unique on user+date) and return the entry id.
+ * `note` is only written when passed: callers that don't touch the note (the
+ * one-tap win, quick-add, freezes) must not wipe a reflection already there.
+ */
 export async function upsertEntryStatus(
   userId: string,
   date: LocalDate,
@@ -163,7 +167,12 @@ export async function upsertEntryStatus(
   const { data, error } = await supabase
     .from('daily_entries')
     .upsert(
-      { user_id: userId, entry_date: date, status, note: note ?? null },
+      {
+        user_id: userId,
+        entry_date: date,
+        status,
+        ...(note !== undefined ? { note: note?.trim() || null } : {}),
+      },
       { onConflict: 'user_id,entry_date' },
     )
     .select('id')

@@ -171,10 +171,12 @@ function writeOptimisticEntry(
   date: LocalDate,
   status: EntryStatus,
   drinks: DrinkInput[],
-  note: string | null,
+  /** `undefined` keeps whatever note the day already has. */
+  note: string | null | undefined,
 ): EntrySnapshot {
   const prevAll = qc.getQueryData<DailyEntryWithDrinks[]>(keys.allEntries(uid));
   const prevEntry = qc.getQueryData<DailyEntryWithDrinks | null>(keys.entry(uid, date));
+  if (note === undefined) note = prevEntry?.note ?? null;
   const id = prevEntry?.id ?? `optimistic-${date}`;
   const entry: DailyEntryWithDrinks = {
     id,
@@ -244,7 +246,7 @@ export function useSaveDay() {
         input.date,
         input.status,
         input.drinks,
-        input.note ?? null,
+        input.note,
       );
     },
     onError: (_e, input, ctx) => {

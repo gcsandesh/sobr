@@ -22,6 +22,7 @@ import { PlusIcon, TargetIcon } from '../../src/components/icons';
 import { Button, Card, Row, SectionHeader, Txt } from '../../src/components/ui';
 import { useDayEntry, useDeleteDay, useSaveDay, useSettings } from '../../src/data/hooks';
 import { confirmAction } from '../../src/lib/confirm';
+import { formatDay } from '../../src/lib/dates';
 import { colors } from '../../src/theme';
 
 /**
@@ -49,6 +50,7 @@ export default function DayLogger() {
   const [drinks, setDrinks] = useState<EditableDrink[]>([]);
   const [manualStatus, setManualStatus] = useState<'win' | 'slip'>('win');
   const [showCustom, setShowCustom] = useState(false);
+  const [note, setNote] = useState('');
   const [hydrated, setHydrated] = useState(false);
 
   // hydrate local state from the saved entry once
@@ -67,6 +69,7 @@ export default function DayLogger() {
         })),
       );
       if (e.status === 'win' || e.status === 'slip') setManualStatus(e.status);
+      setNote(e.note ?? '');
     }
     setHydrated(true);
   }, [hydrated, entryQ.isLoading, entryQ.data]);
@@ -117,7 +120,7 @@ export default function DayLogger() {
   }
 
   async function save() {
-    await saveDay.mutateAsync({ date: day, status, drinks });
+    await saveDay.mutateAsync({ date: day, status, drinks, note });
     router.back();
   }
 
@@ -144,7 +147,7 @@ export default function DayLogger() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <Stack.Screen options={{ title: prettyDate(day), headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text }} />
+      <Stack.Screen options={{ title: formatDay(day) }} />
       <ScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
         keyboardShouldPersistTaps="handled"
@@ -295,6 +298,31 @@ export default function DayLogger() {
         </Pressable>
         {showCustom && <CustomForm onAdd={(d) => setDrinks((prev) => [...prev, d])} />}
 
+        {/* reflection — optional, private, and never required to save */}
+        <SectionHeader
+          title="Reflection"
+          caption={note.length > 400 ? `${500 - note.length} left` : 'optional'}
+          className="mt-6 mb-3"
+        />
+        <View className="rounded-2xl border border-border bg-surface">
+          <TextInput
+            value={note}
+            onChangeText={setNote}
+            multiline
+            maxLength={500}
+            placeholder={
+              isToday
+                ? 'How did today feel? What helped, what was hard?'
+                : 'Anything you want to remember about this day?'
+            }
+            placeholderTextColor={colors.textFaint}
+            accessibilityLabel="Reflection note"
+            textAlignVertical="top"
+            className="text-text font-sans text-base px-4 py-3"
+            style={{ minHeight: 110 }}
+          />
+        </View>
+
         <DayPhotos entryId={entryQ.data?.id} />
       </ScrollView>
 
@@ -355,15 +383,4 @@ function CustomForm({ onAdd }: { onAdd: (d: DrinkInput) => void }) {
       />
     </Card>
   );
-}
-
-function prettyDate(d: string): string {
-  const [y, m, day] = d.split('-').map(Number);
-  if (!y || !m || !day) return d;
-  return new Date(Date.UTC(y, m - 1, day)).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
 }
