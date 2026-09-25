@@ -110,7 +110,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 ## M7 — Settings · [progress](PROGRESS.md#m3-app)
 - [x] Change win mode + daily limit value
 - [x] Currency selector (default USD)
-- [~] Time zone setting — _captured from device at onboarding + shown; in-app editor pending_
+- [x] Time zone setting — captured at onboarding; editable from Settings (picker sheet)
 - [x] Account: show email, sign out
 - [x] Account: delete account/data (calls purge routine) with confirm
 - [~] Data export (CSV/JSON) — _dropped: data lives in the DB and syncs on login, so a manual export isn't needed. Model still supports adding a backup file later._
@@ -147,6 +147,26 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] frontend-design skill pass: forest-at-dusk hero (the app's one bold dominant surface — dark gradient, glow, warm Fraunces numeral), editorial greeting headline, staggered page-load reveal on Home
 - [x] Google sign-in button commented out (untestable in Expo Go) — re-enable is the LAST TODO item
 - [ ] User must test both notification schedules on a device (needs dev build for full fidelity)
+
+## Phase 5 · Complete app + release pipeline · [progress](PROGRESS.md#phase5-complete)
+- [x] UI kit: TextField, OptionList, ToggleRow, RowValue, icons; max-width layout; tab labels
+- [x] Forgot password (code-based recovery) + change password
+- [x] Display name (auth metadata): onboarding step 1 + Account screen
+- [x] Account screen (name, password, sign out, delete); Settings/Profile de-duplicated
+- [x] Settings: picker sheets for win rule / currency / time zone
+- [x] Day reflection notes (+ fix: saves without a note no longer wipe it)
+- [x] History screen (grouped by month, filters, notes inline)
+- [x] Support screen (helplines, peer groups, stopping-safely note)
+- [x] Privacy policy + terms screens (`src/content/legal.ts`)
+- [x] Not-found route
+- [x] Email hook: per-action copy, teal palette
+- [x] GitHub Actions: tests + typecheck + release APK → GitHub Release
+- [x] DEPLOY.md checklist
+- [ ] _User step:_ add `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` repo secrets
+- [ ] _User step:_ redeploy `send-email` edge function
+- [ ] _User step:_ phone smoke test (DEPLOY.md §4)
+- [ ] Dark mode (deferred: see PROGRESS → Phase 5 decisions)
+- [ ] Mood on check-in (needs a migration)
 
 ---
 

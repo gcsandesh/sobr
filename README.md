@@ -11,7 +11,7 @@ long-term progress. Built mobile-first (Expo) with a web companion view.
 > **Picking up the project?** Start with **[HANDOVER.md](./HANDOVER.md)** — the single entry point
 > (status, decisions, gotchas, how to verify, where to continue). Then **[PROJECT.md](./PROJECT.md)**
 > (what/why), **[PLAN.md](./PLAN.md)** (architecture), **[TODO.md](./TODO.md)** (tasks), and
-> **[PROGRESS.md](./PROGRESS.md)** (chronological log).
+> **[PROGRESS.md](./PROGRESS.md)** (chronological log). Shipping a build: **[DEPLOY.md](./DEPLOY.md)**.
 
 ## Monorepo layout
 
@@ -47,7 +47,7 @@ cp .env.example .env       # then fill in EXPO_PUBLIC_SUPABASE_URL + ANON key
 ```bash
 pnpm web        # the app in a browser
 pnpm app        # Expo dev server (scan QR with Expo Go on a device)
-pnpm test:core  # run the domain-logic test suite (71 tests)
+pnpm test:core  # run the domain-logic test suite
 ```
 
 Until your Supabase env vars are set, the app shows a friendly setup screen.

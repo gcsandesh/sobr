@@ -7,7 +7,7 @@
 > [PROGRESS.md](./PROGRESS.md) (chronological log with "what the user must do" per step).
 > Detailed change history lives in `git log` (one commit per feature).
 
-Last updated: 2026-07-11.
+Last updated: 2026-09-25.
 
 ---
 
@@ -37,6 +37,13 @@ a **Profile tab** (avatar, stats grid, growth-journey achievement track), redesi
 stat pills), and **opt-in motivational notifications** — a daily check-in plus a rotating
 "daily motivation" note (7 weekly local triggers, different copy per weekday, no servers).
 Tab bar is now Home · Progress · Profile · Settings. See `phase4-engagement` in PROGRESS.md.
+
+**Phase 5 (2026-09-25):** the app is screen-complete: password reset, Account, History
+(with reflection notes), Support, Privacy/Terms, 404, and redesigned Settings/Profile. A
+release **APK is built by GitHub Actions** (`.github/workflows/android-apk.yml`) and
+published as a GitHub Release, because this cloud dev environment can't reach the Android
+SDK or EAS. Release process: **[DEPLOY.md](./DEPLOY.md)**. Decisions: `phase5-complete` in
+PROGRESS.md.
 
 ---
 
