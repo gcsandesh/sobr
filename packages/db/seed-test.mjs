@@ -9,12 +9,26 @@ if (!process.env.DATABASE_URL) {
 }
 
 /**
- * Seed realistic July 2026 history for the test account so every screen has
- * real data: a believable mix of wins, two slips with drinks+costs, notes, a
- * banked freeze, and a live 13-day streak. Idempotent: wipes and re-inserts
- * only this user's rows.
+ * Seed realistic history for a test account so every screen has real data: a
+ * believable mix of wins, two slips with drinks+costs, notes, a banked freeze,
+ * and a live 13-day streak. Idempotent: wipes and re-inserts only this user's
+ * rows.
+ *
+ * Dates are relative to today, not fixed: a hardcoded month silently decays
+ * into "streak 0, nothing recent" once real time moves past it, which is
+ * exactly when the seeded screens stop being useful.
+ *
+ * Usage: node seed-test.mjs [email]
  */
-const EMAIL = 'gcsandesh01@gmail.com';
+const EMAIL = process.argv[2] ?? 'gcsandesh01@gmail.com';
+
+/** `n` days before today, as a local civil date (YYYY-MM-DD). */
+const SPAN = 27;
+function dayOffset(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
 const sql = postgres(process.env.DATABASE_URL, { ssl: 'require', max: 1 });
 
 const [user] = await sql`select id from auth.users where email = ${EMAIL}`;
@@ -34,30 +48,29 @@ await sql`delete from daily_entries where user_id = ${uid}`; // drinks cascade
 await sql`delete from freeze_grants where user_id = ${uid}`;
 
 const days = [];
-// Jul 1–5: clear start
-for (let d = 1; d <= 5; d++) days.push({ d, status: 'win' });
-// Jul 6: slip — friends over, 2 strong beers
-days.push({
-  d: 6,
+// oldest → newest, so index 0 is SPAN-1 days ago and the last entry is today.
+// Shape: 5 clear · slip · 7 clear (earns the freeze) · slip · 13 clear run.
+const add = (offset, extra = {}) => days.push({ date: dayOffset(offset), ...extra });
+
+for (let i = 0; i < 5; i++) add(SPAN - 1 - i, { status: 'win' });
+add(SPAN - 6, {
   status: 'slip',
   note: 'Friends over for the football match. Two beers, stopped there.',
   drinks: [{ preset_key: 'beer_strong', name: 'Beer — strong / craft', volume_ml: 500, abv: 6.5, cost: 600, quantity: 2 }],
 });
-// Jul 7–13: 7 clear days (earns the freeze)
-for (let d = 7; d <= 13; d++) days.push({ d, status: 'win', note: d === 13 ? 'One full week. Sleeping so much better.' : null });
-// Jul 14: slip — work dinner, wine
-days.push({
-  d: 14,
+// the 7-day run that earns the freeze
+for (let i = 0; i < 7; i++) add(SPAN - 7 - i, { status: 'win', note: i === 6 ? 'One full week. Sleeping so much better.' : null });
+const freezeEarnedOn = dayOffset(SPAN - 13);
+add(SPAN - 14, {
   status: 'slip',
   note: 'Work dinner. One glass turned into two.',
   drinks: [{ preset_key: 'wine_glass', name: 'Wine — glass', volume_ml: 150, abv: 12, cost: 550, quantity: 2 }],
 });
-// Jul 15–27: current 13-day run
-for (let d = 15; d <= 27; d++)
-  days.push({ d, status: 'win', note: d === 21 ? 'Craving hit hard after work — went for a walk instead.' : null });
+// current 13-day run, ending today
+for (let i = 0; i < 13; i++) add(12 - i, { status: 'win', note: i === 6 ? 'Craving hit hard after work — went for a walk instead.' : null });
 
 for (const day of days) {
-  const date = `2026-07-${String(day.d).padStart(2, '0')}`;
+  const date = day.date;
   const ts = `${date}T15:00:00Z`;
   const [entry] = await sql`
     insert into daily_entries (user_id, entry_date, status, note, created_at, updated_at)
@@ -73,7 +86,7 @@ for (const day of days) {
 // one banked freeze, earned when the Jul 7–13 run hit 7
 await sql`
   insert into freeze_grants (user_id, granted_at, granted_for_streak)
-  values (${uid}, '2026-07-13T15:00:00Z', 7)`;
+  values (${uid}, ${`${freezeEarnedOn}T15:00:00Z`}, 7)`;
 
 const check = await sql`
   select status, count(*) from daily_entries where user_id = ${uid} group by status order by 1`;

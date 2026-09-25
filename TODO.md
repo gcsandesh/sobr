@@ -95,7 +95,9 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Current streak + longest streak display
 - [x] Banked freeze tokens display (cap 3)
 - [x] "Use a freeze to protect your streak" flow on a slip day
-- [ ] Verify freeze award/use round-trips through DB
+- [x] Verify freeze award/use round-trips through DB — award (grant row → 1/3 in UI) and
+      use (slip → freeze, `used_at` + `used_on_entry_id` set, streak 0 → 13) both confirmed
+      against the live project
 
 ## M6 — Calendar + stats · [progress](PROGRESS.md#m3-app)
 - [x] Month-grid calendar, color-coded (win/slip/frozen/future-disabled)
