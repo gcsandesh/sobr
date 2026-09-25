@@ -1,11 +1,13 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { GROWTH_STAGES } from '@sobr/config';
-import { SnowflakeIcon, LogOutIcon } from '../../src/components/icons';
+import { BookIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
 import {
   Avatar,
   Card,
   ListRow,
   Row,
+  RowValue,
   Screen,
   SectionHeader,
   Txt,
@@ -19,7 +21,8 @@ import { colors } from '../../src/theme';
  * journey so far. Celebratory, never clinical — this is the trophy room.
  */
 export default function Profile() {
-  const { email, session, signOut } = useSession();
+  const router = useRouter();
+  const { email, session, greetingName } = useSession();
   const stats = useHomeStats();
 
   const memberSince = session?.user.created_at
@@ -33,9 +36,21 @@ export default function Profile() {
     <Screen scroll>
       {/* identity */}
       <View className="items-center mt-6 mb-8">
-        <Avatar name={email} size={84} />
+        <Pressable
+          onPress={() => router.push('/account')}
+          accessibilityRole="button"
+          accessibilityLabel="Edit your name and account"
+          className="active:opacity-80"
+        >
+          <Avatar name={greetingName} size={84} />
+          <View
+            className="absolute -right-1 -bottom-1 w-8 h-8 rounded-full items-center justify-center bg-surface border border-border"
+          >
+            <PencilIcon color={colors.accent} size={16} />
+          </View>
+        </Pressable>
         <Txt variant="title" className="mt-4">
-          {displayName(email)}
+          {greetingName ?? 'You'}
         </Txt>
         {/* omit entirely when there's nothing to say — a lone em-dash reads as a bug */}
         {(email || memberSince) && (
@@ -131,12 +146,14 @@ export default function Profile() {
         </Row>
       </Card>
 
-      {/* account actions */}
+      {/* read back */}
       <Card>
         <ListRow
-          icon={<LogOutIcon color={colors.textMuted} />}
-          title="Sign out"
-          onPress={() => void signOut()}
+          icon={<BookIcon color={colors.accent} />}
+          title="History & notes"
+          subtitle="Every day you’ve checked in, newest first"
+          right={<RowValue />}
+          onPress={() => router.push('/history')}
         />
       </Card>
 
@@ -158,13 +175,4 @@ function StatCard({ value, label }: { value: string; label: string }) {
       </Txt>
     </Card>
   );
-}
-
-/** A friendly display name from the email's local part ("jane.doe" → "Jane Doe"). */
-function displayName(email: string | null): string {
-  if (!email) return 'You';
-  const local = email.split('@')[0] ?? '';
-  const words = local.split(/[._-]+/).filter(Boolean);
-  if (words.length === 0) return 'You';
-  return words.map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ');
 }

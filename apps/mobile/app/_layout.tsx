@@ -22,6 +22,26 @@ import { SessionProvider, useSession } from '../src/data/SessionProvider';
 import { useSettings } from '../src/data/hooks';
 import { colors } from '../src/theme';
 
+const DETAIL_SCREENS = [
+  'day/[date]',
+  'about',
+  'account',
+  'history',
+  'support',
+  'legal/privacy',
+  'legal/terms',
+] as const;
+
+const detailHeader = {
+  headerShown: true,
+  presentation: 'card',
+  headerBackButtonDisplayMode: 'minimal',
+  headerShadowVisible: false,
+  headerStyle: { backgroundColor: colors.bg },
+  headerTintColor: colors.text,
+  headerTitleStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 17 },
+} as const;
+
 function Splash() {
   return <View className="flex-1 bg-bg" />;
 }
@@ -75,6 +95,9 @@ function Gate() {
       if (group !== '(auth)') router.replace('/(auth)/sign-in');
       return;
     }
+    // Redeeming a reset code signs the user in *before* the new password is
+    // saved. Leave the reset screen alone; it routes onward itself once done.
+    if (group === '(auth)' && segments[1] === 'forgot-password') return;
     // signed in — wait for settings to resolve before deciding onboarding
     if (settings.isLoading) return;
     const onboarded = settings.data?.onboarded ?? false;
@@ -94,26 +117,13 @@ function Gate() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="setup" />
       {/*
-        `headerBackButtonDisplayMode: 'minimal'` shows just the chevron — without
-        it the back button inherits the parent route's name and renders the raw
-        group label "(tabs)".
+        Pushed detail screens share one calm native header. `minimal` shows just
+        the chevron; without it the back button inherits the parent route's
+        name and renders the raw group label "(tabs)".
       */}
-      <Stack.Screen
-        name="day/[date]"
-        options={{
-          headerShown: true,
-          presentation: 'card',
-          headerBackButtonDisplayMode: 'minimal',
-        }}
-      />
-      <Stack.Screen
-        name="about"
-        options={{
-          headerShown: true,
-          presentation: 'card',
-          headerBackButtonDisplayMode: 'minimal',
-        }}
-      />
+      {DETAIL_SCREENS.map((name) => (
+        <Stack.Screen key={name} name={name} options={detailHeader} />
+      ))}
       <Stack.Screen name="steady" options={{ presentation: 'modal' }} />
     </Stack>
   );

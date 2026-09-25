@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
+import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { formatCurrency } from '@sobr/config';
 import { addDays, milestoneProgress, nextMilestone, roundUnits, todayInTz, totalUnits } from '@sobr/core';
-import { ChartIcon } from '../../src/components/icons';
+import { BookIcon, ChartIcon } from '../../src/components/icons';
 import {
   Card,
   EmptyState,
+  ListRow,
   Notice,
   Row,
+  RowValue,
   Screen,
   SectionHeader,
   Txt,
@@ -19,6 +22,7 @@ import { colors } from '../../src/theme';
 const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export default function Progress() {
+  const router = useRouter();
   const stats = useHomeStats();
   const settings = useSettings();
   const tz = useTimeZone();
@@ -93,6 +97,18 @@ export default function Progress() {
         </>
       )}
 
+      {!isEmpty && (
+        <Card className="mb-6">
+          <ListRow
+            icon={<BookIcon color={colors.accent} />}
+            title="History & notes"
+            subtitle="Read back every day, with your reflections"
+            right={<RowValue />}
+            onPress={() => router.push('/history')}
+          />
+        </Card>
+      )}
+
       <View className={isEmpty ? 'mt-6' : ''}>
         <Milestones totalWinDays={stats.lifetimeWins} />
       </View>
@@ -113,7 +129,7 @@ function Milestones({ totalWinDays }: { totalWinDays: number }) {
         title="Milestones"
         caption={
           next
-            ? `${next.days - totalWinDays} clear ${next.days - totalWinDays === 1 ? 'day' : 'days'} to ${next.label.toLowerCase()}`
+            ? `${next.days - totalWinDays} to go`
             : 'all reached'
         }
       />

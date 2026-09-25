@@ -1,34 +1,40 @@
-import { useState } from 'react';
-import { Platform, Switch, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { WinMode } from '@sobr/core';
-import { CURRENCIES } from '@sobr/config';
+import { CURRENCIES, currencyByCode } from '@sobr/config';
+import { BottomSheet } from '../../src/components/BottomSheet';
 import {
   BellIcon,
   ChartIcon,
-  ChevronRightIcon,
+  DocIcon,
   GlobeIcon,
-  LogOutIcon,
+  InfoIcon,
+  LifebuoyIcon,
+  ShieldIcon,
   SparkIcon,
   TargetIcon,
   WalletIcon,
 } from '../../src/components/icons';
 import {
+  Avatar,
   Button,
   Card,
   Chip,
   Divider,
   ListRow,
   Notice,
-  Row,
+  OptionList,
+  RowValue,
   Screen,
   SectionHeader,
+  TextField,
+  ToggleRow,
   Txt,
 } from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
-import { useDeleteAccount, useSettings, useUpdateSettings, deviceTimeZone } from '../../src/data/hooks';
+import { deviceTimeZone, useSettings, useUpdateSettings } from '../../src/data/hooks';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
-import { confirmAction } from '../../src/lib/confirm';
 import { notificationsSupported } from '../../src/lib/notifications';
 import { colors } from '../../src/theme';
 
@@ -40,11 +46,19 @@ const formatHour = (h: number) => {
   return `${hour12}:00 ${period}`;
 };
 
-const MODE_LABELS: Record<WinMode, string> = {
-  zero: 'A clear day',
-  limit: 'Within my limit',
-  manual: 'I’ll decide each day',
-};
+const MODES: { value: WinMode; title: string; subtitle: string }[] = [
+  { value: 'zero', title: 'A clear day', subtitle: 'Any logged drink makes the day a slip.' },
+  {
+    value: 'limit',
+    title: 'Within my limit',
+    subtitle: 'Staying at or under a daily limit counts as a win.',
+  },
+  {
+    value: 'manual',
+    title: 'I’ll decide each day',
+    subtitle: 'Reflect, then call the day yourself.',
+  },
+];
 
 /** Common IANA zones offered alongside the device zone. */
 const COMMON_ZONES = [
@@ -61,32 +75,31 @@ const COMMON_ZONES = [
   'UTC',
 ];
 
+type SheetKey = 'mode' | 'currency' | 'zone' | null;
+
 export default function Settings() {
   const router = useRouter();
-  const { email, signOut } = useSession();
+  const { email, greetingName } = useSession();
   const settings = useSettings();
   const update = useUpdateSettings();
-  const deleteAccount = useDeleteAccount();
   const notif = useNotificationPrefs();
+  const [sheet, setSheet] = useState<SheetKey>(null);
 
   const s = settings.data;
   const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
-  const [showZones, setShowZones] = useState(false);
+  useEffect(() => {
+    if (s) setLimit(String(s.dailyLimitUnits));
+  }, [s?.dailyLimitUnits]);
 
   const device = deviceTimeZone();
   const zones = [device, ...COMMON_ZONES.filter((z) => z !== device)];
+  const modeTitle = MODES.find((m) => m.value === s?.winMode)?.title;
+  const modeValue =
+    s?.winMode === 'limit' ? `${modeTitle} · ${s.dailyLimitUnits}u` : modeTitle ?? '';
 
   function saveLimit() {
-    update.mutate({ dailyLimitUnits: Number(limit) || 2 });
-  }
-
-  function confirmDelete() {
-    confirmAction({
-      title: 'Delete everything?',
-      message: 'This permanently removes your account and all your data. This can’t be undone.',
-      confirmLabel: 'Delete',
-      onConfirm: () => deleteAccount.mutate(),
-    });
+    const n = Number(limit);
+    update.mutate({ dailyLimitUnits: Number.isFinite(n) && n > 0 ? n : 2 });
   }
 
   return (
@@ -95,82 +108,42 @@ export default function Settings() {
         Settings
       </Txt>
 
-      {/* ── Preferences ─────────────────────────────────────────────── */}
-      <SectionHeader title="Preferences" />
+      {/* ── Account ─────────────────────────────────────────────────── */}
+      <Card className="mb-6">
+        <ListRow
+          icon={<Avatar name={greetingName} size={40} />}
+          title={greetingName ?? 'Your account'}
+          subtitle={email ?? undefined}
+          right={<RowValue />}
+          onPress={() => router.push('/account')}
+          accessibilityLabel="Account: name, password, sign out"
+        />
+      </Card>
+
+      {/* ── Your rules ──────────────────────────────────────────────── */}
+      <SectionHeader title="Your rules" />
       <Card className="mb-6">
         <ListRow
           icon={<TargetIcon color={colors.accent} />}
           title="What counts as a win"
-          subtitle={s ? MODE_LABELS[s.winMode] : '—'}
+          right={<RowValue value={modeValue} />}
+          onPress={() => setSheet('mode')}
         />
-        <View className="flex-row flex-wrap gap-2 mb-2">
-          {(Object.keys(MODE_LABELS) as WinMode[]).map((mode) => (
-            <Chip
-              key={mode}
-              label={MODE_LABELS[mode]}
-              selected={s?.winMode === mode}
-              onPress={() => update.mutate({ winMode: mode })}
-            />
-          ))}
-        </View>
-        {s?.winMode === 'limit' && (
-          <Row className="justify-between items-center mb-2">
-            <Txt variant="label">Daily limit (units)</Txt>
-            <Row className="gap-2">
-              <TextInput
-                value={limit}
-                onChangeText={setLimit}
-                onEndEditing={saveLimit}
-                keyboardType="decimal-pad"
-                maxLength={4}
-                className="bg-surface-raised border border-border rounded-lg px-3 py-2 text-text font-sans w-16 text-center"
-                placeholderTextColor={colors.textFaint}
-              />
-              <Button label="Save" tone="secondary" onPress={saveLimit} />
-            </Row>
-          </Row>
-        )}
-
-        <Divider className="my-3" />
-
+        <Divider className="my-1" />
         <ListRow
           icon={<WalletIcon color={colors.accent} />}
           title="Currency"
-          subtitle={s?.currency ?? 'USD'}
+          right={<RowValue value={s ? `${currencyByCode(s.currency).symbol} ${s.currency}` : ''} />}
+          onPress={() => setSheet('currency')}
         />
-        <View className="flex-row flex-wrap gap-2 mb-2">
-          {CURRENCIES.map((c) => (
-            <Chip
-              key={c.code}
-              label={`${c.symbol} ${c.code}`}
-              selected={s?.currency === c.code}
-              onPress={() => update.mutate({ currency: c.code })}
-              accessibilityLabel={`Use ${c.name}`}
-            />
-          ))}
-        </View>
-
-        <Divider className="my-3" />
-
+        <Divider className="my-1" />
         <ListRow
           icon={<GlobeIcon color={colors.accent} />}
           title="Time zone"
-          subtitle={`${s?.timeZone ?? 'UTC'} — decides when your day rolls over`}
-          onPress={() => setShowZones((v) => !v)}
-          accessibilityLabel="Change time zone"
+          subtitle="Decides when your day rolls over"
+          right={<RowValue value={s?.timeZone.split('/').pop()?.replace(/_/g, ' ')} />}
+          onPress={() => setSheet('zone')}
         />
-        {showZones && (
-          <View className="flex-row flex-wrap gap-2 mb-2">
-            {zones.map((z) => (
-              <Chip
-                key={z}
-                label={z === device ? `${z} (device)` : z}
-                selected={s?.timeZone === z}
-                onPress={() => update.mutate({ timeZone: z })}
-              />
-            ))}
-          </View>
-        )}
       </Card>
 
       {/* ── Notifications (device-local; native only) ───────────────── */}
@@ -179,8 +152,8 @@ export default function Settings() {
           <SectionHeader title="Notifications" caption="stays on this device" />
           <Notice
             tone="info"
-            title="Needs a dev build here"
-            message="Expo Go on Android dropped notification support in SDK 53. These will work once you run this on a custom dev build."
+            title="Not available in Expo Go"
+            message="Notifications work in the installed app. Expo Go on Android dropped support in SDK 53."
           />
           <View className="mb-6" />
         </>
@@ -189,24 +162,16 @@ export default function Settings() {
         <>
           <SectionHeader title="Notifications" caption="stays on this device" />
           <Card className="mb-6">
-            <Row className="justify-between">
-              <View className="flex-1 pr-3">
-                <ListRow
-                  icon={<BellIcon color={colors.accent} />}
-                  title="Daily check-in"
-                  subtitle="One quiet nudge a day to reflect and log."
-                />
-              </View>
-              <Switch
-                value={notif.checkinEnabled}
-                disabled={notif.busy || !notif.loaded}
-                onValueChange={(v) => void notif.toggleCheckin(v)}
-                trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor="#FFFFFF"
-              />
-            </Row>
+            <ToggleRow
+              icon={<BellIcon color={colors.accent} />}
+              title="Daily check-in"
+              subtitle="One quiet nudge a day to reflect and log."
+              value={notif.checkinEnabled}
+              disabled={notif.busy || !notif.loaded}
+              onValueChange={(v) => void notif.toggleCheckin(v)}
+            />
             {notif.checkinEnabled && (
-              <View className="flex-row flex-wrap gap-2 mb-2">
+              <View className="flex-row flex-wrap gap-2 mt-1 mb-2">
                 {REMINDER_TIMES.map((h) => (
                   <Chip
                     key={h}
@@ -218,27 +183,17 @@ export default function Settings() {
                 ))}
               </View>
             )}
-
-            <Divider className="my-3" />
-
-            <Row className="justify-between">
-              <View className="flex-1 pr-3">
-                <ListRow
-                  icon={<SparkIcon color={colors.accent} />}
-                  title="Daily motivation"
-                  subtitle="A warm note each day — a different one every day of the week."
-                />
-              </View>
-              <Switch
-                value={notif.motivationEnabled}
-                disabled={notif.busy || !notif.loaded}
-                onValueChange={(v) => void notif.toggleMotivation(v)}
-                trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor="#FFFFFF"
-              />
-            </Row>
+            <Divider className="my-2" />
+            <ToggleRow
+              icon={<SparkIcon color={colors.accent} />}
+              title="Daily motivation"
+              subtitle="A warm note, different every day of the week."
+              value={notif.motivationEnabled}
+              disabled={notif.busy || !notif.loaded}
+              onValueChange={(v) => void notif.toggleMotivation(v)}
+            />
             {notif.motivationEnabled && (
-              <View className="flex-row flex-wrap gap-2 mb-2">
+              <View className="flex-row flex-wrap gap-2 mt-1 mb-2">
                 {MOTIVATION_TIMES.map((h) => (
                   <Chip
                     key={h}
@@ -255,76 +210,128 @@ export default function Settings() {
       )}
 
       {/* ── Email (server-side; sent even when the app is closed) ───── */}
-      <SectionHeader title="Email" caption={email ?? 'your inbox'} />
+      <SectionHeader title="Email" caption="sent to your inbox" />
       <Card className="mb-6">
-        <Row className="justify-between">
-          <View className="flex-1 pr-3">
-            <ListRow
-              icon={<BellIcon color={colors.accent} />}
-              title="Daily reminder"
-              subtitle="A nudge at 8pm your time, only on days you haven’t logged."
-            />
-          </View>
-          <Switch
-            value={s?.emailReminders ?? true}
-            disabled={!s || update.isPending}
-            onValueChange={(v) => update.mutate({ emailReminders: v })}
-            trackColor={{ false: colors.border, true: colors.accent }}
-            thumbColor="#FFFFFF"
-          />
-        </Row>
-
-        <Divider className="my-3" />
-
-        <Row className="justify-between">
-          <View className="flex-1 pr-3">
-            <ListRow
-              icon={<ChartIcon color={colors.accent} />}
-              title="Weekly progress"
-              subtitle="Your week in review, every Sunday evening."
-            />
-          </View>
-          <Switch
-            value={s?.emailWeekly ?? true}
-            disabled={!s || update.isPending}
-            onValueChange={(v) => update.mutate({ emailWeekly: v })}
-            trackColor={{ false: colors.border, true: colors.accent }}
-            thumbColor="#FFFFFF"
-          />
-        </Row>
-      </Card>
-
-      {/* ── Account ─────────────────────────────────────────────────── */}
-      <SectionHeader title="Account" />
-      <Card className="mb-3">
-        <ListRow title="Signed in as" subtitle={email ?? '—'} />
-        <Divider className="my-1" />
-        <ListRow
-          icon={<LogOutIcon color={colors.textMuted} />}
-          title="Sign out"
-          onPress={() => void signOut()}
+        <ToggleRow
+          icon={<BellIcon color={colors.accent} />}
+          title="Daily reminder"
+          subtitle="At 8pm your time, only on days you haven’t checked in."
+          value={s?.emailReminders ?? true}
+          disabled={!s || update.isPending}
+          onValueChange={(v) => update.mutate({ emailReminders: v })}
+        />
+        <Divider className="my-2" />
+        <ToggleRow
+          icon={<ChartIcon color={colors.accent} />}
+          title="Weekly progress"
+          subtitle="Your week in review, every Sunday evening."
+          value={s?.emailWeekly ?? true}
+          disabled={!s || update.isPending}
+          onValueChange={(v) => update.mutate({ emailWeekly: v })}
         />
       </Card>
-      <Button
-        label="Delete account & data"
-        tone="danger"
-        loading={deleteAccount.isPending}
-        onPress={confirmDelete}
-      />
 
-      <SectionHeader title="About" className="mt-6" />
+      {/* ── Help & info ─────────────────────────────────────────────── */}
+      <SectionHeader title="Help & info" />
       <Card>
         <ListRow
+          icon={<LifebuoyIcon color={colors.accent} />}
+          title="Support"
+          subtitle="Helplines, peer groups, stopping safely"
+          right={<RowValue />}
+          onPress={() => router.push('/support')}
+        />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<InfoIcon color={colors.accent} />}
           title="About sobr"
-          subtitle="Privacy, notifications, and app info"
-          right={<ChevronRightIcon color={colors.textFaint} />}
+          right={<RowValue />}
           onPress={() => router.push('/about')}
+        />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<ShieldIcon color={colors.accent} />}
+          title="Privacy policy"
+          right={<RowValue />}
+          onPress={() => router.push('/legal/privacy')}
+        />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<DocIcon color={colors.accent} />}
+          title="Terms of use"
+          right={<RowValue />}
+          onPress={() => router.push('/legal/terms')}
         />
       </Card>
 
       <Txt variant="caption" className="text-center mt-6 mb-2">
         Your data is private to you. sobr · Clear days, counted.
       </Txt>
+
+      {/* ── sheets ──────────────────────────────────────────────────── */}
+      <BottomSheet visible={sheet === 'mode'} onClose={() => setSheet(null)} title="What counts as a win">
+        <OptionList
+          options={MODES}
+          value={s?.winMode}
+          onChange={(mode) => update.mutate({ winMode: mode })}
+        />
+        {s?.winMode === 'limit' && (
+          <View className="mt-4">
+            <TextField
+              label="Daily limit (units)"
+              value={limit}
+              onChangeText={(v) => setLimit(v.replace(/[^0-9.]/g, ''))}
+              keyboardType="decimal-pad"
+              maxLength={4}
+              hint="A regular beer is about 2 units; a glass of wine about 2–3."
+              onSubmitEditing={saveLimit}
+            />
+            <Button
+              label="Save limit"
+              tone="secondary"
+              className="mt-3"
+              loading={update.isPending}
+              onPress={() => {
+                saveLimit();
+                setSheet(null);
+              }}
+            />
+          </View>
+        )}
+        <Txt variant="caption" className="mt-4">
+          Days you’ve already logged keep the result they were saved with.
+        </Txt>
+      </BottomSheet>
+
+      <BottomSheet visible={sheet === 'currency'} onClose={() => setSheet(null)} title="Currency">
+        <OptionList
+          options={CURRENCIES.map((c) => ({
+            value: c.code,
+            title: `${c.symbol}  ${c.code}`,
+            subtitle: c.name,
+          }))}
+          value={s?.currency}
+          onChange={(code) => {
+            update.mutate({ currency: code });
+            setSheet(null);
+          }}
+        />
+      </BottomSheet>
+
+      <BottomSheet visible={sheet === 'zone'} onClose={() => setSheet(null)} title="Time zone">
+        <OptionList
+          options={zones.map((z) => ({
+            value: z,
+            title: z.replace(/_/g, ' '),
+            subtitle: z === device ? 'This device' : undefined,
+          }))}
+          value={s?.timeZone}
+          onChange={(z) => {
+            update.mutate({ timeZone: z });
+            setSheet(null);
+          }}
+        />
+      </BottomSheet>
     </Screen>
   );
 }
