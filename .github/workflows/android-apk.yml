@@ -1,0 +1,129 @@
+# Builds an installable, release-mode Android APK on GitHub's runners and
+# publishes it as a GitHub Release, so the app can be sideloaded straight from
+# a phone without EAS or a local Android SDK.
+#
+# One-time setup (repo → Settings → Secrets and variables → Actions):
+#   EXPO_PUBLIC_SUPABASE_URL       https://<project>.supabase.co
+#   EXPO_PUBLIC_SUPABASE_ANON_KEY  the project's anon / publishable key
+# Both are public by design (they ship inside the APK; RLS protects the data).
+# Without them the APK still builds, but boots to the "setup" screen, so no
+# Release is published, only a workflow artifact.
+#
+# Signing: the release variant is signed with the React Native template's
+# debug keystore. That is fine for personal sideloading and keeps the
+# signature stable between builds (so updates install over the top), but a
+# Play Store upload needs a real upload key. See DEPLOY.md.
+
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/android-apk.yml'
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  checks:
+    name: Tests + typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sobr/core test
+      - run: pnpm --filter @sobr/core --filter @sobr/config typecheck
+      - run: pnpm exec tsc --noEmit
+        working-directory: apps/mobile
+
+  apk:
+    name: Release APK
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      ANDROID_VERSION_CODE: ${{ github.run_number }}
+      EXPO_NO_TELEMETRY: '1'
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check Supabase config
+        id: cfg
+        run: |
+          if [ -n "$EXPO_PUBLIC_SUPABASE_URL" ] && [ -n "$EXPO_PUBLIC_SUPABASE_ANON_KEY" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY secrets are not set. The APK will open to the setup screen, and no Release will be published."
+          fi
+
+      - name: Generate native Android project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --no-install --clean
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        run: |
+          ./gradlew assembleRelease \
+            -PreactNativeArchitectures=arm64-v8a,armeabi-v7a \
+            -Dorg.gradle.jvmargs="-Xmx6g -XX:MaxMetaspaceSize=1g" \
+            --no-daemon
+
+      - name: Name the APK
+        id: apk
+        run: |
+          VERSION=$(node -p "require('./apps/mobile/app.json').expo.version")
+          NAME="sobr-${VERSION}-${{ github.run_number }}.apk"
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "$NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: ${{ steps.apk.outputs.name }}
+
+      - name: Publish GitHub Release
+        if: steps.cfg.outputs.configured == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ steps.apk.outputs.version }}-${{ github.run_number }}
+          name: sobr ${{ steps.apk.outputs.version }} (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          files: ${{ steps.apk.outputs.name }}
+          body: |
+            Android APK built from `${{ github.ref_name }}` @ `${{ github.sha }}`.
+
+            **Install:** open this page on your Android phone, tap the `.apk` below,
+            and allow "Install unknown apps" for your browser when asked. Later
+            builds install over this one; your data lives in your account.
