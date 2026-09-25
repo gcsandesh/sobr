@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Caprasimo_400Regular } from '@expo-google-fonts/caprasimo';
+import { Fraunces_700Bold, Fraunces_900Black } from '@expo-google-fonts/fraunces';
 import {
   Figtree_400Regular,
   Figtree_500Medium,
@@ -121,7 +121,8 @@ function Gate() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Caprasimo_400Regular,
+    Fraunces_700Bold,
+    Fraunces_900Black,
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,

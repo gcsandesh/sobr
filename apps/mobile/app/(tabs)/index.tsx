@@ -44,10 +44,10 @@ import { haptics } from '../../src/lib/haptics';
 import { colors } from '../../src/theme';
 
 /**
- * The hero card's own mini-palette: a deep terracotta dusk. Deliberately darker
- * than anything else in the (otherwise cream) app — one dominant surface that
- * carries the brand, per the frontend-design direction. Warm off-white text
- * (Caprasimo numeral) clears WCAG AA against the terracotta-brown.
+ * The hero card's own mini-palette: a deep teal dusk. Deliberately darker than
+ * anything else in the (otherwise cool-mist) app — one dominant surface that
+ * carries the brand, per the frontend-design direction. Cool off-white text
+ * (Fraunces numeral) clears WCAG AA against the deep teal.
  */
 const HERO = {
   bgTop: '#2E9D95', // luminous teal at the top…

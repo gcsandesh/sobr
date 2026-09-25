@@ -30,8 +30,8 @@ module.exports = {
         'accent-bg': '#E2F2EF',
       },
       fontFamily: {
-        display: ['Caprasimo_400Regular'],
-        'display-bold': ['Caprasimo_400Regular'],
+        display: ['Fraunces_900Black'],
+        'display-bold': ['Fraunces_900Black'],
         sans: ['Figtree_400Regular'],
         medium: ['Figtree_500Medium'],
         semibold: ['Figtree_600SemiBold'],
