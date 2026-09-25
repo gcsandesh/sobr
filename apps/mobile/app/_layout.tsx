@@ -97,7 +97,8 @@ function Gate() {
     }
     // Redeeming a reset code signs the user in *before* the new password is
     // saved. Leave the reset screen alone; it routes onward itself once done.
-    if (group === '(auth)' && segments[1] === 'forgot-password') return;
+    // (widened: without generated typed routes, as in CI, segments is `[string]`)
+    if (group === '(auth)' && (segments as string[])[1] === 'forgot-password') return;
     // signed in — wait for settings to resolve before deciding onboarding
     if (settings.isLoading) return;
     const onboarded = settings.data?.onboarded ?? false;
