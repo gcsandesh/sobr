@@ -39,3 +39,6 @@ android/
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# local agent config (machine-specific)
+.claude/
