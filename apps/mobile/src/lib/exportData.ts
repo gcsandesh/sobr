@@ -9,7 +9,9 @@ import { entriesToCsv, type DailyEntryWithDrinks } from '@sobr/core';
  * web triggers a normal download. Nothing is uploaded anywhere by us.
  */
 export async function exportCsv(entries: DailyEntryWithDrinks[], today: string): Promise<void> {
-  const csv = entriesToCsv(entries);
+  // BOM first: without it Excel reads UTF-8 as ANSI, garbling ×, curly
+  // quotes, Devanagari and emoji in notes.
+  const csv = '\uFEFF' + entriesToCsv(entries);
   const name = `sobr-days-${today}.csv`;
 
   if (Platform.OS === 'web') {

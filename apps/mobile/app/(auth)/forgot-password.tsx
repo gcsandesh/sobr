@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LockIcon } from '../../src/components/icons';
@@ -10,6 +10,7 @@ import {
 } from '../../src/lib/account';
 import { authErrorMessage } from '../../src/lib/errorMessage';
 import { haptics } from '../../src/lib/haptics';
+import { supabase } from '../../src/lib/supabase';
 import { colors } from '../../src/theme';
 
 /**
@@ -27,6 +28,18 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const passwordRef = useRef<TextInput>(null);
+  const completed = useRef(false);
+
+  // Redeeming the code signs the user in before the new password is saved.
+  // Leaving this screen any other way than success (back button, gesture,
+  // "Back to sign in") must not leave that half-finished session behind,
+  // or the Gate would walk them into the app with no new password set.
+  useEffect(
+    () => () => {
+      if (!completed.current) void supabase.auth.signOut();
+    },
+    [],
+  );
 
   async function sendCode() {
     setError(null);
@@ -51,10 +64,11 @@ export default function ForgotPassword() {
     setLoading(true);
     try {
       await resetPasswordWithCode({ email, code, password });
+      completed.current = true;
       haptics.success();
       router.replace('/');
     } catch (e) {
-      setError(authErrorMessage(e));
+      setError(authErrorMessage(e, 'code'));
       setLoading(false);
     }
   }

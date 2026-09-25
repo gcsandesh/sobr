@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { useState } from 'react';
+import { Platform, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { WinMode } from '@sobr/core';
 import { CURRENCIES, currencyByCode } from '@sobr/config';
@@ -36,10 +36,11 @@ import { useSession } from '../../src/data/SessionProvider';
 import {
   deviceTimeZone,
   useAllEntries,
-  useHomeStats,
   useSettings,
+  useTimeZone,
   useUpdateSettings,
 } from '../../src/data/hooks';
+import { todayInTz } from '@sobr/core';
 import { exportCsv } from '../../src/lib/exportData';
 import { errorMessage } from '../../src/lib/errorMessage';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
@@ -93,7 +94,7 @@ export default function Settings() {
   const notif = useNotificationPrefs();
   const [sheet, setSheet] = useState<SheetKey>(null);
   const entriesQ = useAllEntries();
-  const { today } = useHomeStats();
+  const tz = useTimeZone();
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -101,7 +102,7 @@ export default function Settings() {
     setExportError(null);
     setExporting(true);
     try {
-      await exportCsv(entriesQ.data ?? [], today);
+      await exportCsv(entriesQ.data ?? [], todayInTz(tz));
     } catch (e) {
       setExportError(errorMessage(e, 'Couldn’t create the file. Try again?'));
     } finally {
@@ -110,21 +111,12 @@ export default function Settings() {
   }
 
   const s = settings.data;
-  const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
-  useEffect(() => {
-    if (s) setLimit(String(s.dailyLimitUnits));
-  }, [s?.dailyLimitUnits]);
 
   const device = deviceTimeZone();
   const zones = [device, ...COMMON_ZONES.filter((z) => z !== device)];
   const modeTitle = MODES.find((m) => m.value === s?.winMode)?.title;
   const modeValue =
     s?.winMode === 'limit' ? `${modeTitle} · ${s.dailyLimitUnits}u` : modeTitle ?? '';
-
-  function saveLimit() {
-    const n = Number(limit);
-    update.mutate({ dailyLimitUnits: Number.isFinite(n) && n > 0 ? n : 2 });
-  }
 
   return (
     <Screen scroll>
@@ -320,27 +312,10 @@ export default function Settings() {
           onChange={(mode) => update.mutate({ winMode: mode })}
         />
         {s?.winMode === 'limit' && (
-          <View className="mt-4">
-            <TextField
-              label="Daily limit (units)"
-              value={limit}
-              onChangeText={(v) => setLimit(v.replace(/[^0-9.]/g, ''))}
-              keyboardType="decimal-pad"
-              maxLength={4}
-              hint="A regular beer is about 2 units; a glass of wine about 2–3."
-              onSubmitEditing={saveLimit}
-            />
-            <Button
-              label="Save limit"
-              tone="secondary"
-              className="mt-3"
-              loading={update.isPending}
-              onPress={() => {
-                saveLimit();
-                setSheet(null);
-              }}
-            />
-          </View>
+          <LimitStepper
+            value={s.dailyLimitUnits}
+            onChange={(v) => update.mutate({ dailyLimitUnits: v })}
+          />
         )}
         <Txt variant="caption" className="mt-4">
           Days you’ve already logged keep the result they were saved with.
@@ -377,5 +352,52 @@ export default function Settings() {
         />
       </BottomSheet>
     </Screen>
+  );
+}
+
+const LIMIT_STEP = 0.5;
+const LIMIT_MIN = 0.5;
+const LIMIT_MAX = 20;
+
+/**
+ * Daily limit as a stepper (0.5-unit steps) instead of a text field: no
+ * keyboard inside a sheet, no unparsable input, and each tap saves.
+ */
+function LimitStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const set = (v: number) => onChange(Math.min(LIMIT_MAX, Math.max(LIMIT_MIN, v)));
+  const btn = 'w-12 h-12 rounded-full items-center justify-center bg-surface-raised active:opacity-70';
+  return (
+    <View className="mt-4 rounded-2xl border border-border bg-surface p-4">
+      <Txt variant="label">Daily limit</Txt>
+      <View className="flex-row items-center justify-between mt-2">
+        <Pressable
+          onPress={() => set(value - LIMIT_STEP)}
+          disabled={value <= LIMIT_MIN}
+          accessibilityRole="button"
+          accessibilityLabel="Lower the limit by half a unit"
+          className={`${btn} ${value <= LIMIT_MIN ? 'opacity-40' : ''}`}
+        >
+          <Txt variant="title">−</Txt>
+        </Pressable>
+        <View className="items-center" accessibilityLiveRegion="polite">
+          <Txt variant="displaySm" style={{ color: colors.accent }}>
+            {value}
+          </Txt>
+          <Txt variant="caption">units a day</Txt>
+        </View>
+        <Pressable
+          onPress={() => set(value + LIMIT_STEP)}
+          disabled={value >= LIMIT_MAX}
+          accessibilityRole="button"
+          accessibilityLabel="Raise the limit by half a unit"
+          className={`${btn} ${value >= LIMIT_MAX ? 'opacity-40' : ''}`}
+        >
+          <Txt variant="title">+</Txt>
+        </Pressable>
+      </View>
+      <Txt variant="caption" className="mt-3">
+        A regular beer is about 2 units; a glass of wine about 2–3.
+      </Txt>
+    </View>
   );
 }

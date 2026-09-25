@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
@@ -104,6 +104,9 @@ export default function Today() {
 
   /** FAB shortcut: add one preset to today without leaving Home. */
   function quickAdd(preset: DrinkPreset) {
+    // The save replaces the whole day's list, so it must start from what's
+    // really saved; never from an empty list because today failed to load.
+    if (!todayEntry.isSuccess) return;
     const existing = (todayEntry.data?.drinks ?? []).map((d) => ({
       presetKey: d.presetKey,
       name: d.name,
@@ -158,17 +161,7 @@ export default function Today() {
 
   return (
     <>
-      <Screen
-        scroll
-        refreshControl={
-          <RefreshControl
-            refreshing={refresh.refreshing}
-            onRefresh={refresh.onRefresh}
-            tintColor={colors.accent}
-            colors={[colors.accent]}
-          />
-        }
-      >
+      <Screen scroll refreshControl={refresh}>
         {growth.celebration && (
           <GrowthCelebration meta={growth.celebration} onDismiss={growth.dismiss} />
         )}
@@ -401,7 +394,18 @@ export default function Today() {
           <Txt variant="heading" className="mt-6 mb-3">
             {dateHeading(activeDate, stats.today)}
           </Txt>
-          {dayEntry.data ? (
+          {dayEntry.isError && !dayEntry.data ? (
+            <Notice
+              tone="error"
+              title="Couldn’t load this day"
+              message="Check your connection; nothing has been changed."
+              onRetry={() => dayEntry.refetch()}
+            />
+          ) : !dayEntry.isSuccess ? (
+            // still loading: show nothing rather than buttons that would
+            // overwrite a day we haven't seen yet
+            <View className="h-14" />
+          ) : dayEntry.data ? (
             <Card>
               <Row className="justify-between">
                 <StatusPill status={dayEntry.data.status} />
@@ -515,6 +519,20 @@ export default function Today() {
         onClose={() => setQuickAddOpen(false)}
         title="Add a drink · Today"
       >
+        {!todayEntry.isSuccess && (
+          <View className="mb-4">
+            <Notice
+              tone={todayEntry.isError ? 'error' : 'info'}
+              title={todayEntry.isError ? 'Couldn’t load today' : 'Loading today…'}
+              message={
+                todayEntry.isError
+                  ? 'Adding is paused so nothing already logged gets replaced.'
+                  : undefined
+              }
+              onRetry={todayEntry.isError ? () => todayEntry.refetch() : undefined}
+            />
+          </View>
+        )}
         {(['beer', 'wine', 'spirits', 'local'] as const).map((group) => (
           <View key={group} className="mb-4">
             <Txt variant="label" className="mb-2">
@@ -525,7 +543,9 @@ export default function Today() {
                 <Pressable
                   key={p.key}
                   onPress={() => quickAdd(p)}
+                  disabled={!todayEntry.isSuccess}
                   accessibilityLabel={`Add ${p.name}`}
+                  accessibilityState={{ disabled: !todayEntry.isSuccess }}
                   className="bg-surface border border-border rounded-full px-4 min-h-[44px] justify-center active:opacity-70"
                 >
                   <Txt variant="body" className="text-sm">

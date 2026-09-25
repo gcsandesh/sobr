@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, RefreshControl, SectionList, View } from 'react-native';
+import { Pressable, SectionList, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { roundUnits, totalUnits, type DailyEntryWithDrinks } from '@sobr/core';
 import { BookIcon, ChevronRightIcon } from '../src/components/icons';
@@ -79,14 +79,7 @@ export default function History() {
           sections={sections}
           keyExtractor={(e) => e.id}
           stickySectionHeadersEnabled={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refresh.refreshing}
-              onRefresh={refresh.onRefresh}
-              tintColor={colors.accent}
-              colors={[colors.accent]}
-            />
-          }
+          refreshControl={refresh}
           contentContainerStyle={{
             padding: 20,
             paddingBottom: 48,

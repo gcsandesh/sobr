@@ -1,4 +1,4 @@
-import { Pressable, RefreshControl, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GROWTH_STAGES } from '@sobr/config';
 import { BookIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
@@ -35,17 +35,7 @@ export default function Profile() {
     : null;
 
   return (
-    <Screen
-        scroll
-        refreshControl={
-          <RefreshControl
-            refreshing={refresh.refreshing}
-            onRefresh={refresh.onRefresh}
-            tintColor={colors.accent}
-            colors={[colors.accent]}
-          />
-        }
-      >
+    <Screen scroll refreshControl={refresh}>
       {/* identity */}
       <View className="items-center mt-6 mb-8">
         <Pressable

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RefreshControl, View } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { formatCurrency } from '@sobr/config';
@@ -47,17 +47,7 @@ export default function Progress() {
   const isEmpty = !stats.isError && !stats.isLoading && !stats.hasAnyData;
 
   return (
-    <Screen
-        scroll
-        refreshControl={
-          <RefreshControl
-            refreshing={refresh.refreshing}
-            onRefresh={refresh.onRefresh}
-            tintColor={colors.accent}
-            colors={[colors.accent]}
-          />
-        }
-      >
+    <Screen scroll refreshControl={refresh}>
       <Txt variant="title" className="mt-2 mb-6">
         Progress
       </Txt>

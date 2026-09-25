@@ -20,7 +20,15 @@ import {
 } from '@sobr/core';
 import { DayPhotos } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon } from '../../src/components/icons';
-import { Button, CONTENT_MAX_WIDTH, Card, Row, SectionHeader, Txt } from '../../src/components/ui';
+import {
+  Button,
+  CONTENT_MAX_WIDTH,
+  Card,
+  Notice,
+  Row,
+  SectionHeader,
+  Txt,
+} from '../../src/components/ui';
 import { useDayEntry, useDeleteDay, useSaveDay, useSettings } from '../../src/data/hooks';
 import { confirmAction } from '../../src/lib/confirm';
 import { formatDay } from '../../src/lib/dates';
@@ -54,9 +62,12 @@ export default function DayLogger() {
   const [note, setNote] = useState('');
   const [hydrated, setHydrated] = useState(false);
 
-  // hydrate local state from the saved entry once
+  // Hydrate local state from the saved entry once — and only from a query that
+  // actually succeeded (live or from the persisted cache). Hydrating after a
+  // failed fetch would start from blank state, and Save would then overwrite
+  // the day's real drinks and note on the server.
   useEffect(() => {
-    if (hydrated || entryQ.isLoading) return;
+    if (hydrated || !entryQ.isSuccess) return;
     const e = entryQ.data;
     if (e) {
       setDrinks(
@@ -73,7 +84,7 @@ export default function DayLogger() {
       setNote(e.note ?? '');
     }
     setHydrated(true);
-  }, [hydrated, entryQ.isLoading, entryQ.data]);
+  }, [hydrated, entryQ.isSuccess, entryQ.data]);
 
   const evalResult = useMemo(
     () => evaluateStatus({ mode, drinks, manualStatus, dailyLimitUnits: limit }),
@@ -157,6 +168,17 @@ export default function DayLogger() {
         // clear the sticky Save bar, which the keyboard doesn't push up
         bottomOffset={24}
       >
+        {!hydrated && entryQ.isError && (
+          <View className="mb-4">
+            <Notice
+              tone="error"
+              title="Couldn’t load this day"
+              message="Saving is paused so nothing already logged gets overwritten. Check your connection and try again."
+              onRetry={() => entryQ.refetch()}
+            />
+          </View>
+        )}
+
         {/* status banner */}
         <Card className={status === 'win' ? 'border-win' : 'border-slip'}>
           <Row className="gap-3 mb-1">
@@ -337,6 +359,7 @@ export default function DayLogger() {
           label={isToday ? 'Save today' : 'Save this day'}
           onPress={save}
           loading={saveDay.isPending}
+          disabled={!hydrated}
         />
         {entryQ.data && (
           <Button

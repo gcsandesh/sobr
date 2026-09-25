@@ -74,9 +74,16 @@ const COPY: Partial<Record<EmailActionType, { title: string; lead: string; subje
     lead: 'Enter this code in the app, then choose a new password:',
     subject: 'is your sobr password reset code',
   },
+  // Sent to the account's current address, so it confirms the change rather
+  // than "this address". (The app has no change-email flow yet.)
   email_change: {
-    title: 'Confirm your new email',
-    lead: 'Enter this code in the app to confirm this address:',
+    title: 'Confirm your email change',
+    lead: 'Someone asked to change the email on your sobr account. If it was you, enter this code in the app:',
+    subject: 'is your sobr email-change code',
+  },
+  reauthentication: {
+    title: 'Confirm it’s you',
+    lead: 'Enter this code in the app to confirm this change to your account:',
     subject: 'is your sobr confirmation code',
   },
 };
