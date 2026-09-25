@@ -1,0 +1,8 @@
+<svg width="1024" height="1024" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Android adaptive-icon foreground: transparent, leaf only, scaled into the
+       66dp safe zone of the 108dp canvas so no launcher mask can clip it. -->
+  <g transform="translate(32 32) scale(0.72) translate(-32 -32) rotate(-28 32 32)">
+    <path d="M32 11 C45 18 49 31 32 53 C15 31 19 18 32 11 Z" fill="#F4FAF8" />
+    <path d="M32 17 L32 47" stroke="#1F6F6B" stroke-width="2.4" stroke-linecap="round" />
+  </g>
+</svg>

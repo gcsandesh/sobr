@@ -16,7 +16,9 @@
     "android": {
       "package": "com.sobr.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brand/icon.png",
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "backgroundImage": "./assets/brand/adaptive-background.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png",
         "backgroundColor": "#1F6F6B"
       }
     },
