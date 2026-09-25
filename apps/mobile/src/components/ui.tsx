@@ -1,18 +1,22 @@
 import { ReactNode } from 'react';
+import { forwardRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   PressableProps,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
+  TextInput,
+  TextInputProps,
   TextProps,
   View,
   ViewProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { HomeLeafIcon } from './icons';
+import { CheckIcon, ChevronRightIcon, EyeIcon, HomeLeafIcon } from './icons';
 import { colors } from '../theme';
 
 /** Soft, low-opacity elevation — never a harsh drop shadow. */
@@ -57,17 +61,31 @@ export function Txt({
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Content never stretches past a comfortable reading width: on a tablet or a
+ * desktop browser the column centers instead of running edge to edge.
+ */
+export const CONTENT_MAX_WIDTH = 640;
+
 export function Screen({
   children,
   scroll = false,
   className,
+  edges = ['top', 'bottom'],
 }: {
   children: ReactNode;
   scroll?: boolean;
   className?: string;
+  /** Pushed screens with a native header only need the bottom inset. */
+  edges?: ('top' | 'bottom')[];
 }) {
   const inner = (
-    <View className={`flex-1 px-5 ${className ?? ''}`}>{children}</View>
+    <View
+      className={`flex-1 px-5 w-full self-center ${className ?? ''}`}
+      style={{ maxWidth: CONTENT_MAX_WIDTH }}
+    >
+      {children}
+    </View>
   );
   return (
     <View className="flex-1 bg-bg">
@@ -78,12 +96,13 @@ export function Screen({
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
-      <SafeAreaView className="flex-1" edges={['top', 'bottom']}>
+      <SafeAreaView className="flex-1" edges={edges}>
         {scroll ? (
           <ScrollView
             className="flex-1"
             contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {inner}
           </ScrollView>
@@ -439,5 +458,156 @@ export function EmptyState({
         </Txt>
       ) : null}
     </Card>
+  );
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+
+/**
+ * A labelled text input with an inline, calm error line. Password fields get a
+ * show/hide toggle, since typing blind on a phone keyboard is the main reason
+ * sign-in fails.
+ */
+export const TextField = forwardRef<
+  TextInput,
+  TextInputProps & { label: string; error?: string | null; hint?: string; className?: string }
+>(function TextField({ label, error, hint, secureTextEntry, className, ...props }, ref) {
+  const [hidden, setHidden] = useState(true);
+  const isSecret = !!secureTextEntry;
+  return (
+    <View className={className}>
+      <Txt variant="label" className="mb-1.5">
+        {label}
+      </Txt>
+      <View
+        className={`flex-row items-center rounded-xl border bg-surface ${
+          error ? 'border-slip' : 'border-border'
+        }`}
+      >
+        <TextInput
+          ref={ref}
+          placeholderTextColor={colors.textFaint}
+          secureTextEntry={isSecret && hidden}
+          accessibilityLabel={label}
+          className="flex-1 px-4 py-3.5 text-text font-sans text-base"
+          style={{ minHeight: 52 }}
+          {...props}
+        />
+        {isSecret ? (
+          <IconButton
+            onPress={() => setHidden((h) => !h)}
+            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+            className="mr-1"
+          >
+            <EyeIcon color={colors.textFaint} off={!hidden} />
+          </IconButton>
+        ) : null}
+      </View>
+      {error ? (
+        <Txt variant="caption" className="mt-1.5 text-slip" accessibilityLiveRegion="polite">
+          {error}
+        </Txt>
+      ) : hint ? (
+        <Txt variant="caption" className="mt-1.5">
+          {hint}
+        </Txt>
+      ) : null}
+    </View>
+  );
+});
+
+/* ── Option list (used inside sheets) ────────────────────────────────────── */
+
+/**
+ * A vertical single-select list: title, optional subtitle, and a check on the
+ * selected row. Replaces the old walls of chips for long option sets
+ * (currencies, time zones), which were hard to scan.
+ */
+export function OptionList<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { value: T; title: string; subtitle?: string }[];
+  value: T | undefined;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <View className="rounded-2xl border border-border bg-surface overflow-hidden">
+      {options.map((o, i) => {
+        const selected = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            onPress={() => onChange(o.value)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            accessibilityLabel={o.subtitle ? `${o.title}, ${o.subtitle}` : o.title}
+            className={`flex-row items-center px-4 min-h-[56px] py-2 active:opacity-70 ${
+              i > 0 ? 'border-t border-border' : ''
+            } ${selected ? 'bg-accent-bg' : ''}`}
+          >
+            <View className="flex-1 pr-3">
+              <Txt variant="body" className={selected ? 'font-semibold text-accent' : ''}>
+                {o.title}
+              </Txt>
+              {o.subtitle ? (
+                <Txt variant="caption" className="mt-0.5">
+                  {o.subtitle}
+                </Txt>
+              ) : null}
+            </View>
+            {selected ? <CheckIcon color={colors.accent} /> : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+/** A right-aligned value + chevron, the trailing element of a tappable ListRow. */
+export function RowValue({ value }: { value?: string }) {
+  return (
+    <Row className="gap-1">
+      {value ? (
+        <Txt variant="label" numberOfLines={1} style={{ maxWidth: 160 }}>
+          {value}
+        </Txt>
+      ) : null}
+      <ChevronRightIcon color={colors.textFaint} />
+    </Row>
+  );
+}
+
+/** A ListRow with a switch: the one pattern for every on/off preference. */
+export function ToggleRow({
+  icon,
+  title,
+  subtitle,
+  value,
+  onValueChange,
+  disabled,
+}: {
+  icon?: ReactNode;
+  title: string;
+  subtitle?: string;
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Row>
+      <View className="flex-1 pr-3">
+        <ListRow icon={icon} title={title} subtitle={subtitle} />
+      </View>
+      <Switch
+        value={value}
+        disabled={disabled}
+        onValueChange={onValueChange}
+        accessibilityLabel={title}
+        trackColor={{ false: colors.border, true: colors.accent }}
+        thumbColor="#FFFFFF"
+      />
+    </Row>
   );
 }
