@@ -20,7 +20,10 @@ import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
 import { completeSessionFromUrl } from '../src/lib/auth';
 import { isSupabaseConfigured } from '../src/lib/env';
 import { SessionProvider, useSession } from '../src/data/SessionProvider';
-import { useSettings } from '../src/data/hooks';
+import { useSettings, useTimeZone } from '../src/data/hooks';
+import { onCheckinTapped } from '../src/lib/notifications';
+import { resyncNotificationSchedule } from '../src/data/useNotificationPrefs';
+import { todayInTz } from '@sobr/core';
 import { colors } from '../src/theme';
 
 const DETAIL_SCREENS = [
@@ -110,6 +113,17 @@ function Gate() {
       router.replace('/(tabs)');
     }
   }, [router, segments, session, initializing, settings.isLoading, settings.data?.onboarded]);
+
+  // A tapped check-in reminder opens today's check-in, once the user is in.
+  const tz = useTimeZone();
+  const ready = !!session && !!settings.data?.onboarded;
+  useEffect(() => {
+    if (ready) void resyncNotificationSchedule();
+  }, [ready]);
+  useEffect(() => {
+    if (!ready) return;
+    return onCheckinTapped(() => router.push(`/day/${todayInTz(tz)}`));
+  }, [ready, tz, router]);
 
   if (initializing && isSupabaseConfigured) return <Splash />;
   return (

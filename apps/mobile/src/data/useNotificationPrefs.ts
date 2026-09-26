@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   applyNotificationSchedule,
+  hasNotificationPermission,
   type NotificationPrefs,
 } from '../lib/notifications';
 
@@ -69,4 +70,23 @@ export function useNotificationPrefs() {
     toggleMotivation: (v: boolean) => apply({ motivationEnabled: v }),
     setMotivationHour: (h: number) => apply({ motivationHour: h }),
   };
+}
+
+/**
+ * Re-apply the stored schedule once per launch. Keeps scheduled reminders in
+ * step with the current app version (copy, tap-to-open data) after an update,
+ * and restores them if the OS dropped them. Silent: skips unless permission
+ * was already granted, so it never pops a prompt on startup.
+ */
+export async function resyncNotificationSchedule(): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const prefs = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<NotificationPrefs>) };
+    if (!prefs.checkinEnabled && !prefs.motivationEnabled) return;
+    if (!(await hasNotificationPermission())) return;
+    await applyNotificationSchedule(prefs);
+  } catch {
+    // best effort; the Settings toggles still re-apply on change
+  }
 }

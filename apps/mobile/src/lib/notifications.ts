@@ -65,6 +65,16 @@ export type NotificationPrefs = {
   motivationHour: number;
 };
 
+/** Permission already granted? Never prompts; for background re-syncs. */
+export async function hasNotificationPermission(): Promise<boolean> {
+  if (!Notifications) return false;
+  try {
+    return (await Notifications.getPermissionsAsync()).granted;
+  } catch {
+    return false;
+  }
+}
+
 export async function ensureNotificationPermission(): Promise<boolean> {
   if (!Notifications) return false;
   try {
@@ -114,6 +124,8 @@ export async function applyNotificationSchedule(prefs: NotificationPrefs): Promi
         content: {
           title: 'A moment for sobr',
           body: 'How did today feel? A few quiet seconds to check in.',
+          // tapping it opens today's check-in (see onCheckinTapped)
+          data: { action: 'checkin' },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -145,4 +157,27 @@ export async function applyNotificationSchedule(prefs: NotificationPrefs): Promi
   } catch {
     return false;
   }
+}
+
+/**
+ * Call `handler` whenever the user taps a check-in notification, including the
+ * one that cold-started the app. Returns an unsubscribe function; a no-op
+ * where notifications aren't supported.
+ */
+export function onCheckinTapped(handler: () => void): () => void {
+  if (!Notifications) return () => {};
+  const N = Notifications;
+  const isCheckin = (r: NotificationsModule.NotificationResponse | null) =>
+    r?.notification.request.content.data?.action === 'checkin';
+  let handledId: string | null = null;
+  const handle = (r: NotificationsModule.NotificationResponse | null) => {
+    if (!r || !isCheckin(r)) return;
+    // the launch response and the listener can both report the same tap
+    if (handledId === r.notification.request.identifier + r.notification.date) return;
+    handledId = r.notification.request.identifier + r.notification.date;
+    handler();
+  };
+  void N.getLastNotificationResponseAsync().then(handle).catch(() => {});
+  const sub = N.addNotificationResponseReceivedListener(handle);
+  return () => sub.remove();
 }
