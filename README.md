@@ -32,11 +32,12 @@ packages/db     Drizzle schema, RLS migration, account-purge routine
 ```bash
 pnpm install
 
-# 1) Database: in the Supabase SQL editor, run:
-#      packages/db/migrations/0000_init.sql
-#    (or: DATABASE_URL=... pnpm --filter @sobr/db migrate)
+# 1) Database: in the Supabase SQL editor, run every file in
+#      packages/db/migrations/ in order (0000 → 0005)
 
-# 2) Auth: in Supabase → Authentication, enable Email OTP / magic-link sign-in.
+# 2) Auth: Supabase → Authentication → Providers → Email → turn "Confirm email" OFF.
+#    For password reset codes: enable custom SMTP, then paste
+#    packages/db/email/reset-password.html into the Reset Password template.
 
 # 3) Env:
 cp .env.example .env       # then fill in EXPO_PUBLIC_SUPABASE_URL + ANON key
@@ -51,6 +52,13 @@ pnpm test:core  # run the domain-logic test suite
 ```
 
 Until your Supabase env vars are set, the app shows a friendly setup screen.
+
+## Install on Android
+
+Every push that touches the app builds a release APK on GitHub Actions and publishes it
+under **[Releases](https://github.com/gcsandesh/sobr/releases)**. Open the newest one on
+your phone, tap the `.apk`, and allow installs from your browser. Details and the release
+checklist: [DEPLOY.md](./DEPLOY.md).
 
 ## Privacy
 

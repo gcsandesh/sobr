@@ -62,7 +62,7 @@ Units use the UK formula: `units = volume_ml × abv% / 1000` (× quantity).
 - **Styling:** NativeWind + shared design tokens. **Data:** TanStack Query.
 - **Backend:** Supabase (Postgres + Auth + RLS). **ORM/migrations:** Drizzle.
 - **Validation:** Zod (shared). **Charts/visuals:** react-native-svg.
-- **Auth (MVP):** email OTP. **Tests:** Vitest on `@sobr/core`.
+- **Auth:** email + password (no confirmation), code-based password reset. **Tests:** Vitest on `@sobr/core`.
 
 ### Packages
 - `@sobr/core` — schemas + pure logic (units, win, streak, freeze, growth, dates). Tested.
@@ -73,22 +73,26 @@ Units use the UK formula: `units = volume_ml × abv% / 1000` (× quantity).
 
 ## Design language
 
-- Dark-first, deep charcoal-green background; **moss** = win, **terracotta** = slip,
-  **dusty blue** = frozen, **amber/gold** = the single accent (streaks/highlights).
-- Type: **Fraunces** (warm serif) for headers + big numbers; **Manrope** (grotesk) for UI.
+- **Light, calm "mist + deep teal"** (since 2026-07; the original dark theme was retired):
+  cool mist canvas, near-white cards, **deep teal** = the single brand accent, **forest
+  green** = win, **muted brick** = slip (never alarm red), **blue** = frozen. One bold
+  surface only: the dark-teal Home hero. Tokens live in `@sobr/config` (`tokens.ts`).
+- Type: **Fraunces 900** (warm serif) for headers + big numbers; **Figtree** for UI.
 - Generous spacing, soft rounded corners, no harsh shadows. ≥44px tap targets, AA contrast,
   screen-reader labels on icon-only buttons.
-- Brand mark: a sprout rising through an open ring (growth + "days, counted"). SVG assets in
-  `apps/mobile/assets/brand/` (placeholder-quality; replaceable).
+- Brand mark: a single tilted leaf on a teal gradient. SVG sources + rasterized PNGs in
+  `apps/mobile/assets/brand/`, including Android adaptive, themed (monochrome) and
+  notification icons.
 
-## On the roadmap (kept in mind, not MVP-blocking)
+## On the roadmap (kept in mind, not blocking)
 
-- **Reminders / notifications:** gentle, well-timed nudges ("a moment to check in")
-  via Expo push — phrased to encourage reflection, never to remind of drinking. The
-  data model and `time_zone` setting are already in place to support per-user local
-  scheduling. (Phase 2.)
-- Google / Apple sign-in, CSV/JSON export UI, offline tolerance (optimistic + sync),
-  optional dedicated Next.js web app if the companion view outgrows RN Web.
+Shipped since the MVP: local reminders + motivation notifications, offline tolerance,
+CSV export, reflection notes, history, support screen, password reset.
+
+- Dark mode (needs CSS-variable tokens + a `useColors()` hook; see HANDOVER §9).
+- Mood on check-in (needs a migration).
+- Google / Apple sign-in (Google is wired, button hidden until native OAuth can be tested).
+- Remote push ("log before midnight" nudges); Play Store release via EAS.
 
 ## Working agreement (how we build this together)
 

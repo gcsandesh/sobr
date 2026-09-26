@@ -28,10 +28,16 @@ its task groups here.
 - Verified: 80/80 core tests, typecheck (with and without generated routes), Android JS
   bundle; APK builds 4 and 6 published and checked (Supabase config baked in).
 
+**Status (2026-09-26):** the owner installed **build 7** on their Android phone. Their
+password was reset directly via SQL (Supabase won't allow template edits without custom
+SMTP, so the reset email still had the localhost link), and they're signed in and using
+the app. HANDOVER.md was rewritten as a single current picture for the next agent.
+
 **What you need to do**
-1. Supabase → Authentication → Emails → Templates → **Reset Password** → paste
-   `packages/db/email/reset-password.html`, then reset your password in the app.
-2. Install the newest APK from Releases and run DEPLOY.md §4.
+1. When convenient: Supabase → Emails → SMTP Settings (Resend values in DEPLOY.md §1), then
+   Templates → **Reset Password** → paste `packages/db/email/reset-password.html`, so
+   in-app password reset works next time.
+2. Run DEPLOY.md §4 on the phone and report anything off.
 
 ---
 

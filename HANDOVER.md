@@ -1,292 +1,327 @@
-# sobr — Engineering Handover
+# sobr: Engineering Handover
 
-> **Read this first.** It's the single entry point for any agent/developer picking up the
-> project. It consolidates status, decisions, gotchas, the verification workflow, and where to
-> continue. Companion docs: [PROJECT.md](./PROJECT.md) (product context & principles),
-> [PLAN.md](./PLAN.md) (architecture), [TODO.md](./TODO.md) (task list, kept current),
-> [PROGRESS.md](./PROGRESS.md) (chronological log with "what the user must do" per step).
-> Detailed change history lives in `git log` (one commit per feature).
+> **Read this first.** It is the single entry point for any agent or developer picking up the
+> project: current status, how it's built, the decisions behind it, the gotchas that have
+> already bitten, how to verify work, and where to continue.
+>
+> Companion docs:
+> [PROJECT.md](./PROJECT.md) (product + principles) ·
+> [PLAN.md](./PLAN.md) (original architecture plan) ·
+> [TODO.md](./TODO.md) (task list, kept current) ·
+> [PROGRESS.md](./PROGRESS.md) (chronological log, newest first, with "what the user must do") ·
+> [DEPLOY.md](./DEPLOY.md) (release checklist + phone smoke test).
+> Change history: `git log` (one commit per feature, with the why in the body).
 
-Last updated: 2026-09-25.
-
----
-
-## 1. TL;DR — current status
-
-**The MVP is feature-complete and verified.** A calm, private alcohol-moderation habit tracker
-("**sobr — clear days, counted.**") built as ONE Expo app for **web + iOS + Android**, backed by
-Supabase. Web runs and is confirmed working (incl. Google sign-in). Native hasn't been tested on a
-device yet — it needs a custom dev build (Expo Go can't do native Google OAuth or scheduled
-notifications fully).
-
-Health at handover: **`@sobr/core` 71/71 tests pass**, all four workspaces + the app
-type-check, web bundles clean, `expo-doctor` passes.
-
-What works end-to-end on **web**: email-OTP + Google auth (now a two-step sign-in → verify
-flow), a three-step onboarding, daily check-in, drink logger, streaks + freeze tokens + growth
-tree (with level-up celebration), an embedded calendar + day-detail panel on Home, stats,
-settings, offline persistence. Reminders are local-notification based (native).
-
-**Visual direction (2026-07-01):** the app moved from the original dark charcoal-green theme to
-a **light, minimal white + moss-green** palette per product direction — see §3 and the
-`redesign-light-theme` entry in PROGRESS.md. The standalone Calendar tab was folded into Home.
-
-**Phase 4 (2026-07-11):** design-system v2 (ListRow/Chip/SectionHeader/Avatar + new icons),
-a **Profile tab** (avatar, stats grid, growth-journey achievement track), redesigned grouped
-**Settings** with a time-zone editor, a redesigned Home hero (gradient wash, stage progress bar,
-stat pills), and **opt-in motivational notifications** — a daily check-in plus a rotating
-"daily motivation" note (7 weekly local triggers, different copy per weekday, no servers).
-Tab bar is now Home · Progress · Profile · Settings. See `phase4-engagement` in PROGRESS.md.
-
-**Phase 5 (2026-09-25):** the app is screen-complete: password reset, Account, History
-(with reflection notes), Support, Privacy/Terms, 404, and redesigned Settings/Profile. A
-release **APK is built by GitHub Actions** (`.github/workflows/android-apk.yml`) and
-published as a GitHub Release, because this cloud dev environment can't reach the Android
-SDK or EAS. Release process: **[DEPLOY.md](./DEPLOY.md)**. Decisions: `phase5-complete` in
-PROGRESS.md.
+Last updated: **2026-09-26** (Phase 5b).
 
 ---
 
-## 2. What this product is (one paragraph)
+## 1. TL;DR: where things stand
+
+**sobr ("clear days, counted")** is a calm, private alcohol-moderation habit tracker: one
+**Expo Router app for Android + iOS + web**, backed by **Supabase**. It is **screen-complete
+and in daily use on the owner's Android phone** (installed from a GitHub Release APK).
+
+- **Health:** `@sobr/core` **80/80** tests pass; the app typechecks with and without Expo's
+  generated typed routes; the Android JS bundle exports clean; CI builds a release APK.
+- **Users:** one (the owner). Sign-up is open; email confirmation is off.
+- **Active branch:** `claude/awesome-bohr-aos87s` (not merged to `main` yet; open a PR when
+  the owner asks). Every push touching the app builds an APK on GitHub Actions.
+- **Latest APK:** build 7, https://github.com/gcsandesh/sobr/releases (tags `android-v<version>-<run>`).
+- **Not yet verified on a device:** the Phase 5 screens were verified by typecheck, bundling
+  and web screenshots only. The owner is running the phone smoke test (DEPLOY.md §4).
+
+### What the app does, screen by screen
+
+| Route | Screen |
+| --- | --- |
+| `(auth)/sign-in` | Email + password sign-in / sign-up toggle, field errors, "Forgot password?" |
+| `(auth)/forgot-password` | Code-based reset: email → code + new password |
+| `(onboarding)/welcome → how-it-works → win-condition` | Optional name, how it works, pick win rule (limit stepper) |
+| `(tabs)/index` Home | Greeting, forest hero (tree + streak), stat pills, pledge/evening check-in, Steady link, month calendar, selected-day panel (status, units, note), FAB quick-add sheet |
+| `(tabs)/progress` | 14-day bars, month + all-time stats, History link, milestones |
+| `(tabs)/profile` | Avatar (tap → Account), numbers, growth journey, freezes explainer, History link |
+| `(tabs)/settings` | Account row; Your rules (win rule, currency, time zone as picker sheets); notifications; email toggles; Your data (CSV export); Help & info |
+| `day/[date]` | Status banner, logged items with steppers + cost, preset chips, custom item, **Reflection** note, photos |
+| `account` | Display name, change password, sign out, delete account |
+| `history` | Every day newest-first, grouped by month, filters, notes inline |
+| `support` | Helplines (tap to call), findahelpline.com, peer groups, stopping-safely note |
+| `legal/privacy`, `legal/terms` | Text from `src/content/legal.ts` |
+| `steady` | Guided breathing for cravings (modal) |
+| `about`, `setup`, `+not-found` | Info, "configure env" screen, 404 |
+
+---
+
+## 2. Product in one paragraph + principles
 
 Each day the user taps **"It was a clear day"** (one-tap win) or **logs what they had**. A win
-extends a **streak** and lifetime **clear days**, which grows a **tree** (seed→…→grove at
-0/3/7/14/30/60 clear days). Every 7-day streak earns a **freeze token** (max 3 banked); on a slip
-a freeze protects the streak. Win condition is configurable per user: **zero** (any drink = slip),
-**limit** (≤ N units = win), or **manual** (self-declared). Units use the UK formula
-`volume_ml × abv% / 1000`. See [PROJECT.md](./PROJECT.md) for principles.
+extends the **streak** and lifetime **clear days**, which grow a **tree** (seed → sprout →
+sapling → young tree → full tree → grove at 0/3/7/14/30/60 clear days). Every 7-day streak
+earns a **freeze** (max 3 banked); a freeze can protect the streak on a slip day. The win rule
+is per user: **zero** (anything logged = slip), **limit** (≤ N units = win), or **manual**.
+Units use the UK formula `volume_ml × abv% / 1000 × quantity`.
 
-### Non-negotiable principles (apply to all future work)
-- **Calm, never punitive.** A bad day is a *slip* — never "failure"/"relapse". Terracotta, not red.
-- **Non-triggering language.** App chrome leans on *clear days / wins / growth*; avoid
-  "alcohol / drinking / consumption" framing (it can nudge some people toward drinking).
-- **Privacy first.** Sensitive health data: per-user Postgres RLS, no analytics on logged content,
-  account deletion truly purges, secrets only in `.env` (gitignored).
-- **Correctness of the math** lives in the tested `@sobr/core` package — change it with tests.
+**Non-negotiable principles** (PROJECT.md has the full text):
+- **Calm, never punitive.** A bad day is a *slip*, never "failure"/"relapse". Slip color is
+  muted brick, never alarm red.
+- **Non-triggering language.** App chrome talks about clear days, wins, growth, reflection.
+  Don't name specific drinks in hints or chrome outside the logger itself.
+- **Privacy first.** Per-user RLS on every table; no analytics or third-party SDKs that can see
+  logged content; account deletion purges everything.
+- **Correct math.** Streak / units / freeze / date logic lives in `@sobr/core` with tests.
+  Change it only with tests.
+- **Never overwrite what you haven't loaded.** A save replaces a day's whole drink list, so any
+  write path must start from a *successfully loaded* day (see gotcha 11).
 
 ---
 
-## 3. Tech stack & the decisions behind it
+## 3. Stack
 
-| Concern | Choice | Why (decision) |
+| Concern | Choice | Notes |
 | --- | --- | --- |
-| Monorepo | pnpm workspaces + Turborepo | Shared logic/schema never drift. |
-| Frontend | **One Expo Router app** (web+iOS+Android) | Web is an authed companion — no SEO/SSR — so a separate Next.js app wasn't worth a 2nd UI codebase. Reversible: packages stay shareable. |
-| Styling | **NativeWind v4.2.5**, `darkMode: 'class'` | Tailwind for RN, works web+native. Theme is **light** (white + moss-green, since 2026-07-01); `darkMode: 'class'` is kept because `'media'` has historically crashed on this NativeWind/RN combo (see gotchas) — the app never applies a `dark` class, so it's inert. |
-| Tokens | `@sobr/config` (mirrored in `tailwind.config.js`) | Tailwind (CJS) can't import the TS ESM tokens, so the palette is mirrored — keep them in sync. |
-| Data/cache | TanStack Query (+ persistence) | Offline tolerance. |
-| Backend | **Supabase** (Postgres + Auth + RLS) | Bundled auth + row-isolation beats Neon + bolt-on auth for sensitive per-user data. |
-| ORM/migrations | **Drizzle** + hand-written SQL | RLS/triggers/grants are hand-written (Drizzle can't infer them). |
-| Validation | **Zod** (in `@sobr/core`) | Single source of truth for shapes. |
-| Charts/visuals | **react-native-svg** | One cross-platform path (no Recharts/shadcn — DOM-only). |
-| Animation | reanimated 4 + `react-native-worklets` | SDK 54. |
-| Auth | email OTP + **Google** (Supabase OAuth/PKCE) | Apple deferred to store-publish time. |
-| Reminders | `expo-notifications` (local) | No servers; remote push later. |
-| Tests | **Vitest** on `@sobr/core` | The bug-prone math is covered. |
-| Runtime | Expo **SDK 54** (React 19.1, RN 0.81.5), Node ≥20, pnpm 9 (corepack) | |
+| Monorepo | pnpm 9 workspaces (`node-linker=hoisted`) + Turborepo | Node 20 (`.nvmrc`) |
+| App | **Expo SDK 54**, Expo Router 6, React 19.1, RN 0.81, New Architecture | one codebase for Android/iOS/web |
+| Styling | NativeWind 4.2.x (`darkMode: 'class'`, never applied) + tokens in `@sobr/config` | palette mirrored in `tailwind.config.js` |
+| Type | Fraunces 900 (display), Figtree (UI) via `@expo-google-fonts` | |
+| Data | TanStack Query 5 + AsyncStorage persistence | optimistic writes for days, freezes, settings |
+| Backend | **Supabase**: Postgres + Auth + RLS + Storage (`day-photos`) + pg_cron/pg_net email jobs | project ref `uqozokfjfstsfuelgzcy` |
+| Validation | Zod (in `@sobr/core`) | |
+| Visuals | react-native-svg (tree, charts, icons), reanimated 4 + worklets | |
+| Keyboard | **react-native-keyboard-controller 1.18.5** | required on edge-to-edge Android (gotcha 12) |
+| Files | expo-file-system (new `File`/`Paths` API), expo-sharing | CSV export |
+| Notifications | expo-notifications, local only | daily check-in + 7 weekly motivation triggers |
+| Auth | **email + password** (no confirmation); code-based reset | Google wired but hidden; Apple deferred |
+| Tests | Vitest on `@sobr/core` | 80 tests |
+| CI / release | GitHub Actions → release APK → GitHub Release | EAS profiles exist in `eas.json` for later |
 
-**Rejected:** `@expo/ui` (native-only/alpha — would break web); separate Next.js web app (not
-needed); CSV/JSON export (data lives in DB and restores on login).
+**Rejected / deferred:** separate Next.js web app (not needed), `@expo/ui` (native-only),
+dark mode (see §9), moods (needs a migration).
 
 ---
 
 ## 4. Repository layout
 
 ```
-sobr/
-├─ apps/mobile/                Expo Router app (web + native)
-│  ├─ app/                     routes: (auth) (onboarding) (tabs) day/[date] setup _layout
-│  ├─ src/components/          UI kit (ui.tsx), Tree, Logo, Glow, GrowthCelebration, icons, AnimatedNumber
-│  ├─ src/data/                SessionProvider, hooks (queries+mutations), useReminder, useGrowthCelebration, api.ts
-│  ├─ src/lib/                 supabase, auth (Google), notifications, queryClient, env, haptics
-│  ├─ src/theme/               re-exports @sobr/config tokens for SVG/inline use
-│  ├─ assets/brand/            SVGs + PNGs (logo/icon/favicon/splash) — placeholder, replaceable
-│  ├─ app.json / app.config.js plugins, scheme "sobr"; app.config.js loads the ROOT .env into `extra`
-│  ├─ tailwind.config.js metro.config.js babel.config.js global.css
-├─ packages/core/              @sobr/core — schemas + pure logic + 71 Vitest tests
-├─ packages/config/            @sobr/config — tokens, drink presets, currencies (USD default), growth meta
-├─ packages/db/                @sobr/db — Drizzle schema, migrations/ (0000_init.sql, 0001_grants.sql), client
-├─ HANDOVER.md PROJECT.md PLAN.md TODO.md PROGRESS.md README.md
-└─ package.json pnpm-workspace.yaml turbo.json tsconfig.base.json .env.example
+apps/mobile/
+  app/                 routes (table in §1); _layout.tsx = providers, Gate, ErrorBoundary
+  src/components/      ui.tsx (kit: Txt, Screen, Card, Button, TextField, OptionList,
+                       ToggleRow, ListRow, RowValue, Chip, Avatar, Notice, EmptyState…),
+                       BottomSheet, LimitStepper, LegalDoc, Tree, MonthCalendar, DayPhotos,
+                       icons, celebrations
+  src/data/            SessionProvider (session, displayName, greetingName), hooks.ts
+                       (queries + optimistic mutations), api.ts (Supabase I/O), useRefresh,
+                       useNotificationPrefs (+ resyncNotificationSchedule), pledge/celebrations
+  src/lib/             supabase, account (name/password/reset), notifications, exportData,
+                       dates (formatDay/formatMonth), errorMessage (+ authErrorMessage),
+                       haptics, env, confirm, queryClient
+  src/content/legal.ts privacy + terms text
+  assets/brand/        logo/icon/splash + adaptive-{foreground,background,monochrome}
+                       + notification-icon (SVG sources next to PNGs)
+  app.json / app.config.js   app.config.js loads ROOT .env into `extra`; CI sets versionCode
+packages/core/         @sobr/core: schemas + pure logic (units, win, streak, freeze, growth,
+                       milestones, aggregates, dates, CSV export) + tests
+packages/config/       @sobr/config: tokens, drink presets (incl. Nepal-local), currencies, growth meta
+packages/db/           migrations 0000–0005, email/ templates (auth-code.html, reset-password.html),
+                       seed + apply scripts
+supabase/functions/send-email   Send Email auth hook via Resend (optional; not wired yet)
+.github/workflows/android-apk.yml   tests + typecheck → release APK → GitHub Release
 ```
 
-Dependency direction: `apps/mobile` → `@sobr/{core,config,db-types}`. Packages never import apps.
-`@sobr/core` has zero deps except Zod (keeps it portable + fast to test).
+Dependency direction: `apps/mobile` → `@sobr/{core,config}`. Packages never import the app.
+Shared packages use **extensionless** relative imports (gotcha 4).
 
 ---
 
-## 5. Data model & database
+## 5. Data model
 
-Tables (all in `public`, all **RLS enabled + forced**, all granted to `authenticated`):
-- **`user_settings`** (PK `user_id`→auth.users): `win_mode` (zero|limit|manual), `daily_limit_units`,
-  `currency` (default **USD**), `time_zone`, **`onboarded`** (drives routing), timestamps.
-- **`daily_entries`**: `user_id`, `entry_date` (local civil date), `status` (win|slip|freeze),
-  `note`, unique `(user_id, entry_date)`.
-- **`drinks`**: `daily_entry_id` (cascade), `preset_key`, `name`, `volume_ml`, `abv` (percent number),
-  `cost`, `quantity`. **Units are derived, never stored.**
-- **`freeze_grants`**: `user_id`, `granted_for_streak` (unique per user — no double-award),
-  `used_at`, `used_on_entry_id`.
+All tables in `public`, **RLS enabled + forced**, granted to `authenticated` (gotcha 3).
 
-Derived-not-stored: units, streaks, banked-freeze counts, all stats (computed in `@sobr/core` on
-read — can't drift). DB extras: `handle_new_user` trigger (auto-creates `user_settings` on signup),
-`updated_at` triggers, `delete_account()` security-definer purge (cascades from auth.users).
+- **`user_settings`** (PK `user_id`): `win_mode`, `daily_limit_units`, `currency` (USD
+  default), `time_zone`, `onboarded` (drives routing), `email_reminders`, `email_weekly`.
+  Auto-created by the `handle_new_user` trigger.
+- **`daily_entries`**: `user_id`, `entry_date` (user's local civil date), `status`
+  (`win|slip|freeze`), `note` (≤ 500 chars), unique `(user_id, entry_date)`.
+- **`drinks`**: line items per entry (cascade delete). Units are **derived, never stored**.
+- **`freeze_grants`**: `granted_for_streak` (unique per user), `used_at`, `used_on_entry_id`.
+- **`day_photos`** + private storage bucket `day-photos`; object key
+  `<user_id>/<entry_id>/<id>.<ext>`; storage policies pin the first segment to `auth.uid()`.
+- **`email_log`** (service-only): reminder/weekly email audit + dedupe.
+- **Display name** is *not* a column: it's `auth.users.user_metadata.display_name`.
 
-**Migrations** (`packages/db/migrations/`): `0000_init.sql` (tables, checks, indexes, RLS, policies,
-grants, triggers, delete routine) and `0001_grants.sql` (idempotent grants for DBs created before
-grants were added). Apply via the Supabase SQL editor or `pnpm --filter @sobr/db migrate`.
+Derived on read in `@sobr/core`: units, streaks, banked freezes, all stats.
 
----
+Server-side jobs (migration 0002): `pg_cron` runs `app.run_email_jobs()` hourly; `pg_net`
+posts to Resend using the Vault secret `resend_api_key` (absent → rows logged as
+`skipped_no_key`). Sends from `onboarding@resend.dev`, so only the Resend account owner
+receives them until a domain is verified.
 
-## 6. Gotchas & fixes already discovered (READ — these will bite again)
-
-1. **NativeWind must be ≥ 4.2.x AND `darkMode: 'class'`.** 4.1.x crashes on the New Architecture
-   under React 19 (web blanks / native errors). `darkMode: 'media'` has thrown *"Cannot manually
-   set color scheme"* on this stack before — `darkMode: 'class'` avoids it. (The app is
-   light-themed now and never applies a `dark` class, so this is purely defensive.)
-2. **The canonical `.env` is at the REPO ROOT**, loaded by `apps/mobile/app.config.js` (Expo only
-   auto-loads the app-folder `.env`). **Restart the dev server after editing `.env`**
-   (`pnpm web` / `pnpm app --clear`).
-3. **RLS needs table GRANTs.** Symptom: `42501 permission denied for table ...`. RLS governs rows;
-   Postgres still needs `GRANT ... TO authenticated`. Fix = run `0001_grants.sql` on the project.
-4. **Shared packages use extensionless relative imports** (`from './x'`, not `'./x.js'`) — Metro
-   can't rewrite `.js`→`.ts`. `tsc` (Bundler resolution) is happy either way.
-5. **`pnpm app` "Unable to resolve <new dep>"** after adding a dependency = stale Metro module map.
-   Restart with `pnpm app --clear` (not just a reload). It's not a code bug.
-6. **Web favicon/app icon need PNGs** (Expo's generator rejects SVG). PNGs were rasterized from the
-   brand SVGs with `@resvg/resvg-js` (installed ad-hoc in /tmp). Regenerate the same way if the SVGs change.
-7. **Reanimated 4 / SDK 54:** `babel-preset-expo` auto-injects the worklets plugin — do NOT add
-   `react-native-reanimated/plugin` manually; `react-native-worklets` is installed.
-8. **Supabase client never throws at import** when env is unset (placeholder url/key) so the setup
-   screen can show; `flowType: 'pkce'` is set for OAuth.
-9. **Mutation hooks must not throw at render** when signed out — the "must be signed in" check lives
-   inside the `mutationFn` (`requireUid`), not the hook body.
+Migrations are applied manually (Supabase SQL editor or `packages/db/apply-*.mjs`), in order
+0000 → 0005. **This environment has no access to the sobr Supabase project** (the connected
+Supabase account only has an unrelated project), so schema changes must be handed to the owner.
 
 ---
 
-## 7. Auth specifics
+## 6. Gotchas (read these; each one has bitten)
 
-- **Email OTP** works on web + native (`signInWithOtp` / `verifyOtp`).
-- **Google** (`src/lib/auth.ts` → `signInWithGoogle`): Supabase OAuth + PKCE.
-  - Web redirect = page origin; `detectSessionInUrl` exchanges the `?code`. **Confirmed working.**
-  - Native redirect = `sobr://auth-callback`; handled inline by `openAuthSessionAsync` and via a
-    deep-link listener in `app/_layout.tsx`. **Needs a custom dev build** (Expo Go can't).
-  - Supabase setup the user has done: Google provider (client id/secret), redirect URLs
-    (`http://localhost:8081`, `sobr://auth-callback`), Site URL, and the Google Cloud "Authorized
-    redirect URI" = `https://<project>.supabase.co/auth/v1/callback`.
-- **Apple**: deferred (needs paid Apple Developer account + dev build; mandatory for App Store apps
-  that offer Google). See TODO → Future enhancements.
+1. **NativeWind must be ≥ 4.2.x with `darkMode: 'class'`.** 4.1.x crashes under React 19 /
+   New Arch; `'media'` throws "Cannot manually set color scheme".
+2. **The canonical `.env` is at the repo root**, loaded by `app.config.js`. Restart the dev
+   server (`--clear`) after editing it. It is gitignored and exists only on the owner's Mac.
+3. **RLS needs table GRANTs.** Symptom: `42501 permission denied` / "nothing saves". Fix:
+   `0001_grants.sql`. supabase-js rejects with plain objects, so use `errorMessage()`, never
+   `e instanceof Error`.
+4. **Extensionless imports in shared packages** (`'./x'`, not `'./x.js'`); Metro can't rewrite them.
+5. **"Unable to resolve <dep>"** after adding a dependency = stale Metro map → `--clear`.
+6. **Brand PNGs are rasterized from the SVGs** with `@resvg/resvg-js` (install it in a scratch
+   dir). Regenerate the PNGs whenever an SVG changes; Expo rejects SVG icons.
+7. **Reanimated 4:** don't add the reanimated babel plugin; `babel-preset-expo` handles it.
+8. **The Supabase client never throws at import** without env; the Gate shows `/setup`.
+9. **Mutation hooks must not throw at render** when signed out; check inside `mutationFn`.
+10. **Typed routes differ between local and CI.** `.expo/types` is gitignored, so CI typechecks
+    with loose route types (e.g. `useSegments()` is `[string]`). New routes typecheck locally
+    only after the dev server regenerates types. To reproduce CI, move `.expo/` and
+    `expo-env.d.ts` aside and run `tsc --noEmit`.
+11. **A day save replaces the whole drink list.** Any write path (day screen, Home quick-add,
+    one-tap win) must only run after that day's query **succeeded** (live or from the
+    persisted cache). A failed fetch must block writes and show a notice, or you wipe real
+    data. `upsertEntryStatus` only writes `note` when it's passed (`undefined` = keep).
+12. **Android is edge-to-edge on SDK 54**, so the window doesn't resize for the keyboard.
+    Scrolling screens use `KeyboardAwareScrollView` (via `Screen scroll`), and the root is
+    wrapped in `KeyboardProvider`. Avoid text inputs inside `BottomSheet` (a RN `Modal`):
+    keyboard avoidance there is unverified, which is why the daily limit is a stepper.
+13. **Supabase won't let you edit email templates without custom SMTP.** The default Reset
+    Password email only has a link to the Site URL (`localhost:3000`), which is useless on a
+    phone. The app's reset is code-based and needs `{{ .Token }}` in that template (DEPLOY.md §1).
+    Until SMTP + template are set, reset a password via SQL:
+    `update auth.users set encrypted_password = crypt('<pw>', gen_salt('bf')) where email = '<email>';`
+14. **This cloud dev environment can't reach** `dl.google.com` (Android SDK), `api.expo.dev`
+    (EAS) or `*.supabase.co`. Hence APKs are built on GitHub Actions, and anything touching the
+    live DB is handed to the owner.
+15. **The Expo CLI needs `--offline` / `EXPO_OFFLINE=1` here**, or it crashes fetching
+    dependency versions through the proxy.
 
 ---
 
-## 8. How to run
+## 7. Auth
+
+- **Email + password**, `signUp` / `signInWithPassword`, one screen. Needs Supabase →
+  Authentication → Providers → Email → **Confirm email OFF** (it is).
+- **Password reset** (`src/lib/account.ts`): `resetPasswordForEmail` → user enters the emailed
+  code → `verifyOtp({ type: 'recovery' })` → `updateUser({ password })`. The Gate
+  (`app/_layout.tsx`) leaves `(auth)/forgot-password` alone while the recovery session exists;
+  leaving the screen without finishing signs that session out. The code field accepts
+  6–10 digits.
+- **Change password / display name:** `updateUser` from the Account screen.
+- **Google:** `signInWithGoogle` in `src/lib/auth.ts` works on web, but the button was removed
+  from sign-in. Re-add only once native OAuth can be tested. **Apple:** deferred to store time.
+- **Dev bypass:** `EXPO_PUBLIC_SKIP_AUTH=1` (and `__DEV__`) jumps to the tabs with no session.
+  Reads render empty; writes fail by design.
+
+---
+
+## 8. Build, run, release
 
 ```bash
-corepack enable pnpm          # if pnpm missing
-pnpm install
-# DB: run packages/db/migrations/0000_init.sql then 0001_grants.sql in Supabase SQL editor
-# Env: a .env exists at the repo root (gitignored) with EXPO_PUBLIC_SUPABASE_URL/ANON_KEY (+DATABASE_URL)
-pnpm web                      # web app (origin usually http://localhost:8081)
-pnpm app                      # Expo dev server (device); use --clear after dep/config changes
-pnpm test:core                # 71 domain-logic tests
+corepack enable pnpm && pnpm install
+pnpm web                      # web dev server (http://localhost:8081)
+pnpm app                      # Expo dev server for a device (Expo Go lacks notifications on Android)
+pnpm test:core                # 80 domain-logic tests
 ```
 
-Until env is set, the app shows a friendly **setup screen**.
+**Android release APK (how the owner installs):** push to `main` or `claude/**` (paths:
+`apps/mobile/**`, `packages/**`, lockfile, workflow), or run *Actions → Android APK → Run
+workflow*. About 12 minutes. The job:
+1. runs core tests and typechecks,
+2. runs `expo prebuild` + `gradlew assembleRelease` (arm64-v8a + armeabi-v7a),
+3. sets `versionCode` = run number (so each build installs over the last),
+4. publishes the APK as a GitHub Release, but only if the repo secrets
+   `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` are set (they are).
+
+It is signed with the RN template's debug keystore: fine for sideloading, never for a
+store. Docs-only pushes don't trigger a build. `cancel-in-progress` means a new push cancels
+a running build on the same branch. Full release checklist: **DEPLOY.md**.
+
+To check an APK's baked config without a phone:
+`unzip -p sobr-*.apk assets/app.config | jq .extra`.
 
 ---
 
-## 9. Verification workflow (how this codebase has been checked — keep doing this)
+## 9. Verification workflow (no device, no live DB here)
 
-Because there's no device/CI here, work is verified by:
-1. **Domain logic:** `pnpm --filter @sobr/core test` (must stay green; add tests for any logic change).
-2. **Types:** per package `pnpm --filter @sobr/<pkg> typecheck`; app `cd apps/mobile && pnpm exec tsc --noEmit`.
-3. **Bundling (catches build/resolve errors, then exits — unlike the dev server):**
-   `cd apps/mobile && pnpm exec expo export --platform web|ios|android`.
-4. **Config:** `pnpm dlx expo-doctor`.
-5. **Visual (web):** drive headless Chrome to screenshot, then view the PNG. Pattern used:
-   - Chrome at `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`; `npm i puppeteer-core`
-     in a /tmp dir; `puppeteer.launch({ executablePath, headless:'new' })`; `page.goto('http://localhost:<port>/')`;
-     `page.screenshot()`; capture `pageerror` events.
-   - To screenshot **authed screens** without a session: temporarily edit `app/_layout.tsx`'s `Gate`
-     to force the tabs route (`if (segments[0] !== '(tabs)') router.replace('/(tabs)'); return;`),
-     restart the dev server, screenshot, then **restore the file** (back it up first; never commit it).
-     Authed queries are disabled without a user, so screens render with empty data.
+1. `pnpm --filter @sobr/core test` (add tests for any logic change).
+2. `cd apps/mobile && pnpm exec tsc --noEmit`, and the CI variant (gotcha 10).
+3. `cd apps/mobile && EXPO_OFFLINE=1 pnpm exec expo export --platform android` catches bundling
+   and resolution errors, including new native deps.
+4. **Visual (web):** start `EXPO_OFFLINE=1 EXPO_PUBLIC_SKIP_AUTH=1 EXPO_PUBLIC_SUPABASE_URL=https://example.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=x pnpm exec expo start --web --offline`, then screenshot with
+   `playwright-core` and Chromium at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
+   (390×844 @2x for phone, 1280 wide for desktop). Screens render with empty data under the bypass.
+5. Push → watch the Actions run → confirm the Release asset.
+6. Run `/code-review` and `/security-review` on meaningful batches (both were run for Phase 5).
+
+**Deliberately deferred:**
+- **Dark mode.** Many screens use static `colors.*` from `src/theme` in inline styles and
+  SVGs. Doing it properly means CSS-variable tokens + a `useColors()` hook across the app,
+  plus device testing.
+- **Mood on check-in.** Needs a column + migration the owner must apply.
 
 ---
 
 ## 10. Conventions / working agreement
 
-- **Commit per feature** (small, logical commits). End commit messages with the
-  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>` trailer.
-- **Pause-and-iterate** at stable checkpoints (green typecheck/tests, committed) rather than
-  barrelling through a whole milestone.
-- **End every task** by telling the user (1) what was achieved and (2) what *they* must do; then
-  record it in `PROGRESS.md` and check it off in `TODO.md` (link the TODO group to the PROGRESS
-  anchor). `TODO.md` is the live source of truth — never let it drift.
-- Copy stays **non-judgmental + non-triggering**; aesthetic stays **calm dark wellness** (gradients,
-  glass cards, soft amber glow — no harsh shadows, no casino gamification).
+- **One commit per feature**, with the why in the body. End commit messages with the
+  Co-Authored-By / session trailers your harness specifies. Push to the working branch; open
+  a PR only when asked.
+- **Pause at stable checkpoints** (tests + typecheck green, committed).
+- **End every task** by telling the owner (1) what was achieved and (2) what *they* must do;
+  record it in PROGRESS.md (newest first, with an anchor) and check it off in TODO.md.
+- **Copy:** non-judgmental, non-triggering; the owner prefers no em dashes in chat replies.
+- **Aesthetic:** calm light mist + deep teal; one bold surface (the Home hero); Fraunces
+  numerals; soft cards; no casino gamification.
 
 ---
 
-## 11. What's done vs. what's left
+## 11. Where to continue
 
-**Done (see PROGRESS.md for the full log):** M0 foundations · M1 tested core · M2 DB+RLS+grants ·
-M3 app shell+auth · M4 logger · M5 streaks+tree · M6 calendar+stats · M7 settings · **M8 polish**
-(micro-interactions incl. tree level-up, a11y, error/empty states, copy) · modern UI · daily
-reminders · offline tolerance · Google sign-in (web) · **Phase 3 redesign** (light white+green
-theme, Calendar merged into Home with a day-detail panel, two-step OTP sign-in, three-step
-onboarding).
+Owner actions outstanding (TODO.md has the live list):
+1. Custom SMTP + paste `packages/db/email/reset-password.html` into the Reset Password template.
+2. Phone smoke test (DEPLOY.md §4) and report anything broken.
+3. Later: verify a Resend domain before any other users; Play Store via EAS (DEPLOY.md §5).
 
-**Left / future (TODO.md → Future enhancements):**
-- **Test the native app on a device** (needs a dev build) — only the user can.
-- **Apple sign-in** — at store-publish time (paid Apple account + dev build).
-- **Native Google** — works once a dev build exists (already wired).
-- **Remote push** / smart "log before midnight" nudges.
-- Optional EAS/dev-build setup (`eas.json` + guide) to make native testing one command.
-- Optional dedicated Next.js `apps/web` if the web view ever outgrows RN Web.
-
-**Outstanding user actions:** run `0001_grants.sql` if a fresh DB shows `42501`; make a dev build to
-test native; (later) Apple Developer setup.
+Engineering candidates, roughly by value:
+- Fix whatever the owner's smoke test turns up (top priority).
+- Merge `claude/awesome-bohr-aos87s` → `main` via PR once the owner approves.
+- Dark mode (see §9).
+- Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
+- Re-add Google sign-in (needs native OAuth testing) and Apple sign-in for iOS.
+- Wire the `send-email` hook for branded auth mail once a Resend domain exists.
 
 ---
 
 ## 12. Kickoff prompt for the next agent
 
-Paste this to the next agent:
-
-> You're continuing work on **sobr**, a cross-platform (Expo web+iOS+Android) alcohol-moderation
-> habit tracker at `/Users/gcsandesh/Desktop/projects/personal/sobr`. **Before doing anything,
-> read `HANDOVER.md` in full, then `PROJECT.md`, `PLAN.md`, `PROGRESS.md`, and `TODO.md`** to learn
-> the product, the architecture, every decision, the known gotchas, and exactly where we stopped.
-> Skim recent `git log` for the change history (we commit one feature per commit).
+> You're continuing work on **sobr**, an Expo (Android + iOS + web) habit tracker backed by
+> Supabase, repo `gcsandesh/sobr`, working branch `claude/awesome-bohr-aos87s`. Before doing
+> anything, read `HANDOVER.md` in full, then `PROJECT.md`, `TODO.md`, the top two entries of
+> `PROGRESS.md`, and `DEPLOY.md`. Skim `git log -20`.
 >
-> Then confirm the baseline is healthy: `pnpm install`, `pnpm --filter @sobr/core test` (expect
-> 71 passing), and `cd apps/mobile && pnpm exec tsc --noEmit`. Verify UI changes the way HANDOVER
-> §9 describes (expo export to catch build errors; headless-Chrome screenshots for visuals).
+> Confirm the baseline: `pnpm install`, `pnpm --filter @sobr/core test` (expect 80 passing),
+> `cd apps/mobile && pnpm exec tsc --noEmit`. Heed HANDOVER §6, especially 10–15: typed
+> routes differ in CI, never write a day that hasn't loaded, keyboard handling on edge-to-edge
+> Android, SMTP-gated email templates, and no network access to the Android SDK, EAS or
+> Supabase from the cloud environment. The owner installs APKs from GitHub Releases built by
+> `.github/workflows/android-apk.yml`.
 >
-> Respect the working agreement in HANDOVER §10: commit per feature; keep `TODO.md` and
-> `PROGRESS.md` updated (check items off, log what was done + what the user must do); keep copy
-> non-judgmental/non-triggering and the aesthetic calm. Heed the gotchas in HANDOVER §6 (NativeWind
-> darkMode/version, root `.env` via `app.config.js`, RLS GRANTs, extensionless imports, Metro
-> `--clear`). The MVP is complete and working on web; the main remaining work needs a native dev
-> build (see TODO → Future enhancements). Pick up from the top of `TODO.md`'s unchecked items, or
-> ask the user which direction to take next.
+> Keep copy calm and non-triggering, commit per feature, update PROGRESS.md and TODO.md, and
+> end by telling the owner what changed and what they need to do.
 
 ---
 
-## Appendix — Building with EAS
+## Appendix A: Building with EAS (for store builds)
 
-`eas.json` lives at `apps/mobile/eas.json` with three profiles: `development`
-(dev client, internal), `preview` (installable APK / internal iOS), and
-`production` (AAB, auto-incrementing version).
-
-**The one thing that will silently break a build.** `app.config.js` injects
-`supabaseUrl` / `supabaseAnonKey` into `extra` by reading the **repo-root
-`.env`** — which is gitignored, so EAS build servers never receive it. Without
-the values, `isSupabaseConfigured` is false and the app boots to the *setup*
-screen instead of sign-in, looking broken for reasons that have nothing to do
-with the build.
-
-Set them on EAS once, before the first build:
+`apps/mobile/eas.json` has `development`, `preview` (APK) and `production` (AAB) profiles.
+`app.config.js` reads the **root `.env`**, which EAS servers never receive, so set the
+public vars on EAS once:
 
 ```bash
 cd apps/mobile
@@ -294,91 +329,29 @@ eas env:create --name EXPO_PUBLIC_SUPABASE_URL      --value "<url>" --visibility
 eas env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "<key>" --visibility plaintext --scope project
 ```
 
-Plaintext is correct here: both are public by design, shipped inside the app
-bundle either way, and RLS is what actually protects the data. `DATABASE_URL`
-and `RESEND_API_KEY` must **never** be added — they are server-only.
+Plaintext is correct: both ship in the bundle and RLS protects the data. Never add
+`DATABASE_URL`, `RESEND_API_KEY` or the service-role key. iOS device builds need a paid Apple
+Developer account.
 
-**Android** builds and installs with no paid account: `eas build -p android
---profile preview` produces an APK you can sideload. **iOS on a physical
-device** needs a paid Apple Developer account for provisioning, whatever the
-profile — that is an Apple rule, not an EAS one.
+## Appendix B: Why email + password (not OTP sign-in)
 
----
+Supabase's built-in mailer only delivers to pre-authorized addresses, and lifting that needs a
+verified domain plus custom SMTP, so OTP sign-in could not complete on a device. Password auth
+sends no mail. With **Confirm email OFF**, sign-up returns a session immediately; the sign-in
+screen detects the "user but no session" case and explains it.
 
-## Appendix — Auth: email + password (no verification)
+## Appendix C: The missing-GRANTs bug
 
-**What it is now.** `apps/mobile/app/(auth)/sign-in.tsx` is one screen with a Sign in /
-Create account toggle, calling `supabase.auth.signUp` / `signInWithPassword`. A session is
-issued immediately, so `auth.uid()` is real and every RLS policy works untouched.
+`authenticated` once held only TRUNCATE/REFERENCES/TRIGGER on the app tables, and Postgres
+checks GRANTs before RLS, so every read and write failed ("Plant my tree does nothing"). Check
+with:
+`select table_name, privilege_type from information_schema.role_table_grants where grantee='authenticated' and table_schema='public';`
 
-**Why the OTP flow was dropped.** Supabase's built-in mailer only delivers to pre-authorized
-addresses, and lifting that needs a verified domain plus custom SMTP — so email sign-in could
-not complete on a device at all. Password auth sends no mail. The old `verify.tsx` screen was
-deleted; `packages/db/email/auth-code.html` is kept because password *reset* will need it.
+## Appendix D: Auth email templates
 
-**Required dashboard step (one time).** Authentication → Providers → Email →
-**Confirm email OFF**. With it on, sign-up returns a user but no session; the screen detects
-exactly that case and says so instead of failing silently.
-
-**Google sign-in** stays wired in `src/lib/auth.ts` but is no longer referenced by the
-sign-in screen — re-adding it means re-adding UI, not uncommenting. It is last on TODO.
-
----
-
-## Appendix — Missing GRANTs (the bug behind "nothing saves")
-
-`0001_grants.sql` had never been applied to the live project. `authenticated` held only
-TRUNCATE/REFERENCES/TRIGGER on `user_settings`, `daily_entries`, `drinks` and `freeze_grants`
-— no SELECT/INSERT/UPDATE/DELETE. Postgres checks GRANTs *before* RLS, so every read and
-write failed regardless of policy, session or onboarding state.
-
-It presented as "Plant my tree does nothing": settings could not be read (so the Gate kept
-routing to onboarding) and could not be written (so onboarding could never complete).
-
-It stayed invisible for so long because supabase-js rejects with plain objects, not `Error`
-instances — `e instanceof Error` was false, so the UI fell through to a generic "check your
-connection". `apps/mobile/src/lib/errorMessage.ts` now extracts `message`/`hint` from
-whatever is thrown; use it for any user-facing error rather than `instanceof Error`.
-
-Re-apply with `node packages/db/apply-day-photos.mjs` style scripts, or check with:
-`select table_name, privilege_type from information_schema.role_table_grants
- where grantee='authenticated' and table_schema='public'`.
-
----
-
-## Appendix — Email sign-in: getting a 6-digit OTP instead of a magic link
-
-**Symptom.** The sign-in email contains only a "Log In" link, and that link points at
-`localhost:3000` (the project's Site URL), which is a dead address on a phone. The app's
-OTP screen is fine — the *email* just never contains a code.
-
-**Cause.** Supabase's default **Magic Link** email template renders only
-`{{ .ConfirmationURL }}`. GoTrue always generates a 6-digit OTP alongside it, but the
-template doesn't show it.
-
-**Permanent fix (Supabase dashboard — one time).**
-The template body lives in the repo at **`packages/db/email/auth-code.html`** — copy that
-file's contents into the dashboard under Authentication → Emails.
-
-Paste the *same* body into **every** slot: Confirm signup · Magic Link · Invite user ·
-Change email address · Reset password. It leads with `{{ .Token }}` (the 6-digit code the
-app's verify screen wants) and keeps `{{ .ConfirmationURL }}` as a secondary button. Those
-are the only two variables it uses, and GoTrue provides both in every slot — so it needs no
-per-slot edits, and no revisiting when a new flow starts sending mail.
-
-It follows the same house rules as the reminder/weekly mail (no `<img>`, tables not
-flex/grid, inline styles only) and mirrors `app.email_shell()` from
-`packages/db/migrations/0002_email.sql`, so auth mail matches the rest.
-
-Optionally set Authentication → URL Configuration → Site URL to something real (or add
-`sobr://auth-callback` to Redirect URLs) so the link isn't a dead end either.
-
-**There is no in-app link fallback.** An earlier version of this appendix claimed
-`signInWithEmailLink()` in `apps/mobile/src/lib/auth.ts` accepted a pasted magic link, and
-that the verify screen exposed it under "Got a link instead of a code?". Neither exists —
-`auth.ts` exports only `completeSessionFromUrl` and `signInWithGoogle`, and the verify
-screen is code-only. **Until the template above is applied, email sign-in cannot complete
-on a device.** If a link-paste fallback is ever wanted, note the client runs `flowType:
-'pkce'`, so a link's `code=` needs `exchangeCodeForSession`; the raw
-`/auth/v1/verify?token=…` URL carries a `token_hash` that `verifyOtp({ token_hash, type:
-'magiclink' })` can redeem.
+- `packages/db/email/reset-password.html`: for the **Reset Password** slot. Code only
+  (`{{ .Token }}`), no link.
+- `packages/db/email/auth-code.html`: a general template for the other slots (code first,
+  `{{ .ConfirmationURL }}` as a secondary button).
+- House rules: no `<img>`, tables not flex/grid, inline styles only.
+- All of this requires custom SMTP to be enabled first (gotcha 13).
