@@ -31,6 +31,11 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 ### Supabase dashboard
 - [ ] Authentication → Providers → Email → **Confirm email OFF** (password sign-up must
       return a session; see HANDOVER → "Auth: email + password").
+- [ ] **Custom SMTP** (Supabase requires it before templates can be edited):
+      Authentication → Emails → SMTP Settings → enable; host `smtp.resend.com`, port `465`,
+      username `resend`, password = the Resend API key, sender `onboarding@resend.dev`
+      (delivers only to the Resend account owner until a domain is verified). Gmail with an
+      App Password (`smtp.gmail.com:465`) also works and can deliver to anyone.
 - [ ] **Reset Password email shows a code.** Authentication → Emails → Templates →
       Reset Password → paste `packages/db/email/reset-password.html`. The app's Forgot
       password screen needs the `{{ .Token }}` code; the default template only has a link
