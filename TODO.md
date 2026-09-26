@@ -162,9 +162,13 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Email hook: per-action copy, teal palette
 - [x] GitHub Actions: tests + typecheck + release APK → GitHub Release
 - [x] DEPLOY.md checklist
-- [ ] _User step:_ add `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` repo secrets
-- [ ] _User step:_ redeploy `send-email` edge function
+- [x] _User step:_ add `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` repo secrets
+- [ ] _User step:_ paste `packages/db/email/reset-password.html` into Supabase → Reset Password template
+- [ ] _Optional, later:_ wire + redeploy the `send-email` hook (Resend) once there are other users
 - [ ] _User step:_ phone smoke test (DEPLOY.md §4)
+- [x] Keyboard-aware screens on edge-to-edge Android; adaptive/themed + notification icons
+- [x] Never overwrite a day that failed to load (day screen, quick-add, one-tap win)
+- [x] CSV export; pull to refresh; ErrorBoundary; limit stepper; notification tap → today
 - [ ] Dark mode (deferred: see PROGRESS → Phase 5 decisions)
 - [ ] Mood on check-in (needs a migration)
 

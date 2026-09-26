@@ -6,6 +6,35 @@ its task groups here.
 
 ---
 
+<a id="phase5b-daily-use"></a>
+## Phase 5b · Daily-use polish + review fixes ✅ done (2026-09-26)
+
+**Achieved**
+- **Data-safety fix (from code review):** a day that failed to load used to hydrate as
+  blank, so Save, quick-add or the one-tap win could overwrite its real drinks and note.
+  All three now refuse to write until the day has loaded, and say so.
+- Android: keyboard never covers inputs (react-native-keyboard-controller; SDK 54 is
+  edge-to-edge), proper **adaptive + themed icon**, leaf **notification icon**, tapping the
+  check-in reminder **opens today's check-in**, stored reminders re-sync once per launch.
+- **CSV export** (Settings → Your data), tested in `@sobr/core` (quoting, formula-injection
+  guard), UTF-8 BOM for Excel.
+- **Pull to refresh** on Home, Progress, Profile, History; root **ErrorBoundary**.
+- Daily limit is a **0.5-unit stepper** in Settings and onboarding; settings updates are
+  optimistic with rollback.
+- Password reset: accepts 6–10 digit codes; leaving mid-reset signs the half-finished
+  session out; kinder, context-aware auth errors.
+- Email templates: `reset-password.html` (code only) and `auth-code.html` moved to teal.
+- Reviews: `/code-review` (10 findings, all addressed) and `/security-review` (no findings).
+- Verified: 80/80 core tests, typecheck (with and without generated routes), Android JS
+  bundle; APK builds 4 and 6 published and checked (Supabase config baked in).
+
+**What you need to do**
+1. Supabase → Authentication → Emails → Templates → **Reset Password** → paste
+   `packages/db/email/reset-password.html`, then reset your password in the app.
+2. Install the newest APK from Releases and run DEPLOY.md §4.
+
+---
+
 <a id="phase5-complete"></a>
 ## Phase 5 · Complete app + Android release pipeline ✅ done (2026-09-25)
 

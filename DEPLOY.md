@@ -31,8 +31,13 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 ### Supabase dashboard
 - [ ] Authentication → Providers → Email → **Confirm email OFF** (password sign-up must
       return a session; see HANDOVER → "Auth: email + password").
-- [ ] Authentication → Hooks → **Send Email** → the `send-email` function (sends every
-      auth code, including password-reset codes, through Resend).
+- [ ] **Reset Password email shows a code.** Authentication → Emails → Templates →
+      Reset Password → paste `packages/db/email/reset-password.html`. The app's Forgot
+      password screen needs the `{{ .Token }}` code; the default template only has a link
+      to the Site URL (localhost), which is useless on a phone.
+- [ ] *(Optional, later)* Authentication → Hooks → **Send Email** → the `send-email`
+      function, to send all auth mail through Resend with the app's own design. Not needed
+      while you're the only user: Supabase's built-in mailer plus the template above works.
 - [ ] All migrations applied, in order: `0000_init` → `0001_grants` → `0002_email` →
       `0003_email_visuals` → `0004_day_photos` → `0005_time_zone_guard`.
       Verify grants: `select table_name, privilege_type from information_schema.role_table_grants where grantee='authenticated' and table_schema='public';`
@@ -95,7 +100,9 @@ which manages a real upload key.
 - [ ] Open the day → write a Reflection → Save → note appears on Home and in History.
 - [ ] Quick-add (+) a drink to today → the note is still there (regression check).
 - [ ] Settings → Currency / Time zone sheets change and persist after restart.
-- [ ] Settings → Notifications → enable Daily check-in → Android permission prompt appears.
+- [ ] Settings → Notifications → enable Daily check-in → Android permission prompt appears;
+      when it fires, the status-bar icon is the leaf, and tapping it opens today's check-in.
+- [ ] Settings → Your data → Export → the share sheet offers a `.csv` file.
 - [ ] Day screen → add a photo → it shows, and a dot appears on the calendar.
 - [ ] Account → change name → Home greeting updates.
 - [ ] Sign out → Forgot password → code arrives (see Resend note) → new password works.
