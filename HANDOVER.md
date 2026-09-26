@@ -7,36 +7,47 @@
 > [PROGRESS.md](./PROGRESS.md) (chronological log with "what the user must do" per step).
 > Detailed change history lives in `git log` (one commit per feature).
 
-Last updated: 2026-07-11.
+Last updated: 2026-09-26.
 
 ---
 
 ## 1. TL;DR — current status
 
-**The MVP is feature-complete and verified.** A calm, private alcohol-moderation habit tracker
-("**sobr — clear days, counted.**") built as ONE Expo app for **web + iOS + Android**, backed by
-Supabase. Web runs and is confirmed working (incl. Google sign-in). Native hasn't been tested on a
-device yet — it needs a custom dev build (Expo Go can't do native Google OAuth or scheduled
-notifications fully).
+**The MVP is feature-complete, verified against the live project, and building for Android.**
+A calm, private alcohol-moderation habit tracker ("**sobr — clear days, counted.**") built as ONE
+Expo app for **web + iOS + Android**, backed by Supabase.
 
-Health at handover: **`@sobr/core` 71/71 tests pass**, all four workspaces + the app
-type-check, web bundles clean, `expo-doctor` passes.
+Health: **`@sobr/core` 75/75 tests pass**, all four workspaces type-check, `expo-doctor` reports
+only two patch-version drifts (`expo`, `expo-constants`).
 
-What works end-to-end on **web**: email-OTP + Google auth (now a two-step sign-in → verify
-flow), a three-step onboarding, daily check-in, drink logger, streaks + freeze tokens + growth
-tree (with level-up celebration), an embedded calendar + day-detail panel on Home, stats,
-settings, offline persistence. Reminders are local-notification based (native).
+**Auth is email + password, no verification** (2026-09-25). The old email-OTP flow was removed:
+Supabase's built-in mailer only delivers to pre-authorized addresses, and lifting that needs a
+verified domain plus custom SMTP — so email sign-in could not complete on a device at all.
+Password auth sends no mail and issues a session immediately, so `auth.uid()` is real and every
+RLS policy keeps working. "Confirm email" is OFF in the dashboard, verified by probe: sign-up
+returns a session straight away, so anyone can create an account. Google stays wired in
+`src/lib/auth.ts` but is **not** on the sign-in screen — re-adding it means re-adding UI, not
+uncommenting. It is deliberately last on TODO.
 
-**Visual direction (2026-07-01):** the app moved from the original dark charcoal-green theme to
-a **light, minimal white + moss-green** palette per product direction — see §3 and the
-`redesign-light-theme` entry in PROGRESS.md. The standalone Calendar tab was folded into Home.
+**Everything syncs through Postgres.** Entries, drinks, freezes and settings are rows keyed by
+`auth.uid()`; photos are objects in a private Storage bucket. The on-device TanStack cache is only
+a cache — sign out, sign in elsewhere, and the data is there.
 
-**Phase 4 (2026-07-11):** design-system v2 (ListRow/Chip/SectionHeader/Avatar + new icons),
-a **Profile tab** (avatar, stats grid, growth-journey achievement track), redesigned grouped
-**Settings** with a time-zone editor, a redesigned Home hero (gradient wash, stage progress bar,
-stat pills), and **opt-in motivational notifications** — a daily check-in plus a rotating
-"daily motivation" note (7 weekly local triggers, different copy per weekday, no servers).
-Tab bar is now Home · Progress · Profile · Settings. See `phase4-engagement` in PROGRESS.md.
+**Visual direction (2026-09-20):** retheme from warm cream + terracotta to **cool mist + deep
+teal** (`#F0F5F3` canvas, `#1F6F6B` accent), forest green kept for wins. Two knock-ons the swap
+forced: freeze moved teal → **blue** (teal is the brand now, a frozen day must not read as active)
+and slip moved clay → muted brick. Display face is **Fraunces 900**; Figtree stays for body.
+
+**Day photos (2026-09-20):** attach photos to a tracked day. Objects live at
+`<user_id>/<entry_id>/<id>.<ext>` in the private `day-photos` bucket, and every storage policy pins
+that first path segment to `auth.uid()` — the path *is* the authorization. Only the object path is
+stored; URLs are short-lived signed URLs minted per fetch. Tap a thumbnail for a detail sheet with
+a caption field and remove; days carrying a photo get a corner dot on the calendar.
+
+**The bug that hid behind everything (2026-09-20):** `0001_grants.sql` had never been applied to
+the live project, so `authenticated` held no CRUD on any app table. Postgres checks GRANTs *before*
+RLS, so every read and write failed regardless of session or policy — it presented as "Plant my
+tree does nothing". See the appendix; it is applied now.
 
 ---
 
@@ -73,7 +84,7 @@ a freeze protects the streak. Win condition is configurable per user: **zero** (
 | Validation | **Zod** (in `@sobr/core`) | Single source of truth for shapes. |
 | Charts/visuals | **react-native-svg** | One cross-platform path (no Recharts/shadcn — DOM-only). |
 | Animation | reanimated 4 + `react-native-worklets` | SDK 54. |
-| Auth | email OTP + **Google** (Supabase OAuth/PKCE) | Apple deferred to store-publish time. |
+| Auth | **email + password**, no verification | Built-in mailer only reaches pre-authorized addresses; real email needs a verified domain + SMTP. Google stays wired but off-screen; Apple deferred to store-publish. |
 | Reminders | `expo-notifications` (local) | No servers; remote push later. |
 | Tests | **Vitest** on `@sobr/core` | The bug-prone math is covered. |
 | Runtime | Expo **SDK 54** (React 19.1, RN 0.81.5), Node ≥20, pnpm 9 (corepack) | |
@@ -119,14 +130,24 @@ Tables (all in `public`, all **RLS enabled + forced**, all granted to `authentic
   `cost`, `quantity`. **Units are derived, never stored.**
 - **`freeze_grants`**: `user_id`, `granted_for_streak` (unique per user — no double-award),
   `used_at`, `used_on_entry_id`.
+- **`day_photos`**: `daily_entry_id` (cascade), `user_id` (denormalised so RLS and storage
+  policies check ownership without a join), `object_path` (unique), `caption`. The bytes live
+  in the private **`day-photos`** Storage bucket at `<user_id>/<entry_id>/<id>.<ext>`; every
+  storage policy pins that first path segment to `auth.uid()`. No URL is stored — the bucket is
+  private, so a stored URL would either expire or have to be public.
 
 Derived-not-stored: units, streaks, banked-freeze counts, all stats (computed in `@sobr/core` on
 read — can't drift). DB extras: `handle_new_user` trigger (auto-creates `user_settings` on signup),
 `updated_at` triggers, `delete_account()` security-definer purge (cascades from auth.users).
 
-**Migrations** (`packages/db/migrations/`): `0000_init.sql` (tables, checks, indexes, RLS, policies,
-grants, triggers, delete routine) and `0001_grants.sql` (idempotent grants for DBs created before
-grants were added). Apply via the Supabase SQL editor or `pnpm --filter @sobr/db migrate`.
+**Migrations** (`packages/db/migrations/`): `0000_init.sql` (tables, checks, indexes, RLS,
+policies, grants, triggers, delete routine) · `0001_grants.sql` (idempotent grants — **was never
+applied to the live project and broke every read/write**, see appendix) · `0002_email.sql` +
+`0003_email_visuals.sql` (in-database reminder/weekly mail via pg_cron + pg_net → Resend) ·
+`0004_day_photos.sql` (table, RLS, bucket, storage policies) · `0005_time_zone_guard.sql`
+(rejects unresolvable zones at write time and isolates each user's iteration in the mail job —
+one bad zone used to abort the batch for *everyone*). Apply via the Supabase SQL editor, the
+`packages/db/apply-*.mjs` scripts, or `pnpm --filter @sobr/db migrate`.
 
 ---
 
@@ -158,16 +179,21 @@ grants were added). Apply via the Supabase SQL editor or `pnpm --filter @sobr/db
 
 ## 7. Auth specifics
 
-- **Email OTP** works on web + native (`signInWithOtp` / `verifyOtp`).
-- **Google** (`src/lib/auth.ts` → `signInWithGoogle`): Supabase OAuth + PKCE.
-  - Web redirect = page origin; `detectSessionInUrl` exchanges the `?code`. **Confirmed working.**
-  - Native redirect = `sobr://auth-callback`; handled inline by `openAuthSessionAsync` and via a
-    deep-link listener in `app/_layout.tsx`. **Needs a custom dev build** (Expo Go can't).
-  - Supabase setup the user has done: Google provider (client id/secret), redirect URLs
-    (`http://localhost:8081`, `sobr://auth-callback`), Site URL, and the Google Cloud "Authorized
-    redirect URI" = `https://<project>.supabase.co/auth/v1/callback`.
-- **Apple**: deferred (needs paid Apple Developer account + dev build; mandatory for App Store apps
-  that offer Google). See TODO → Future enhancements.
+- **Email + password** (`apps/mobile/app/(auth)/sign-in.tsx`): one screen, Sign in / Create
+  account toggle, `supabase.auth.signUp` / `signInWithPassword`. A session is issued immediately.
+- **Confirm email must stay OFF** (Authentication → Providers → Email). With it on, sign-up
+  returns a user but no session; the screen detects that exact case and says so rather than
+  failing silently. Currently off and verified.
+- **No OTP, no magic links.** `verify.tsx` was deleted. `packages/db/email/auth-code.html` is kept
+  because password *reset* will need an email template — paste it into every auth slot; it uses
+  only `{{ .Token }}` and `{{ .ConfirmationURL }}`, which GoTrue provides in all of them.
+- **Errors**: supabase-js rejects with plain objects, not `Error` instances, so
+  `e instanceof Error` is false and real failures render as a generic "check your connection".
+  Use `src/lib/errorMessage.ts` for anything user-facing.
+- **Google** (`src/lib/auth.ts` → `signInWithGoogle`): still wired, PKCE, web confirmed working
+  previously. Not referenced by the sign-in screen. Native needs a dev build (`sobr://auth-callback`).
+- **Apple**: deferred (needs paid Apple Developer account; mandatory for App Store apps offering
+  Google).
 
 ---
 
@@ -222,23 +248,22 @@ Because there's no device/CI here, work is verified by:
 
 ## 11. What's done vs. what's left
 
-**Done (see PROGRESS.md for the full log):** M0 foundations · M1 tested core · M2 DB+RLS+grants ·
-M3 app shell+auth · M4 logger · M5 streaks+tree · M6 calendar+stats · M7 settings · **M8 polish**
-(micro-interactions incl. tree level-up, a11y, error/empty states, copy) · modern UI · daily
-reminders · offline tolerance · Google sign-in (web) · **Phase 3 redesign** (light white+green
-theme, Calendar merged into Home with a day-detail panel, two-step OTP sign-in, three-step
-onboarding).
+**Done (see PROGRESS.md + `git log`):** M0–M8 · modern UI · daily reminders · offline tolerance ·
+Phase 3 light redesign · Phase 4 engagement · **email+password auth** · **teal retheme** ·
+**day photos with captions + calendar marker** · **GRANTs applied** · **freeze award/use verified
+end to end against the live DB** (award → `1/3`; use → slip becomes `freeze`, `used_at` and
+`used_on_entry_id` set, streak restored) · **eas.json build profiles** · Android release build.
 
-**Left / future (TODO.md → Future enhancements):**
-- **Test the native app on a device** (needs a dev build) — only the user can.
-- **Apple sign-in** — at store-publish time (paid Apple account + dev build).
-- **Native Google** — works once a dev build exists (already wired).
+**Left / future (TODO.md):**
+- **Notification schedules on a device** — needs a dev/release build to test at full fidelity.
+- **Apple sign-in** and **iOS device builds** — both need a paid Apple Developer account.
+- **Native Google** — wired, but needs UI re-added *and* a dev build.
 - **Remote push** / smart "log before midnight" nudges.
-- Optional EAS/dev-build setup (`eas.json` + guide) to make native testing one command.
+- CSV/JSON export — the model already supports it.
 - Optional dedicated Next.js `apps/web` if the web view ever outgrows RN Web.
 
-**Outstanding user actions:** run `0001_grants.sql` if a fresh DB shows `42501`; make a dev build to
-test native; (later) Apple Developer setup.
+**Outstanding user actions:** keep Confirm email OFF; Apple Developer enrolment before any iOS
+device build.
 
 ---
 
@@ -253,16 +278,17 @@ Paste this to the next agent:
 > Skim recent `git log` for the change history (we commit one feature per commit).
 >
 > Then confirm the baseline is healthy: `pnpm install`, `pnpm --filter @sobr/core test` (expect
-> 71 passing), and `cd apps/mobile && pnpm exec tsc --noEmit`. Verify UI changes the way HANDOVER
+> 75 passing), and `cd apps/mobile && pnpm exec tsc --noEmit`. Verify UI changes the way HANDOVER
 > §9 describes (expo export to catch build errors; headless-Chrome screenshots for visuals).
 >
 > Respect the working agreement in HANDOVER §10: commit per feature; keep `TODO.md` and
 > `PROGRESS.md` updated (check items off, log what was done + what the user must do); keep copy
 > non-judgmental/non-triggering and the aesthetic calm. Heed the gotchas in HANDOVER §6 (NativeWind
 > darkMode/version, root `.env` via `app.config.js`, RLS GRANTs, extensionless imports, Metro
-> `--clear`). The MVP is complete and working on web; the main remaining work needs a native dev
-> build (see TODO → Future enhancements). Pick up from the top of `TODO.md`'s unchecked items, or
-> ask the user which direction to take next.
+> `--clear`). Auth is email+password with verification off — do not reintroduce OTP without a
+> verified sending domain. The MVP is complete and builds for Android via EAS; what is left
+> mostly needs a paid Apple account or a dev build (see TODO). Pick up from the top of
+> `TODO.md`'s unchecked items, or ask the user which direction to take next.
 
 ---
 
@@ -339,7 +365,11 @@ Re-apply with `node packages/db/apply-day-photos.mjs` style scripts, or check wi
 
 ---
 
-## Appendix — Email sign-in: getting a 6-digit OTP instead of a magic link
+## Appendix — Email sign-in (HISTORICAL — OTP was removed 2026-09-25)
+
+> Kept for the template details only. The app no longer uses OTP or magic links; auth is
+> email + password. This matters again if password **reset** is ever wired up, since that does
+> send mail and needs the same template work and a verified sending domain.
 
 **Symptom.** The sign-in email contains only a "Log In" link, and that link points at
 `localhost:3000` (the project's Site URL), which is a dead address on a phone. The app's
