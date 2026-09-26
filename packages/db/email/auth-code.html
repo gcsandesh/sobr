@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <!--
-      Locked to light: the warm palette is the brand, and Apple Mail / Outlook
-      dark mode would otherwise invert the card to muddy grey-brown.
+      Locked to light: the mist + teal palette is the brand, and Apple Mail / Outlook
+      dark mode would otherwise invert the card to a muddy grey.
     -->
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light only" />
   </head>
-  <body style="margin:0;padding:0;background:#F5EAD8;">
+  <body style="margin:0;padding:0;background:#F0F5F3;">
     <!--
       sobr — one auth email for every Supabase template slot.
 
@@ -25,14 +25,14 @@
       Shell mirrors app.email_shell() so auth mail looks like reminder mail.
     -->
     <div
-      style="max-width:520px;margin:0 auto;padding:32px 20px;font-family:Georgia,'Times New Roman',serif;color:#201E1D;"
+      style="max-width:520px;margin:0 auto;padding:32px 20px;font-family:Georgia,'Times New Roman',serif;color:#16211F;"
     >
-      <div style="background:#FFFFFF;border-radius:16px;padding:28px;border:1px solid #E7DCC8;">
-        <div style="font-size:22px;font-weight:bold;color:#C67139;margin-bottom:4px;">sobr</div>
-        <div style="font-size:13px;color:#82796A;margin-bottom:20px;">Clear days, counted.</div>
+      <div style="background:#FFFFFF;border-radius:16px;padding:28px;border:1px solid #D5E3DE;">
+        <div style="font-size:22px;font-weight:bold;color:#1F6F6B;margin-bottom:4px;">sobr</div>
+        <div style="font-size:13px;color:#6F8480;margin-bottom:20px;">Clear days, counted.</div>
 
         <div style="font-size:19px;margin-bottom:14px;">Your sign-in code</div>
-        <div style="font-size:15px;line-height:22px;color:#4A443C;margin-bottom:22px;">
+        <div style="font-size:15px;line-height:22px;color:#4A5D59;margin-bottom:22px;">
           Enter this code in the app to continue.
         </div>
 
@@ -46,10 +46,10 @@
           <tr>
             <td
               align="center"
-              style="background:#FBF4E8;border:1px solid #E7DCC8;border-radius:12px;padding:18px 26px;"
+              style="background:#E2F2EF;border:1px solid #D5E3DE;border-radius:12px;padding:18px 26px;"
             >
               <div
-                style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:30px;font-weight:bold;letter-spacing:4px;color:#201E1D;"
+                style="font-family:'SF Mono',Menlo,Consolas,monospace;font-size:30px;font-weight:bold;letter-spacing:4px;color:#16211F;"
               >
                 {{ .Token }}
               </div>
@@ -57,20 +57,20 @@
           </tr>
         </table>
 
-        <div style="font-size:13px;color:#82796A;text-align:center;margin-bottom:24px;">
+        <div style="font-size:13px;color:#6F8480;text-align:center;margin-bottom:24px;">
           It expires in an hour and works once.
         </div>
 
-        <div style="border-top:1px solid #E7DCC8;margin-bottom:20px;"></div>
+        <div style="border-top:1px solid #D5E3DE;margin-bottom:20px;"></div>
 
-        <div style="font-size:14px;line-height:21px;color:#4A443C;margin-bottom:14px;">
+        <div style="font-size:14px;line-height:21px;color:#4A5D59;margin-bottom:14px;">
           On the same device as your browser? You can tap through instead:
         </div>
 
         <!-- Table-based button: Outlook ignores padding on <a>. -->
         <table role="presentation" align="center" style="border-collapse:collapse;margin:0 auto 6px;">
           <tr>
-            <td align="center" style="background:#C67139;border-radius:10px;">
+            <td align="center" style="background:#1F6F6B;border-radius:10px;">
               <a
                 href="{{ .ConfirmationURL }}"
                 style="display:inline-block;padding:13px 30px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#FFFFFF;text-decoration:none;"
@@ -81,7 +81,7 @@
         </table>
       </div>
 
-      <div style="text-align:center;font-size:12px;color:#82796A;padding:16px;line-height:18px;">
+      <div style="text-align:center;font-size:12px;color:#6F8480;padding:16px;line-height:18px;">
         If you didn't try to sign in, you can ignore this email — nobody gets in
         without the code above.
       </div>
