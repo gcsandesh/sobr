@@ -164,7 +164,10 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Photo indicator on the calendar — corner dot, so a day can show both a status and a photo
 
 ## Future enhancements — free, actionable now
-- [ ] Data backup/export file (CSV/JSON) — model already supports it.
+- [x] CSV export — Settings → Export my data. One row per day (date, status, units, drinks,
+      cost, note) via the OS share sheet. Verified by reading the file back off the device.
+- [ ] JSON export — full-fidelity backup (per-drink rows, photo captions). CSV covers the
+      spreadsheet case; add this only if a restore/import path is ever built.
 - [ ] Remote push on **Android** (smart "log before midnight" nudges). FCM is free; the iOS half
   needs APNs, which is paid — see Parked.
 - [ ] Optional dedicated `apps/web` (Next.js) if the web view outgrows RN Web.

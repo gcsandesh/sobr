@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Platform, Switch, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Switch, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { WinMode } from '@sobr/core';
 import { CURRENCIES } from '@sobr/config';
 import {
   BellIcon,
+  CalendarIcon,
   ChartIcon,
   ChevronRightIcon,
   GlobeIcon,
@@ -26,9 +27,16 @@ import {
   Txt,
 } from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
-import { useDeleteAccount, useSettings, useUpdateSettings, deviceTimeZone } from '../../src/data/hooks';
+import {
+  useDeleteAccount,
+  useSettings,
+  useUpdateSettings,
+  deviceTimeZone,
+} from '../../src/data/hooks';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
 import { confirmAction } from '../../src/lib/confirm';
+import { errorMessage } from '../../src/lib/errorMessage';
+import { exportEntriesCsv } from '../../src/lib/export';
 import { notificationsSupported } from '../../src/lib/notifications';
 import { colors } from '../../src/theme';
 
@@ -63,7 +71,7 @@ const COMMON_ZONES = [
 
 export default function Settings() {
   const router = useRouter();
-  const { email, signOut } = useSession();
+  const { email, userId, signOut } = useSession();
   const settings = useSettings();
   const update = useUpdateSettings();
   const deleteAccount = useDeleteAccount();
@@ -72,6 +80,21 @@ export default function Settings() {
   const s = settings.data;
   const [limit, setLimit] = useState<string>(String(s?.dailyLimitUnits ?? 2));
   const [showZones, setShowZones] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function exportData() {
+    if (!userId) return;
+    setExportError(null);
+    setExporting(true);
+    try {
+      await exportEntriesCsv(userId, s?.currency);
+    } catch (e) {
+      setExportError(`Couldn’t export — ${errorMessage(e, 'try again.')}`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const device = deviceTimeZone();
   const zones = [device, ...COMMON_ZONES.filter((z) => z !== device)];
@@ -300,11 +323,30 @@ export default function Settings() {
         <ListRow title="Signed in as" subtitle={email ?? '—'} />
         <Divider className="my-1" />
         <ListRow
+          icon={<CalendarIcon color={colors.textMuted} />}
+          title="Export my data"
+          subtitle="Every logged day as a spreadsheet (CSV)"
+          right={
+            exporting ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : (
+              <ChevronRightIcon color={colors.textFaint} />
+            )
+          }
+          onPress={exporting ? undefined : () => void exportData()}
+        />
+        <Divider className="my-1" />
+        <ListRow
           icon={<LogOutIcon color={colors.textMuted} />}
           title="Sign out"
           onPress={() => void signOut()}
         />
       </Card>
+      {exportError && (
+        <Txt variant="body" className="text-slip text-sm mb-3">
+          {exportError}
+        </Txt>
+      )}
       <Button
         label="Delete account & data"
         tone="danger"
