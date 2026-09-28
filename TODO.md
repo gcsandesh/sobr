@@ -146,7 +146,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Dev-only auth bypass: `EXPO_PUBLIC_SKIP_AUTH=1` (+ `__DEV__` gate) jumps straight to tabs for Expo Go testing
 - [x] frontend-design skill pass: forest-at-dusk hero (the app's one bold dominant surface — dark gradient, glow, warm Fraunces numeral), editorial greeting headline, staggered page-load reveal on Home
 - [x] Google sign-in button commented out (untestable in Expo Go) — re-enable is the LAST TODO item
-- [ ] User must test both notification schedules on a device (needs dev build for full fidelity)
+- [x] Both notification schedules verified on a physical Android device (2026-09-28) —
+      confirmed working on the EAS release build, which Expo Go could not exercise
 
 ---
 

@@ -252,10 +252,10 @@ Because there's no device/CI here, work is verified by:
 Phase 3 light redesign · Phase 4 engagement · **email+password auth** · **teal retheme** ·
 **day photos with captions + calendar marker** · **GRANTs applied** · **freeze award/use verified
 end to end against the live DB** (award → `1/3`; use → slip becomes `freeze`, `used_at` and
-`used_on_entry_id` set, streak restored) · **eas.json build profiles** · Android release build.
+`used_on_entry_id` set, streak restored) · **eas.json build profiles** · **Android release build, with both notification schedules
+verified on a physical device**.
 
 **Left / future (TODO.md):**
-- **Notification schedules on a device** — needs a dev/release build to test at full fidelity.
 - **Apple sign-in** and **iOS device builds** — both need a paid Apple Developer account.
 - **Native Google** — wired, but needs UI re-added *and* a dev build.
 - **Remote push** / smart "log before midnight" nudges.
