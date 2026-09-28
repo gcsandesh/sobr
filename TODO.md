@@ -163,17 +163,26 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
       and remove (remove moved off the long-press, which was undiscoverable)
 - [x] Photo indicator on the calendar — corner dot, so a day can show both a status and a photo
 
-## Future enhancements (when published to the App Store / Play Store)
-- [ ] **Apple sign-in** — add once there's a paid Apple Developer account + a dev/EAS build
-  (Apple requires it; "Sign in with Apple" is also mandatory for App Store apps that offer Google).
-- [ ] Remote push notifications (smart "log before midnight" nudges).
+## Future enhancements — free, actionable now
 - [ ] Data backup/export file (CSV/JSON) — model already supports it.
-- [ ] **LAST: re-enable Google sign-in** — the flow stays wired in `src/lib/auth.ts`
-  (`signInWithGoogle`; web was verified working), but the button is no longer in
-  `apps/mobile/app/(auth)/sign-in.tsx` — that screen was rewritten for email + password, so the
-  button + "or" divider need re-adding, not just uncommenting. Do this only once a custom
-  dev/EAS build exists so native can actually be tested (Expo Go can't run the `sobr://`
-  redirect).
+- [ ] Remote push on **Android** (smart "log before midnight" nudges). FCM is free; the iOS half
+  needs APNs, which is paid — see Parked.
+- [ ] Optional dedicated `apps/web` (Next.js) if the web view outgrows RN Web.
+
+## Parked — needs a paid account (skip until that changes)
+_Decision 2026-09-28: nothing that costs money for now. Do not re-surface these as "next up"._
+- [ ] **Apple sign-in** — needs the Apple Developer Program ($99/yr). Also mandatory for App Store
+  apps that offer Google, so it is coupled to any iOS store release.
+- [ ] **iOS device / TestFlight builds** — same membership. Apple's rule, not EAS's; no build
+  profile or flag avoids it. Android APKs via `eas build -p android --profile preview` stay free.
+- [ ] **Remote push on iOS** — APNs certificates require the paid membership.
+
+## Deferred by choice — free, but not wanted yet
+- [ ] **LAST: re-enable Google sign-in.** Free on Android — needs only a dev build, which EAS
+  produces at no cost. The flow stays wired in `src/lib/auth.ts` (`signInWithGoogle`; web was
+  verified working), but the button is no longer in `apps/mobile/app/(auth)/sign-in.tsx` — that
+  screen was rewritten for email + password, so the button + "or" divider need re-adding, not just
+  uncommenting. Expo Go can't run the `sobr://` redirect, so test on a dev build.
 
 ---
 

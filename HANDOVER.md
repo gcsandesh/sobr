@@ -252,18 +252,22 @@ Because there's no device/CI here, work is verified by:
 Phase 3 light redesign · Phase 4 engagement · **email+password auth** · **teal retheme** ·
 **day photos with captions + calendar marker** · **GRANTs applied** · **freeze award/use verified
 end to end against the live DB** (award → `1/3`; use → slip becomes `freeze`, `used_at` and
-`used_on_entry_id` set, streak restored) · **eas.json build profiles** · **Android release build, with both notification schedules
-verified on a physical device**.
+`used_on_entry_id` set, streak restored) · **eas.json build profiles** · **Android release build, with both
+notification schedules verified on a physical device**.
 
-**Left / future (TODO.md):**
-- **Apple sign-in** and **iOS device builds** — both need a paid Apple Developer account.
-- **Native Google** — wired, but needs UI re-added *and* a dev build.
-- **Remote push** / smart "log before midnight" nudges.
+**Left — free, actionable now (TODO.md):**
 - CSV/JSON export — the model already supports it.
+- Remote push on **Android** (FCM is free).
 - Optional dedicated Next.js `apps/web` if the web view ever outgrows RN Web.
 
-**Outstanding user actions:** keep Confirm email OFF; Apple Developer enrolment before any iOS
-device build.
+**Parked — needs payment (decision 2026-09-28: skip for now, do not re-surface):**
+- **Apple sign-in**, **iOS device / TestFlight builds**, **iOS remote push** — all require the
+  Apple Developer Program. Android stays fully free.
+
+**Deferred by choice (free, not wanted yet):** **Google sign-in** — wired, needs UI re-added and a
+dev build. Last on the list.
+
+**Outstanding user actions:** keep Confirm email OFF. Nothing else is blocking.
 
 ---
 
@@ -286,9 +290,9 @@ Paste this to the next agent:
 > non-judgmental/non-triggering and the aesthetic calm. Heed the gotchas in HANDOVER §6 (NativeWind
 > darkMode/version, root `.env` via `app.config.js`, RLS GRANTs, extensionless imports, Metro
 > `--clear`). Auth is email+password with verification off — do not reintroduce OTP without a
-> verified sending domain. The MVP is complete and builds for Android via EAS; what is left
-> mostly needs a paid Apple account or a dev build (see TODO). Pick up from the top of
-> `TODO.md`'s unchecked items, or ask the user which direction to take next.
+> verified sending domain. The MVP is complete, installed on the user's Android phone, and
+> notifications are device-verified. **Skip anything that needs payment** (Apple Developer
+> Program) — see TODO → Parked. Pick up from TODO → "free, actionable now", or ask the user.
 
 ---
 
