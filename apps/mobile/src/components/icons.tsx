@@ -218,3 +218,99 @@ export function GoogleIcon({ size = 20 }: { size?: number }) {
     </Svg>
   );
 }
+
+/* ── added with the "complete app" pass ──────────────────────────────────── */
+
+function Stroke({ size, children }: { size: number; children: React.ReactNode }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {children}
+    </Svg>
+  );
+}
+const line = (color: string) =>
+  ({ stroke: color, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }) as const;
+
+export function CheckIcon({ color, size = 20 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M5 12.5l4.5 4.5L19 7.5" {...line(color)} strokeWidth={2.2} />
+    </Stroke>
+  );
+}
+
+export function EyeIcon({ color, size = 22, off = false }: IconProps & { off?: boolean }) {
+  return (
+    <Stroke size={size}>
+      <Path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" {...line(color)} />
+      <Circle cx={12} cy={12} r={3} {...line(color)} />
+      {off ? <Path d="M4 4l16 16" {...line(color)} /> : null}
+    </Stroke>
+  );
+}
+
+/** An open book: the day-by-day history / reflections. */
+export function BookIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z" {...line(color)} />
+      <Path d="M12 6.5v13" {...line(color)} />
+    </Stroke>
+  );
+}
+
+/** A lifebuoy: support and someone-to-talk-to resources. */
+export function LifebuoyIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Circle cx={12} cy={12} r={8.5} {...line(color)} />
+      <Circle cx={12} cy={12} r={3.5} {...line(color)} />
+      <Path d="M6 6l3.5 3.5M18 6l-3.5 3.5M6 18l3.5-3.5M18 18l-3.5-3.5" {...line(color)} />
+    </Stroke>
+  );
+}
+
+export function LockIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Rect x={5} y={10.5} width={14} height={9.5} rx={2.5} {...line(color)} />
+      <Path d="M8.5 10.5V8a3.5 3.5 0 017 0v2.5" {...line(color)} />
+    </Stroke>
+  );
+}
+
+export function ShieldIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M12 3.5l7 2.8v5.2c0 4.3-3 7.6-7 9-4-1.4-7-4.7-7-9V6.3l7-2.8z" {...line(color)} />
+      <Path d="M9 12l2 2 4-4" {...line(color)} />
+    </Stroke>
+  );
+}
+
+export function DocIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M7 3.5h7l4 4V20a.5.5 0 01-.5.5h-10.5A.5.5 0 016.5 20V4a.5.5 0 01.5-.5z" {...line(color)} />
+      <Path d="M13.5 3.5V8h4.5M9.5 12.5h5M9.5 16h5" {...line(color)} />
+    </Stroke>
+  );
+}
+
+export function PencilIcon({ color, size = 20 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 013 3L8 18.5 4 20z" {...line(color)} />
+      <Path d="M13.5 7l3 3" {...line(color)} />
+    </Stroke>
+  );
+}
+
+export function InfoIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Circle cx={12} cy={12} r={8.5} {...line(color)} />
+      <Path d="M12 11v5.5M12 7.8v.1" {...line(color)} strokeWidth={2.2} />
+    </Stroke>
+  );
+}

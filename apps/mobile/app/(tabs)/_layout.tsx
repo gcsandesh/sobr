@@ -22,9 +22,11 @@ export default function TabsLayout() {
           // as a floating surface rather than blending into the content
           backgroundColor: colors.card,
           borderTopWidth: 0,
-          height: 58 + insets.bottom,
-          paddingBottom: Math.max(10, insets.bottom),
-          paddingTop: 10,
+          // icon (24) + label line + breathing room; anything under ~68 clips
+          // the label's descenders on web and small Android phones
+          height: 70 + insets.bottom,
+          paddingBottom: Math.max(12, insets.bottom),
+          paddingTop: 8,
           // soft floating-bar elevation instead of a hairline border
           shadowColor: '#16211F',
           shadowOpacity: 0.08,
@@ -32,7 +34,8 @@ export default function TabsLayout() {
           shadowOffset: { width: 0, height: -4 },
           elevation: 12,
         },
-        tabBarLabelStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 11 },
+        tabBarLabelStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 11, lineHeight: 16, marginTop: 2 },
+        tabBarLabelPosition: 'below-icon',
       }}
     >
       <Tabs.Screen

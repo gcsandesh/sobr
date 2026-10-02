@@ -18,7 +18,7 @@ export default function About() {
           headerTintColor: colors.text,
         }}
       />
-      <Screen scroll>
+      <Screen scroll edges={['bottom']}>
         <View className="items-center mt-6 mb-8">
           <Logo size={72} />
           <Txt variant="title" className="mt-4">
@@ -41,8 +41,8 @@ export default function About() {
         <SectionHeader title="Your privacy" />
         <Card className="mb-6">
           <Txt variant="body">
-            Your data is yours alone. Every row in the database is isolated to your account —
-            nobody else, including us, can read it. Nothing you log is used for analytics or
+            Your data is yours alone. Every row in the database is locked to your account, so
+            no other user can ever read it, and we never look at it. Nothing you log is used for analytics or
             shared with third parties. Deleting your account genuinely erases everything, for
             good.
           </Txt>

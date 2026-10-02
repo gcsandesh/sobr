@@ -1,8 +1,9 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
@@ -19,8 +20,31 @@ import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
 import { completeSessionFromUrl } from '../src/lib/auth';
 import { isSupabaseConfigured } from '../src/lib/env';
 import { SessionProvider, useSession } from '../src/data/SessionProvider';
-import { useSettings } from '../src/data/hooks';
+import { useSettings, useTimeZone } from '../src/data/hooks';
+import { onCheckinTapped } from '../src/lib/notifications';
+import { resyncNotificationSchedule } from '../src/data/useNotificationPrefs';
+import { todayInTz } from '@sobr/core';
 import { colors } from '../src/theme';
+
+const DETAIL_SCREENS = [
+  'day/[date]',
+  'about',
+  'account',
+  'history',
+  'support',
+  'legal/privacy',
+  'legal/terms',
+] as const;
+
+const detailHeader = {
+  headerShown: true,
+  presentation: 'card',
+  headerBackButtonDisplayMode: 'minimal',
+  headerShadowVisible: false,
+  headerStyle: { backgroundColor: colors.bg },
+  headerTintColor: colors.text,
+  headerTitleStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 17 },
+} as const;
 
 function Splash() {
   return <View className="flex-1 bg-bg" />;
@@ -75,6 +99,10 @@ function Gate() {
       if (group !== '(auth)') router.replace('/(auth)/sign-in');
       return;
     }
+    // Redeeming a reset code signs the user in *before* the new password is
+    // saved. Leave the reset screen alone; it routes onward itself once done.
+    // (widened: without generated typed routes, as in CI, segments is `[string]`)
+    if (group === '(auth)' && (segments as string[])[1] === 'forgot-password') return;
     // signed in — wait for settings to resolve before deciding onboarding
     if (settings.isLoading) return;
     const onboarded = settings.data?.onboarded ?? false;
@@ -86,6 +114,17 @@ function Gate() {
     }
   }, [router, segments, session, initializing, settings.isLoading, settings.data?.onboarded]);
 
+  // A tapped check-in reminder opens today's check-in, once the user is in.
+  const tz = useTimeZone();
+  const ready = !!session && !!settings.data?.onboarded;
+  useEffect(() => {
+    if (ready) void resyncNotificationSchedule();
+  }, [ready]);
+  useEffect(() => {
+    if (!ready) return;
+    return onCheckinTapped(() => router.push(`/day/${todayInTz(tz)}`));
+  }, [ready, tz, router]);
+
   if (initializing && isSupabaseConfigured) return <Splash />;
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
@@ -94,26 +133,13 @@ function Gate() {
       <Stack.Screen name="(onboarding)" />
       <Stack.Screen name="setup" />
       {/*
-        `headerBackButtonDisplayMode: 'minimal'` shows just the chevron — without
-        it the back button inherits the parent route's name and renders the raw
-        group label "(tabs)".
+        Pushed detail screens share one calm native header. `minimal` shows just
+        the chevron; without it the back button inherits the parent route's
+        name and renders the raw group label "(tabs)".
       */}
-      <Stack.Screen
-        name="day/[date]"
-        options={{
-          headerShown: true,
-          presentation: 'card',
-          headerBackButtonDisplayMode: 'minimal',
-        }}
-      />
-      <Stack.Screen
-        name="about"
-        options={{
-          headerShown: true,
-          presentation: 'card',
-          headerBackButtonDisplayMode: 'minimal',
-        }}
-      />
+      {DETAIL_SCREENS.map((name) => (
+        <Stack.Screen key={name} name={name} options={detailHeader} />
+      ))}
       <Stack.Screen name="steady" options={{ presentation: 'modal' }} />
     </Stack>
   );
@@ -149,6 +175,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaProvider>
+        <KeyboardProvider>
         <PersistQueryClientProvider
           client={queryClient}
           persistOptions={{ persister: asyncStoragePersister, maxAge: 1000 * 60 * 60 * 24 * 7 }}
@@ -162,7 +189,43 @@ export default function RootLayout() {
             <Gate />
           </SessionProvider>
         </PersistQueryClientProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+/**
+ * Last-resort catch for a render crash anywhere below the root: a calm screen
+ * with a way back instead of a blank white app. Data is server-side, so a
+ * retry (or a restart) loses nothing.
+ */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Promise<void> }) {
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', padding: 24 }}>
+      <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text, marginBottom: 8 }}>
+        Something went sideways
+      </Text>
+      <Text style={{ fontSize: 16, lineHeight: 23, color: colors.textMuted, marginBottom: 20 }}>
+        sobr hit an unexpected error. Your days are safe in your account; try again, or close and
+        reopen the app.
+      </Text>
+      <Pressable
+        onPress={() => void retry()}
+        accessibilityRole="button"
+        style={{
+          backgroundColor: colors.accent,
+          borderRadius: 16,
+          minHeight: 52,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Try again</Text>
+      </Pressable>
+      {__DEV__ ? (
+        <Text style={{ marginTop: 16, fontSize: 12, color: colors.textFaint }}>{error.message}</Text>
+      ) : null}
+    </View>
   );
 }

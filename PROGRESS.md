@@ -6,6 +6,87 @@ its task groups here.
 
 ---
 
+<a id="phase5b-daily-use"></a>
+## Phase 5b · Daily-use polish + review fixes ✅ done (2026-09-26)
+
+**Achieved**
+- **Data-safety fix (from code review):** a day that failed to load used to hydrate as
+  blank, so Save, quick-add or the one-tap win could overwrite its real drinks and note.
+  All three now refuse to write until the day has loaded, and say so.
+- Android: keyboard never covers inputs (react-native-keyboard-controller; SDK 54 is
+  edge-to-edge), proper **adaptive + themed icon**, leaf **notification icon**, tapping the
+  check-in reminder **opens today's check-in**, stored reminders re-sync once per launch.
+- **CSV export** (Settings → Your data), tested in `@sobr/core` (quoting, formula-injection
+  guard), UTF-8 BOM for Excel.
+- **Pull to refresh** on Home, Progress, Profile, History; root **ErrorBoundary**.
+- Daily limit is a **0.5-unit stepper** in Settings and onboarding; settings updates are
+  optimistic with rollback.
+- Password reset: accepts 6–10 digit codes; leaving mid-reset signs the half-finished
+  session out; kinder, context-aware auth errors.
+- Email templates: `reset-password.html` (code only) and `auth-code.html` moved to teal.
+- Reviews: `/code-review` (10 findings, all addressed) and `/security-review` (no findings).
+- Verified: 80/80 core tests, typecheck (with and without generated routes), Android JS
+  bundle; APK builds 4 and 6 published and checked (Supabase config baked in).
+
+**Status (2026-09-26):** the owner installed **build 7** on their Android phone. Their
+password was reset directly via SQL (Supabase won't allow template edits without custom
+SMTP, so the reset email still had the localhost link), and they're signed in and using
+the app. HANDOVER.md was rewritten as a single current picture for the next agent.
+
+**What you need to do**
+1. When convenient: Supabase → Emails → SMTP Settings (Resend values in DEPLOY.md §1), then
+   Templates → **Reset Password** → paste `packages/db/email/reset-password.html`, so
+   in-app password reset works next time.
+2. Run DEPLOY.md §4 on the phone and report anything off.
+
+---
+
+<a id="phase5-complete"></a>
+## Phase 5 · Complete app + Android release pipeline ✅ done (2026-09-25)
+
+**Decisions made (engineer's call, per the user's "decide and continue")**
+- Stay **light** (mist + teal); no dark mode yet. Dark would touch every hardcoded
+  color and re-open the NativeWind `darkMode` gotcha for little gain right now.
+- **Password reset is code-based**, not link-based: `resetPasswordForEmail` → 6-digit code
+  from the existing Resend hook → `verifyOtp({ type: 'recovery' })` + `updateUser`. No deep
+  links, so it works on a phone today.
+- **Display name lives in auth `user_metadata`**: identity, not a preference; no migration.
+- **Notes = the existing `daily_entries.note` column** (500 chars). Moods deferred (would
+  need a migration).
+- **Support screen** leads with Nepal numbers (ambulance 102, helpline 1166) plus the
+  worldwide findahelpline.com directory, and a plain "stopping safely" medical caution.
+- **APK via GitHub Actions**: this dev environment can't reach `dl.google.com` (Android
+  SDK) or `api.expo.dev` (EAS), so the release build runs on GitHub's runners and is
+  published as a GitHub Release. Signed with the RN template debug keystore (stable, so
+  updates install over the top; fine for sideloading, not for stores).
+
+**Achieved**
+- UI kit: `TextField` (label, inline error, password reveal), `OptionList`, `ToggleRow`,
+  `RowValue`, new icons; `Screen` centers at 640px on tablets/desktop; tab labels no longer clip.
+- New screens: **Forgot password**, **Account** (name, password, sign out, delete),
+  **History** (month-grouped, filterable, notes inline), **Support**, **Privacy policy**,
+  **Terms**, **404**.
+- Redesigns: **Settings** (account row, picker sheets instead of chip walls, Help & info),
+  **Profile** (edit on avatar, History link, no duplicate sign-out), **Sign-in** (field
+  errors, kinder auth errors, "Forgot password?"), **Onboarding** step 1 asks for a name.
+- Day screen **Reflection** field; Home shows the note and greets by chosen name.
+- **Bug fixed:** saving a day without a note (one-tap win, quick-add, freeze) wrote
+  `note: null`, which would have erased a reflection. The note is now only written when passed.
+- Email hook: per-action copy (sign-up / reset / email change) and the teal palette.
+- `DEPLOY.md` deploy checklist; `.github/workflows/android-apk.yml`.
+- Verified: 75/75 core tests, app typecheck, Android JS bundle export, web screenshots of
+  every new/changed screen.
+
+**What you need to do**
+1. Add two repo secrets (Settings → Secrets and variables → Actions):
+   `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`. Then re-run the
+   *Android APK* workflow; the APK appears under Releases.
+2. Redeploy the email hook so reset emails say "reset":
+   `npx supabase functions deploy send-email --project-ref uqozokfjfstsfuelgzcy --no-verify-jwt`.
+3. Run the phone smoke test in DEPLOY.md §4.
+
+---
+
 <a id="phase4-polish"></a>
 ## Phase 4b · Skill-driven polish + dev unblocks — ✅ done (2026-07-14)
 

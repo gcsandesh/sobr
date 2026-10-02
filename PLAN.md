@@ -1,5 +1,10 @@
 # sobr — Plan & Architecture
 
+> **Historical plan (June 2026).** Kept for the reasoning behind the stack. Some details have
+> since changed: the theme is now light mist + teal (not dark), auth is email + password (not
+> OTP), and there are more tables (`day_photos`, `email_log`). For the current state, read
+> **[HANDOVER.md](./HANDOVER.md)**.
+
 A calm, growth-oriented drinking-habit tracker built around a daily win/slip streak,
 a freeze-token safety net, and a growing-tree visual anchored to lifetime progress.
 

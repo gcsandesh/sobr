@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { WinMode } from '@sobr/core';
+import { LimitStepper } from '../../src/components/LimitStepper';
 import { OnboardingProgress } from '../../src/components/OnboardingProgress';
 import { Button, Card, Screen, Txt } from '../../src/components/ui';
 import { deviceTimeZone, useUpdateSettings } from '../../src/data/hooks';
@@ -34,7 +35,7 @@ const MODES: { key: WinMode; title: string; blurb: string }[] = [
 export default function WinCondition() {
   const router = useRouter();
   const [mode, setMode] = useState<WinMode>('zero');
-  const [limit, setLimit] = useState('2');
+  const [limit, setLimit] = useState(2);
   const [error, setError] = useState<string | null>(null);
   const update = useUpdateSettings();
 
@@ -43,7 +44,7 @@ export default function WinCondition() {
     try {
       await update.mutateAsync({
         winMode: mode,
-        dailyLimitUnits: mode === 'limit' ? Number(limit) || 2 : undefined,
+        dailyLimitUnits: mode === 'limit' ? limit : undefined,
         timeZone: deviceTimeZone(),
         onboarded: true,
       });
@@ -118,17 +119,7 @@ export default function WinCondition() {
                   </View>
                 </View>
                 {m.key === 'limit' && selected && (
-                  <View className="flex-row items-center gap-3 mt-4">
-                    <Txt variant="label">Daily limit (units)</Txt>
-                    <TextInput
-                      value={limit}
-                      onChangeText={setLimit}
-                      keyboardType="decimal-pad"
-                      maxLength={4}
-                      className="bg-surface border border-border-strong rounded-lg px-3 py-2 text-text font-sans w-20 text-center"
-                      placeholderTextColor={colors.textFaint}
-                    />
-                  </View>
+                  <LimitStepper value={limit} onChange={setLimit} />
                 )}
               </Card>
             </Pressable>

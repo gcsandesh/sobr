@@ -16,7 +16,9 @@
     "android": {
       "package": "com.sobr.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brand/icon.png",
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "backgroundImage": "./assets/brand/adaptive-background.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png",
         "backgroundColor": "#1F6F6B"
       }
     },
@@ -29,7 +31,13 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/notification-icon.png",
+          "color": "#1F6F6B"
+        }
+      ],
       [
         "expo-splash-screen",
         {

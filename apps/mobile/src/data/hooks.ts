@@ -12,6 +12,7 @@ import {
   monthlyAggregates,
   todayInTz,
   totalWinDays,
+  type UserSettings,
   type UserSettingsUpdate,
 } from '@sobr/core';
 import * as api from './api';
@@ -171,10 +172,14 @@ function writeOptimisticEntry(
   date: LocalDate,
   status: EntryStatus,
   drinks: DrinkInput[],
-  note: string | null,
+  /** `undefined` keeps whatever note the day already has. */
+  note: string | null | undefined,
 ): EntrySnapshot {
   const prevAll = qc.getQueryData<DailyEntryWithDrinks[]>(keys.allEntries(uid));
   const prevEntry = qc.getQueryData<DailyEntryWithDrinks | null>(keys.entry(uid, date));
+  if (note === undefined) {
+    note = prevEntry?.note ?? prevAll?.find((e) => e.entryDate === date)?.note ?? null;
+  }
   const id = prevEntry?.id ?? `optimistic-${date}`;
   const entry: DailyEntryWithDrinks = {
     id,
@@ -244,7 +249,7 @@ export function useSaveDay() {
         input.date,
         input.status,
         input.drinks,
-        input.note ?? null,
+        input.note,
       );
     },
     onError: (_e, input, ctx) => {
@@ -285,7 +290,8 @@ export function useUseFreeze() {
         cost: d.cost,
         quantity: d.quantity,
       }));
-      return writeOptimisticEntry(qc, uid, date, 'freeze', drinks, prevEntry?.note ?? null);
+      // undefined: a freeze never touches the note, so keep whatever is cached
+      return writeOptimisticEntry(qc, uid, date, 'freeze', drinks, undefined);
     },
     onError: (_e, date, ctx) => {
       if (uid && ctx) restoreEntry(qc, uid, date, ctx);
@@ -294,13 +300,34 @@ export function useUseFreeze() {
   });
 }
 
+/**
+ * Optimistic: the cache changes on tap, so switches and steppers respond
+ * instantly and rapid taps build on each other instead of on a stale value.
+ * Rolls back if the write fails.
+ */
 export function useUpdateSettings() {
   const uid = useUid();
   const qc = useQueryClient();
+  const key = keys.settings(uid ?? 'anon');
   return useMutation({
     mutationFn: (patch: UserSettingsUpdate) => api.updateSettings(requireUid(uid), patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.settings(uid ?? 'anon') }),
+    onMutate: async (patch) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<UserSettings | null>(key);
+      // Not for `onboarded`: that flips routing, and should only do so once
+      // the server has actually saved it (onboarding shows the error if not).
+      if (prev && patch.onboarded === undefined) qc.setQueryData<UserSettings>(key, { ...prev, ...definedOnly(patch) });
+      return { prev };
+    },
+    onError: (_e, _patch, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(key, ctx.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: key }),
   });
+}
+
+function definedOnly<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 }
 
 /* ── day photos ──────────────────────────────────────────────────────────── */

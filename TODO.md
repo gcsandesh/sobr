@@ -110,10 +110,10 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 ## M7 — Settings · [progress](PROGRESS.md#m3-app)
 - [x] Change win mode + daily limit value
 - [x] Currency selector (default USD)
-- [~] Time zone setting — _captured from device at onboarding + shown; in-app editor pending_
+- [x] Time zone setting — captured at onboarding; editable from Settings (picker sheet)
 - [x] Account: show email, sign out
 - [x] Account: delete account/data (calls purge routine) with confirm
-- [~] Data export (CSV/JSON) — _dropped: data lives in the DB and syncs on login, so a manual export isn't needed. Model still supports adding a backup file later._
+- [x] Data export (CSV) — Settings → Your data → Export (see Future enhancements)
 
 ## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
 - [x] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up, win/freeze haptic + banner, and tree level-up celebration_
@@ -148,6 +148,31 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Google sign-in button commented out (untestable in Expo Go) — re-enable is the LAST TODO item
 - [x] Both notification schedules verified on a physical Android device (2026-09-28) —
       confirmed working on the EAS release build, which Expo Go could not exercise
+
+## Phase 5 · Complete app + release pipeline · [progress](PROGRESS.md#phase5-complete)
+- [x] UI kit: TextField, OptionList, ToggleRow, RowValue, icons; max-width layout; tab labels
+- [x] Forgot password (code-based recovery) + change password
+- [x] Display name (auth metadata): onboarding step 1 + Account screen
+- [x] Account screen (name, password, sign out, delete); Settings/Profile de-duplicated
+- [x] Settings: picker sheets for win rule / currency / time zone
+- [x] Day reflection notes (+ fix: saves without a note no longer wipe it)
+- [x] History screen (grouped by month, filters, notes inline)
+- [x] Support screen (helplines, peer groups, stopping-safely note)
+- [x] Privacy policy + terms screens (`src/content/legal.ts`)
+- [x] Not-found route
+- [x] Email hook: per-action copy, teal palette
+- [x] GitHub Actions: tests + typecheck + release APK → GitHub Release
+- [x] DEPLOY.md checklist
+- [x] _User step:_ add `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` repo secrets
+- [x] _User step:_ install the APK and sign in (build 7; password set via SQL on 2026-09-26)
+- [ ] _User step:_ enable custom SMTP, then paste `packages/db/email/reset-password.html` into Supabase → Reset Password template
+- [ ] _Optional, later:_ wire + redeploy the `send-email` hook (Resend) once there are other users
+- [ ] _User step:_ phone smoke test (DEPLOY.md §4)
+- [x] Keyboard-aware screens on edge-to-edge Android; adaptive/themed + notification icons
+- [x] Never overwrite a day that failed to load (day screen, quick-add, one-tap win)
+- [x] Pull to refresh; ErrorBoundary; limit stepper; notification tap → today (CSV export came from main)
+- [ ] Dark mode (deferred: see PROGRESS → Phase 5 decisions)
+- [ ] Mood on check-in (needs a migration)
 
 ---
 

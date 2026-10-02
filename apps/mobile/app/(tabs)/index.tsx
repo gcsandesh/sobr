@@ -42,7 +42,10 @@ import { useGrowthCelebration } from '../../src/data/useGrowthCelebration';
 import { useMilestoneCelebration } from '../../src/data/useMilestoneCelebration';
 import { useDailyPledge } from '../../src/data/useDailyPledge';
 import { haptics } from '../../src/lib/haptics';
+import { formatDay } from '../../src/lib/dates';
+import { useSession } from '../../src/data/SessionProvider';
 import { colors } from '../../src/theme';
+import { useRefresh } from '../../src/data/useRefresh';
 
 /**
  * The hero card's own mini-palette: a deep teal dusk. Deliberately darker than
@@ -62,7 +65,9 @@ const HERO = {
 } as const;
 
 export default function Today() {
+  const refresh = useRefresh();
   const router = useRouter();
+  const { displayName } = useSession();
   const stats = useHomeStats();
   const entriesQ = useAllEntries();
   const settings = useSettings();
@@ -81,7 +86,10 @@ export default function Today() {
   const milestone = useMilestoneCelebration(stats.lifetimeWins, !stats.isLoading && !stats.isError);
 
   const meta = growthMetaForKey(stats.stage);
-  const greeting = greetingForHour();
+  // only a name the user chose; an email-derived guess is too presumptuous here
+  const greeting = displayName
+    ? `${greetingForHour()}, ${displayName.split(' ')[0]}`
+    : greetingForHour();
   const pledge = useDailyPledge(stats.today);
   const isEvening = new Date().getHours() >= 17;
   const activeDate = selectedDate ?? stats.today;
@@ -96,6 +104,9 @@ export default function Today() {
 
   /** FAB shortcut: add one preset to today without leaving Home. */
   function quickAdd(preset: DrinkPreset) {
+    // The save replaces the whole day's list, so it must start from what's
+    // really saved; never from an empty list because today failed to load.
+    if (!todayEntry.isSuccess) return;
     const existing = (todayEntry.data?.drinks ?? []).map((d) => ({
       presetKey: d.presetKey,
       name: d.name,
@@ -150,7 +161,7 @@ export default function Today() {
 
   return (
     <>
-      <Screen scroll>
+      <Screen scroll refreshControl={refresh}>
         {growth.celebration && (
           <GrowthCelebration meta={growth.celebration} onDismiss={growth.dismiss} />
         )}
@@ -161,9 +172,11 @@ export default function Today() {
         {/* header — the greeting IS the headline: personal, editorial */}
         <Animated.View entering={FadeInDown.duration(450)}>
           <Row className="justify-between mt-2 mb-4">
-            <View>
+            <View className="flex-1 pr-3">
               <Txt variant="caption">sobr</Txt>
-              <Txt variant="title">{greeting}</Txt>
+              <Txt variant="title" numberOfLines={1} adjustsFontSizeToFit>
+                {greeting}
+              </Txt>
             </View>
             <Row
               className="gap-1"
@@ -197,7 +210,7 @@ export default function Today() {
       */}
         <Animated.View entering={FadeInDown.delay(80).duration(500)}>
           <View
-            className="items-center pt-8 pb-5 px-5 rounded-2xl overflow-hidden"
+            className="items-center pt-5 pb-5 px-5 rounded-2xl overflow-hidden"
             style={{
               backgroundColor: HERO.bg,
               shadowColor: HERO.bg,
@@ -216,7 +229,7 @@ export default function Today() {
             <View className="absolute top-0 items-center justify-center" pointerEvents="none">
               <Glow size={340} color="#8FD9CF" opacity={0.42} />
             </View>
-            <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={200} />
+            <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={176} />
             <AnimatedNumber
               value={stats.streak.current}
               variant="display"
@@ -381,7 +394,18 @@ export default function Today() {
           <Txt variant="heading" className="mt-6 mb-3">
             {dateHeading(activeDate, stats.today)}
           </Txt>
-          {dayEntry.data ? (
+          {dayEntry.isError && !dayEntry.data ? (
+            <Notice
+              tone="error"
+              title="Couldn’t load this day"
+              message="Check your connection; nothing has been changed."
+              onRetry={() => dayEntry.refetch()}
+            />
+          ) : !dayEntry.isSuccess ? (
+            // still loading: show nothing rather than buttons that would
+            // overwrite a day we haven't seen yet
+            <View className="h-14" />
+          ) : dayEntry.data ? (
             <Card>
               <Row className="justify-between">
                 <StatusPill status={dayEntry.data.status} />
@@ -399,6 +423,16 @@ export default function Today() {
                   {roundUnits(totalUnits(dayEntry.data.drinks))} units logged
                 </Txt>
               )}
+              {dayEntry.data.note?.trim() ? (
+                <View className="mt-3 rounded-xl bg-surface-raised px-3 py-2.5">
+                  <Txt variant="caption" className="mb-0.5">
+                    Reflection
+                  </Txt>
+                  <Txt variant="body" className="text-sm" numberOfLines={4}>
+                    {dayEntry.data.note.trim()}
+                  </Txt>
+                </View>
+              ) : null}
               <Button
                 label="Edit this day"
                 tone="secondary"
@@ -485,6 +519,20 @@ export default function Today() {
         onClose={() => setQuickAddOpen(false)}
         title="Add a drink · Today"
       >
+        {!todayEntry.isSuccess && (
+          <View className="mb-4">
+            <Notice
+              tone={todayEntry.isError ? 'error' : 'info'}
+              title={todayEntry.isError ? 'Couldn’t load today' : 'Loading today…'}
+              message={
+                todayEntry.isError
+                  ? 'Adding is paused so nothing already logged gets replaced.'
+                  : undefined
+              }
+              onRetry={todayEntry.isError ? () => todayEntry.refetch() : undefined}
+            />
+          </View>
+        )}
         {(['beer', 'wine', 'spirits', 'local'] as const).map((group) => (
           <View key={group} className="mb-4">
             <Txt variant="label" className="mb-2">
@@ -495,7 +543,9 @@ export default function Today() {
                 <Pressable
                   key={p.key}
                   onPress={() => quickAdd(p)}
+                  disabled={!todayEntry.isSuccess}
                   accessibilityLabel={`Add ${p.name}`}
+                  accessibilityState={{ disabled: !todayEntry.isSuccess }}
                   className="bg-surface border border-border rounded-full px-4 min-h-[44px] justify-center active:opacity-70"
                 >
                   <Txt variant="body" className="text-sm">
@@ -575,12 +625,5 @@ function greetingForHour(): string {
 
 function dateHeading(date: LocalDate, today: LocalDate): string {
   if (date === today) return 'How was today?';
-  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
-  const label = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
-  return label;
+  return formatDay(date, 'long');
 }
