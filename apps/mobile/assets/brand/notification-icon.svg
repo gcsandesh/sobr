@@ -1,12 +1,8 @@
 <svg width="1024" height="1024" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <!-- Android 13+ themed icon: single-color silhouette; the vein is cut out. -->
-  <defs>
-    <mask id="vein">
-      <rect width="64" height="64" fill="white" />
-      <path d="M32 17 L32 47" stroke="black" stroke-width="2.4" stroke-linecap="round" />
-    </mask>
-  </defs>
-  <g transform="translate(32 32) scale(1.05) translate(-32 -32) rotate(-28 32 32)">
-    <path d="M32 11 C45 18 49 31 32 53 C15 31 19 18 32 11 Z" fill="#FFFFFF" mask="url(#vein)" />
-  </g>
+  <!-- Status-bar icon: Android uses only the alpha channel, so a white silhouette. -->
+  
+  <g transform="translate(32 32) scale(1.3) translate(-32 -32)"><circle cx="32" cy="32" r="19" fill="none" stroke="#FFF" stroke-width="3.6"/>
+    <path d="M24.5 37 A7.5 7.5 0 0 1 39.5 37 Z" fill="#FFF"/>
+    <path d="M17 39.5 H47" stroke="#FFF" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M32 23.6v3M23.2 28l2 1.8M40.8 28l-2 1.8" stroke="#FFF" stroke-width="2.2" stroke-linecap="round"/></g>
 </svg>
