@@ -1,8 +1,10 @@
 /**
- * Growth stage — the home-screen tree's emotional anchor. Keyed to LIFETIME win
- * days (not streak length) so a single slip never visibly regresses the tree.
+ * Growth stage — the home-screen tree's emotional anchor. The app keys it to the
+ * CURRENT streak (owner decision 2026-10-02): a slip sends the tree back to a
+ * seed, and finished runs are planted in the forest (see forest.ts). The math
+ * here is just "days → stage", so callers pass whichever count they mean.
  *
- * Thresholds (win days): 0 / 3 / 7 / 14 / 30 / 60.
+ * Thresholds (days): 0 / 3 / 7 / 14 / 30 / 60.
  * Display copy + visuals for each stage live in @sobr/config/growth, keyed by the
  * same stage keys defined here.
  */

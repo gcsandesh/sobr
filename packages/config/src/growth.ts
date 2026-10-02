@@ -3,8 +3,8 @@
  * in @sobr/core (pure, tested). This file only describes how each stage looks/reads,
  * keyed by the same stage keys, so copy + visuals stay in one place.
  *
- * The tree is anchored to LIFETIME win days, not streak length — so a single slip
- * never visibly regresses long-term progress. Copy is gentle and encouraging.
+ * The tree grows with the current streak (a slip resets it; finished runs live on
+ * in the forest). Copy is gentle and encouraging either way.
  */
 
 import { palette } from './tokens';
