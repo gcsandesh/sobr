@@ -28,6 +28,9 @@ module.exports = {
         accent: '#1F6F6B',
         'accent-bright': '#2E9D95',
         'accent-bg': '#E2F2EF',
+        flame: '#F97316',
+        'flame-deep': '#C2410C',
+        'flame-bg': '#FFEDD5',
       },
       fontFamily: {
         display: ['Fraunces_900Black'],

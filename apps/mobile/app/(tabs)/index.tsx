@@ -27,7 +27,14 @@ import { GrowthCelebration } from '../../src/components/GrowthCelebration';
 import { MilestoneCelebration } from '../../src/components/MilestoneCelebration';
 import { MonthCalendar } from '../../src/components/MonthCalendar';
 import { Tree } from '../../src/components/Tree';
-import { ChevronRightIcon, PlusIcon, SnowflakeIcon, SparkIcon } from '../../src/components/icons';
+import {
+  ChevronRightIcon,
+  HomeLeafIcon,
+  PlusIcon,
+  SnowflakeIcon,
+  SparkIcon,
+} from '../../src/components/icons';
+import { FlameIcon, StreakPill } from '../../src/components/StreakFlame';
 import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
 import {
   useAllEntries,
@@ -178,17 +185,7 @@ export default function Today() {
                 {greeting}
               </Txt>
             </View>
-            <Row
-              className="gap-1"
-              accessibilityLabel={`${stats.bankedFreezes} of 3 freezes banked`}
-            >
-              {[0, 1, 2].map((i) => (
-                <SnowflakeIcon
-                  key={i}
-                  color={i < stats.bankedFreezes ? colors.frozen : colors.border}
-                />
-              ))}
-            </Row>
+            <StreakPill streak={stats.streak.current} />
           </Row>
         </Animated.View>
 
@@ -230,14 +227,17 @@ export default function Today() {
               <Glow size={340} color="#8FD9CF" opacity={0.42} />
             </View>
             <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={176} />
-            <AnimatedNumber
-              value={stats.streak.current}
-              variant="display"
-              className="mt-2"
-              style={{ color: HERO.text }}
-            />
+            <Row className="mt-2 items-center">
+              <FlameIcon streak={stats.streak.current} size={44} />
+              <AnimatedNumber
+                value={stats.streak.current}
+                variant="display"
+                className="ml-1"
+                style={{ color: HERO.text }}
+              />
+            </Row>
             <Txt variant="label" className="-mt-1" style={{ color: HERO.textMuted }}>
-              day streak
+              {stats.streak.current === 0 ? 'start a streak today' : 'day streak'}
             </Txt>
             <Txt
               variant="bodyMuted"
@@ -246,6 +246,16 @@ export default function Today() {
             >
               {meta.label} · {meta.blurb}
             </Txt>
+            {stats.streak.current === 0 && stats.forest[0] ? (
+              <Txt
+                variant="caption"
+                className="mt-2 text-center px-4"
+                style={{ color: HERO.textFaint }}
+              >
+                Your {stats.forest[0].length}-day tree is planted in your forest. A new seed is in
+                the ground.
+              </Txt>
+            ) : null}
 
             {/* progress to the next stage */}
             {stats.progress.winDaysToNext !== null && (
@@ -268,8 +278,8 @@ export default function Today() {
                   className="mt-2 text-center"
                   style={{ color: HERO.textFaint }}
                 >
-                  {stats.progress.winDaysToNext} more clear{' '}
-                  {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} to grow further
+                  {stats.progress.winDaysToNext} more{' '}
+                  {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} in a row to grow further
                 </Txt>
               </View>
             )}
@@ -279,9 +289,27 @@ export default function Today() {
         {/* stat pills */}
         <Animated.View entering={FadeInDown.delay(160).duration(500)}>
           <Row className="gap-3 mt-3">
-            <StatPill value={String(stats.lifetimeWins)} label="clear days" />
-            <StatPill value={String(stats.streak.longest)} label="longest" />
-            <StatPill value={`${stats.bankedFreezes}/3`} label="freezes" />
+            <StatPill
+              icon={<FlameIcon streak={Math.max(1, stats.streak.longest)} size={20} />}
+              value={String(stats.streak.longest)}
+              label="best streak"
+              fg={colors.flameDeep}
+              bg={colors.flameBg}
+            />
+            <StatPill
+              icon={<HomeLeafIcon color={colors.win} size={20} />}
+              value={String(stats.lifetimeWins)}
+              label="clear days"
+              fg={colors.win}
+              bg={colors.winBg}
+            />
+            <StatPill
+              icon={<SnowflakeIcon color={colors.frozen} size={18} />}
+              value={`${stats.bankedFreezes}/3`}
+              label="freezes"
+              fg={colors.frozen}
+              bg={colors.frozenBg}
+            />
           </Row>
         </Animated.View>
 
@@ -570,24 +598,39 @@ export default function Today() {
   );
 }
 
-/** A compact stat on a soft card — the row under the hero. */
 /**
- * The numeral's color is set via `style`, not a class: the `heading` variant
- * hardcodes `text-text`, which wins over a caller's `text-accent`.
+ * A compact stat under the hero. Each one carries its own color family
+ * (flame / leaf / ice) so the row reads as three different things at a glance.
  */
-function StatPill({ value, label }: { value: string; label: string }) {
+function StatPill({
+  icon,
+  value,
+  label,
+  fg,
+  bg,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  fg: string;
+  bg: string;
+}) {
   return (
-    <Card
-      className="flex-1 items-center py-3 px-2"
-      style={{ backgroundColor: colors.accentBg, borderColor: '#BFDED8' }}
+    <View
+      className="flex-1 items-center rounded-2xl py-3 px-2"
+      style={{ backgroundColor: bg }}
+      accessibilityLabel={`${value} ${label}`}
     >
-      <Txt variant="heading" style={{ color: colors.accent }}>
-        {value}
-      </Txt>
-      <Txt variant="caption" className="mt-0.5">
+      <Row className="gap-1">
+        {icon}
+        <Txt variant="heading" style={{ color: fg }}>
+          {value}
+        </Txt>
+      </Row>
+      <Txt variant="caption" className="mt-0.5" style={{ color: fg, opacity: 0.85 }}>
         {label}
       </Txt>
-    </Card>
+    </View>
   );
 }
 

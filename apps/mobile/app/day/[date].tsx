@@ -18,7 +18,7 @@ import {
   totalCost,
   totalUnits,
 } from '@sobr/core';
-import { DayPhotos } from '../../src/components/DayPhotos';
+import { DayPhotos, type PendingPhoto } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon } from '../../src/components/icons';
 import {
   Button,
@@ -29,7 +29,13 @@ import {
   SectionHeader,
   Txt,
 } from '../../src/components/ui';
-import { useDayEntry, useDeleteDay, useSaveDay, useSettings } from '../../src/data/hooks';
+import {
+  useDayEntry,
+  useDeleteDay,
+  useSaveDay,
+  useSettings,
+  useUploadPendingPhotos,
+} from '../../src/data/hooks';
 import { confirmAction } from '../../src/lib/confirm';
 import { formatDay } from '../../src/lib/dates';
 import { colors } from '../../src/theme';
@@ -60,6 +66,10 @@ export default function DayLogger() {
   const [manualStatus, setManualStatus] = useState<'win' | 'slip'>('win');
   const [showCustom, setShowCustom] = useState(false);
   const [note, setNote] = useState('');
+  const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const uploadPending = useUploadPendingPhotos();
   const [hydrated, setHydrated] = useState(false);
 
   // Hydrate local state from the saved entry once — and only from a query that
@@ -132,7 +142,21 @@ export default function DayLogger() {
   }
 
   async function save() {
-    await saveDay.mutateAsync({ date: day, status, drinks, note });
+    setPhotoError(null);
+    const entryId = await saveDay.mutateAsync({ date: day, status, drinks, note });
+    if (pendingPhotos.length > 0) {
+      setUploading(true);
+      const failed = await uploadPending(entryId, pendingPhotos);
+      setUploading(false);
+      setPendingPhotos(failed);
+      if (failed.length > 0) {
+        // the day is saved; keep the screen open so no photo is lost silently
+        setPhotoError(
+          `Day saved, but ${failed.length === 1 ? 'a photo' : `${failed.length} photos`} didn’t upload. Tap Save again to retry.`,
+        );
+        return;
+      }
+    }
     router.back();
   }
 
@@ -350,7 +374,16 @@ export default function DayLogger() {
           />
         </View>
 
-        <DayPhotos entryId={entryQ.data?.id} />
+        <DayPhotos
+          entryId={entryQ.data?.id}
+          pending={pendingPhotos}
+          onPendingChange={setPendingPhotos}
+        />
+        {photoError ? (
+          <Txt variant="caption" className="text-slip mt-2" accessibilityRole="alert">
+            {photoError}
+          </Txt>
+        ) : null}
       </KeyboardAwareScrollView>
 
       {/* sticky actions */}
@@ -358,7 +391,7 @@ export default function DayLogger() {
         <Button
           label={isToday ? 'Save today' : 'Save this day'}
           onPress={save}
-          loading={saveDay.isPending}
+          loading={saveDay.isPending || uploading}
           disabled={!hydrated}
         />
         {entryQ.data && (

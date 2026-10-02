@@ -33,7 +33,8 @@ export function useGrowthCelebration(
           await AsyncStorage.setItem(KEY, String(stageIndex));
           if (active) setCelebration(growthMetaForKey(stage));
         } else if (stageIndex < last) {
-          // lifetime wins only grow; resync defensively without celebrating
+          // the tree follows the current streak, so a slip shrinks it: record
+          // the new baseline quietly, and regrowing past a stage celebrates again
           await AsyncStorage.setItem(KEY, String(stageIndex));
         }
       } catch {

@@ -3,6 +3,7 @@ import {
   allTimeStats,
   bankedFreezes,
   computeStreak,
+  forestTrees,
   type DailyEntryWithDrinks,
   type DrinkInput,
   type EntryStatus,
@@ -118,8 +119,14 @@ export function useHomeStats() {
     today,
   );
   const lifetimeWins = totalWinDays(entries);
-  const stage = growthStage(lifetimeWins);
-  const progress = growthProgress(lifetimeWins);
+  // The tree grows with the CURRENT streak: a slip sends it back to a seed.
+  // Finished runs are planted in the forest so what was grown isn't erased.
+  const stage = growthStage(streak.current);
+  const progress = growthProgress(streak.current);
+  const forest = forestTrees(
+    entries.map((e) => ({ entryDate: e.entryDate, status: e.status })),
+    today,
+  );
   const banked = bankedFreezes(grants);
 
   return {
@@ -135,6 +142,7 @@ export function useHomeStats() {
     lifetimeWins,
     stage,
     progress,
+    forest,
     bankedFreezes: banked,
     monthly: monthlyAggregates(entries, today),
     allTime: allTimeStats(entries, streak.longest),
@@ -238,6 +246,8 @@ export function useSaveDay() {
         todayInTz(tz),
       );
       await api.reconcileFreezeAwards(u, streak.current, grants);
+      // the caller may need it, e.g. to attach photos picked before the first save
+      return entryId;
     },
     onMutate: async (input) => {
       if (!uid) return undefined;
@@ -357,6 +367,39 @@ export function usePhotoDates() {
     queryFn: () => api.fetchPhotoDates(userId as string),
     enabled: !!userId,
   });
+}
+
+/**
+ * Upload photos that were picked before the day had an entry row. Returns the
+ * ones that failed, so the screen can keep them on show and offer a retry
+ * instead of silently dropping a memory.
+ */
+export function useUploadPendingPhotos() {
+  const uid = useUid();
+  const qc = useQueryClient();
+  return async (
+    entryId: string,
+    pending: { uri: string; mimeType?: string | null }[],
+  ): Promise<{ uri: string; mimeType?: string | null }[]> => {
+    const failed: typeof pending = [];
+    for (const p of pending) {
+      try {
+        await api.addDayPhoto({
+          userId: requireUid(uid),
+          entryId,
+          uri: p.uri,
+          mimeType: p.mimeType,
+        });
+      } catch {
+        failed.push(p);
+      }
+    }
+    if (failed.length < pending.length) {
+      void qc.invalidateQueries({ queryKey: keys.dayPhotos(entryId) });
+      void qc.invalidateQueries({ queryKey: keys.photoDates(uid ?? 'anon') });
+    }
+    return failed;
+  };
 }
 
 export function useAddDayPhoto(entryId: string | undefined) {

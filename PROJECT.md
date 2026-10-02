@@ -8,7 +8,7 @@
 
 **sobr — clear days, counted.** A calm, private companion for building a steadier
 relationship with alcohol, built around a daily win/slip streak, a freeze-token
-safety net, and a growing tree that reflects long-term progress.
+safety net, a streak flame, and a tree that grows with the current streak.
 
 ## What it is (and isn't)
 
@@ -36,15 +36,21 @@ safety net, and a growing tree that reflects long-term progress.
    fully-unit-tested package (`@sobr/core`).
 5. **Engaging like Duolingo — but quiet.** Borrow the habit-forming clarity (a single
    emotional anchor, satisfying streak feedback, a forgiving freeze) without the loud,
-   gamified-casino energy. The tree is our flame.
+   gamified-casino energy. The streak has a visible flame that gets hotter as it grows.
+6. **A streak is worth protecting (owner decision, 2026-10-02).** The tree grows with the
+   *current* streak, so a slip sends it back to a seed. That is a real cost, which is what
+   makes the streak motivating. It stays humane: freezes protect the streak and the tree,
+   and every finished run of 3+ days is planted in **your forest**, so what was grown is
+   never erased. Lifetime clear days still count in the stats.
 
 ## The core loop
 
 Each day the user either taps **"It was a clear day"** (one-tap win) or **logs what
-they had**. A win extends the **streak** and adds to **lifetime clear days**, which
-grows the **tree** (seed → sprout → sapling → young tree → full tree → grove at
-0/3/7/14/30/60 clear days). Every 7-day streak earns a **freeze token** (max 3 banked);
-on a slip, a freeze can protect the streak instead of resetting it.
+they had**. A win extends the **streak** (shown with a flame) and adds to **lifetime clear
+days**. The **tree** grows with the current streak (seed → sprout → sapling → young tree →
+full tree → grove at 0/3/7/14/30/60 days in a row). A slip resets the streak and the tree;
+the finished tree is planted in **your forest**. Every 7-day streak earns a **freeze token**
+(max 3 banked); on a slip, a freeze protects the streak (and the tree) instead.
 
 ## Win conditions (per-user, changeable anytime)
 

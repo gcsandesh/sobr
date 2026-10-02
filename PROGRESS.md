@@ -6,6 +6,41 @@ its task groups here.
 
 ---
 
+<a id="phase6-streak"></a>
+## Phase 6 · Streak with stakes, flame, sobriety icon, photos before save ✅ done (2026-10-02)
+
+**Owner requests:** a streak that costs something to break, fire icons for the streak, more
+attractive color + icon combinations, an icon that says sobriety, photos while creating an
+entry, and PR + merge to main.
+
+**Achieved**
+- **PR #1 merged** (Phases 5–5b). `main` had moved in parallel (a local agent added a CSV
+  export); merged it in, kept main's export (byte-written BOM, verified on device) and dropped
+  this branch's duplicate.
+- **Tree follows the current streak** (owner decision): a slip resets it to a seed; freezes
+  protect it. Finished runs of 3+ days are planted in **Your forest** on Profile
+  (`streakRuns` / `forestTrees` in `@sobr/core`, tested).
+- **Streak flame**: `FlameIcon` / `StreakPill` (ember → spark → flame → blaze); flame color
+  family in the tokens; stat pills + Profile cards each with their own icon + color.
+- **"The chip" icon**: a sobriety medallion holding a sunrise; all launcher/adaptive/themed/
+  notification/splash/favicon assets regenerated; in-app logo matches.
+- **Photos before the first save**: queued locally, uploaded right after Save; failures keep
+  the screen open with the photo still shown.
+- Tab labels no longer clip on web.
+- Verified: 87/87 core tests, typecheck, Android bundle, web screenshots.
+
+**Found, not fixed (needs a migration):** `freeze_grants` is unique per (user, milestone), so
+the 7/14/21-day freezes can each be earned **once per account, ever**. After the first 7-day
+streak, later streaks never earn another freeze. Fix: add the run's start date to the grant
+and the unique key (migration `0006`), then award per run.
+
+**What you need to do**
+1. Install the newest APK from Releases (it shows the new icon).
+2. Clean old test data with the SQL in the chat (preview first; it clears the test freezes too).
+3. Tell the agent which app you want to import from, and share a sample export file.
+
+---
+
 <a id="phase5b-daily-use"></a>
 ## Phase 5b · Daily-use polish + review fixes ✅ done (2026-09-26)
 
