@@ -316,7 +316,7 @@ Owner actions outstanding (TODO.md has the live list):
 Engineering candidates, roughly by value:
 - Fix whatever the owner's smoke test turns up (top priority).
 - Freeze grants per run (gotcha 17), then import from the owner's other app (needs a sample).
-- Merge `claude/awesome-bohr-aos87s` → `main` via PR once the owner approves.
+- Merge PR #2 once its build is green (the owner asked for PR + merge).
 - Dark mode (see §9).
 - Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
 - Re-add Google sign-in (free on Android; needs a dev build to test the native redirect).
