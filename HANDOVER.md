@@ -12,7 +12,7 @@
 > [DEPLOY.md](./DEPLOY.md) (release checklist + phone smoke test).
 > Change history: `git log` (one commit per feature, with the why in the body).
 
-Last updated: **2026-10-02** (Phase 5b merged with main's CSV export + paid-work decision).
+Last updated: **2026-10-02** (Phase 6: streak with stakes, flame, chip icon; PR #1 merged).
 
 ---
 
@@ -22,11 +22,12 @@ Last updated: **2026-10-02** (Phase 5b merged with main's CSV export + paid-work
 **Expo Router app for Android + iOS + web**, backed by **Supabase**. It is **screen-complete
 and in daily use on the owner's Android phone** (installed from a GitHub Release APK).
 
-- **Health:** `@sobr/core` **82/82** tests pass; the app typechecks with and without Expo's
+- **Health:** `@sobr/core` **87/87** tests pass; the app typechecks with and without Expo's
   generated typed routes; the Android JS bundle exports clean; CI builds a release APK.
 - **Users:** one (the owner). Sign-up is open; email confirmation is off.
-- **Active branch:** `claude/awesome-bohr-aos87s` (not merged to `main` yet; open a PR when
-  the owner asks). Every push touching the app builds an APK on GitHub Actions.
+- **Branches:** PR #1 (Phases 5–5b) is merged into `main`. Phase 6 is on
+  `claude/awesome-bohr-aos87s` in PR #2. Every push touching the app builds an APK on GitHub
+  Actions; pushes to `main` publish a normal Release, branch pushes a pre-release.
 - **Latest APK:** build 7, https://github.com/gcsandesh/sobr/releases (tags `android-v<version>-<run>`).
 - **Verified on a physical Android device (2026-09-28):** both notification schedules, on an EAS
   release build made from the owner's Mac. Phase 5 screens were verified by typecheck, bundling
@@ -60,9 +61,11 @@ and in daily use on the owner's Android phone** (installed from a GitHub Release
 ## 2. Product in one paragraph + principles
 
 Each day the user taps **"It was a clear day"** (one-tap win) or **logs what they had**. A win
-extends the **streak** and lifetime **clear days**, which grow a **tree** (seed → sprout →
-sapling → young tree → full tree → grove at 0/3/7/14/30/60 clear days). Every 7-day streak
-earns a **freeze** (max 3 banked); a freeze can protect the streak on a slip day. The win rule
+extends the **streak** (shown as a flame that gets hotter with length) and lifetime **clear
+days**. The **tree grows with the current streak** (seed → sprout → sapling → young tree → full
+tree → grove at 0/3/7/14/30/60 days in a row); **a slip resets it**, and every finished run of
+3+ days is planted in **Your forest** (Profile). Every 7-day streak earns a **freeze** (max 3
+banked); a freeze protects the streak and the tree on a slip day. The win rule
 is per user: **zero** (anything logged = slip), **limit** (≤ N units = win), or **manual**.
 Units use the UK formula `volume_ml × abv% / 1000 × quantity`.
 
@@ -75,6 +78,8 @@ Units use the UK formula `volume_ml × abv% / 1000 × quantity`.
   logged content; account deletion purges everything.
 - **Correct math.** Streak / units / freeze / date logic lives in `@sobr/core` with tests.
   Change it only with tests.
+- **A streak is worth protecting** (owner decision 2026-10-02): breaking it resets the tree,
+  but never erases history (the forest, lifetime clear days).
 - **Never overwrite what you haven't loaded.** A save replaces a day's whole drink list, so any
   write path must start from a *successfully loaded* day (see gotcha 11).
 
@@ -211,7 +216,10 @@ Supabase account only has an unrelated project), so schema changes must be hande
     loses the BOM on Android (found by reading the export back off the device), so
     `src/lib/export.ts` writes raw bytes. Excel needs the BOM to read `×`, emoji and
     non-Latin notes. Web keeps a string BOM in a Blob.
-17. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
+17. **Freeze grants are unique per (user, milestone) forever.** So each of the 7/14/21-day freezes
+    can be earned once per account; a second 7-day streak earns nothing. Fixing it needs a
+    migration (run start date in the grant + unique key). TODO → Phase 6.
+18. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
     `main` (it built the CSV export while the cloud branch built its own). Always
     `git fetch` and check `origin/main` before starting, and merge it in rather than
     assuming your branch point is current.
@@ -241,7 +249,7 @@ Supabase account only has an unrelated project), so schema changes must be hande
 corepack enable pnpm && pnpm install
 pnpm web                      # web dev server (http://localhost:8081)
 pnpm app                      # Expo dev server for a device (Expo Go lacks notifications on Android)
-pnpm test:core                # 82 domain-logic tests
+pnpm test:core                # 87 domain-logic tests
 ```
 
 **Android release APK (how the owner installs):** push to `main` or `claude/**` (paths:
@@ -264,7 +272,7 @@ To check an APK's baked config without a phone:
 
 ## 9. Verification workflow (no device, no live DB here)
 
-1. `pnpm --filter @sobr/core test` (add tests for any logic change). Expect 82.
+1. `pnpm --filter @sobr/core test` (add tests for any logic change). Expect 87.
 2. `cd apps/mobile && pnpm exec tsc --noEmit`, and the CI variant (gotcha 10).
 3. `cd apps/mobile && EXPO_OFFLINE=1 pnpm exec expo export --platform android` catches bundling
    and resolution errors, including new native deps.
@@ -307,6 +315,7 @@ Owner actions outstanding (TODO.md has the live list):
 
 Engineering candidates, roughly by value:
 - Fix whatever the owner's smoke test turns up (top priority).
+- Freeze grants per run (gotcha 17), then import from the owner's other app (needs a sample).
 - Merge `claude/awesome-bohr-aos87s` → `main` via PR once the owner approves.
 - Dark mode (see §9).
 - Mood on check-in + a "how you felt" trend (needs migration `0006_*`).

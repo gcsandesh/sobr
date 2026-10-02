@@ -176,6 +176,15 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 
 ---
 
+## Phase 6 · Streak with stakes · [progress](PROGRESS.md#phase6-streak)
+- [x] Tree grows with the current streak; slip resets it; forest of past trees on Profile
+- [x] Streak flame (tiers) + flame color family; colored stat pills/cards
+- [x] "The chip" sobriety icon + all Android icon variants
+- [x] Photos can be added before the day's first save
+- [ ] **Fix freeze grants:** one award per milestone *per run*, not per account (migration 0006)
+- [ ] Import from another app (waiting on the app name + a sample export)
+- [ ] _User step:_ delete pre-real-use test data (SQL in chat; preview first)
+
 ## Day photos — "track memories as well"
 - [x] `day_photos` table + RLS, private `day-photos` storage bucket + object policies
 - [x] Object key is `<user_id>/<entry_id>/<id>.<ext>`; every storage policy pins the first
