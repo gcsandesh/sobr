@@ -47,6 +47,14 @@ export const palette = {
   accentBright: '#2E9D95',
   accentSoft: '#E2F2EF',
 
+  // Streak flame — the one warm family in a cool palette, so the streak is the
+  // first thing the eye lands on. Used for the flame, streak numerals and pills.
+  // `flame` clears 3:1 on white for large text/icons; body text uses `flameDeep`.
+  flame: '#F97316',
+  flameDeep: '#C2410C',
+  flameGlow: '#FBBF24',
+  flameSoft: '#FFEDD5',
+
   // Misc
   white: '#FFFFFF',
   black: '#000000',
@@ -77,6 +85,11 @@ export const colors = {
   accent: palette.accent,
   accentBright: palette.accentBright,
   accentBg: palette.accentSoft,
+
+  flame: palette.flame,
+  flameDeep: palette.flameDeep,
+  flameGlow: palette.flameGlow,
+  flameBg: palette.flameSoft,
 } as const;
 
 /** Status → color map, used by calendar cells, badges, summary cards. */

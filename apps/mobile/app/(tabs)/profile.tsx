@@ -1,7 +1,10 @@
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GROWTH_STAGES } from '@sobr/config';
-import { BookIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
+import { BookIcon, HomeLeafIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
+import { FlameIcon } from '../../src/components/StreakFlame';
+import { Tree } from '../../src/components/Tree';
+import { formatDay } from '../../src/lib/dates';
 import {
   Avatar,
   Card,
@@ -67,17 +70,41 @@ export default function Profile() {
       {/* stats grid */}
       <SectionHeader title="Your numbers" />
       <View className="flex-row flex-wrap gap-3 mb-6">
-        <StatCard value={String(stats.streak.current)} label="Current streak" />
-        <StatCard value={String(stats.streak.longest)} label="Longest streak" />
-        <StatCard value={String(stats.lifetimeWins)} label="Clear days" />
-        <StatCard value={`${stats.bankedFreezes}/3`} label="Freezes banked" />
+        <StatCard
+          icon={<FlameIcon streak={stats.streak.current} size={22} />}
+          value={String(stats.streak.current)}
+          label="Current streak"
+          color={stats.streak.current > 0 ? colors.flameDeep : colors.textFaint}
+        />
+        <StatCard
+          icon={<FlameIcon streak={Math.max(1, stats.streak.longest)} size={22} />}
+          value={String(stats.streak.longest)}
+          label="Best streak"
+          color={colors.flameDeep}
+        />
+        <StatCard
+          icon={<HomeLeafIcon color={colors.win} size={22} />}
+          value={String(stats.lifetimeWins)}
+          label="Clear days, all time"
+          color={colors.win}
+        />
+        <StatCard
+          icon={<SnowflakeIcon color={colors.frozen} size={20} />}
+          value={`${stats.bankedFreezes}/3`}
+          label="Freezes banked"
+          color={colors.frozen}
+        />
       </View>
 
       {/* growth journey */}
-      <SectionHeader title="Growth journey" caption={`${stats.lifetimeWins} clear days`} />
+      <SectionHeader
+        title="This tree's journey"
+        caption={`${stats.streak.current}-day streak`}
+      />
       <Card className="mb-6">
         {GROWTH_STAGES.map((stage, i) => {
-          const achieved = stats.lifetimeWins >= stage.minWinDays;
+          // the tree follows the current streak: a slip starts a new one
+          const achieved = stats.streak.current >= stage.minWinDays;
           const isCurrent = stage.key === stats.stage;
           const isLast = i === GROWTH_STAGES.length - 1;
           return (
@@ -124,12 +151,50 @@ export default function Profile() {
                   {isCurrent ? '  ·  you are here' : ''}
                 </Txt>
                 <Txt variant="caption" className="mt-0.5">
-                  {stage.minWinDays === 0 ? 'Day one' : `${stage.minWinDays} clear days`}
+                  {stage.minWinDays === 0 ? 'Day one' : `${stage.minWinDays} days in a row`}
                 </Txt>
               </View>
             </View>
           );
         })}
+      </Card>
+
+      {/* the forest: trees from finished streaks */}
+      <SectionHeader
+        title="Your forest"
+        caption={stats.forest.length ? `${stats.forest.length} planted` : undefined}
+      />
+      <Card className="mb-6">
+        {stats.forest.length === 0 ? (
+          <Txt variant="bodyMuted" className="text-sm">
+            When a streak of 3 days or more ends, its tree is planted here. A slip resets the
+            tree on Home, but what you grew stays.
+          </Txt>
+        ) : (
+          <View className="flex-row flex-wrap gap-3">
+            {stats.forest.slice(0, 12).map((t) => (
+              <View
+                key={t.start}
+                className="items-center rounded-2xl bg-surface-raised py-2"
+                style={{ width: 92 }}
+                accessibilityLabel={`${t.length} day streak, ${formatDay(t.start)} to ${formatDay(t.end)}`}
+              >
+                <Tree stage={t.stage} progress={1} size={64} />
+                <Txt variant="body" className="font-semibold text-sm">
+                  {t.length} days
+                </Txt>
+                <Txt variant="caption" style={{ fontSize: 10 }}>
+                  {formatDay(t.start).split(', ').pop()}
+                </Txt>
+              </View>
+            ))}
+          </View>
+        )}
+        {stats.forest.length > 12 ? (
+          <Txt variant="caption" className="mt-3">
+            and {stats.forest.length - 12} more
+          </Txt>
+        ) : null}
       </Card>
 
       {/* freezes explainer */}
@@ -142,7 +207,7 @@ export default function Profile() {
             <Txt variant="body">Streak freezes</Txt>
             <Txt variant="caption" className="mt-0.5">
               Every 7-day streak banks a freeze (max 3). On a harder day, a freeze keeps your
-              streak safe.
+              streak, and your tree, safe.
             </Txt>
           </View>
         </Row>
@@ -166,12 +231,25 @@ export default function Profile() {
   );
 }
 
-function StatCard({ value, label }: { value: string; label: string }) {
+function StatCard({
+  icon,
+  value,
+  label,
+  color,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  color: string;
+}) {
   return (
     <Card className="flex-1 min-w-[45%] py-4">
-      <Txt variant="displaySm" className="text-accent">
-        {value}
-      </Txt>
+      <Row className="gap-1.5">
+        {icon}
+        <Txt variant="displaySm" style={{ color }}>
+          {value}
+        </Txt>
+      </Row>
       <Txt variant="label" className="mt-1">
         {label}
       </Txt>

@@ -1,3 +1,4 @@
+import { Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChartIcon, GearIcon, HomeLeafIcon, UserIcon } from '../../src/components/icons';
@@ -15,6 +16,9 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         sceneStyle: { backgroundColor: colors.bg },
+        // the item fills the bar's content area; without this it kept a fixed
+        // default height and cut off the label's lower half
+        tabBarItemStyle: { height: 52 },
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle: {
@@ -34,7 +38,22 @@ export default function TabsLayout() {
           shadowOffset: { width: 0, height: -4 },
           elevation: 12,
         },
-        tabBarLabelStyle: { fontFamily: 'Figtree_600SemiBold', fontSize: 11, lineHeight: 16, marginTop: 2 },
+        // Rendered by hand: React Navigation's own label box is sized for the
+        // system font and clipped Figtree's descenders ("Settinas").
+        tabBarLabel: ({ color, children }) => (
+          <Text
+            style={{
+              fontFamily: 'Figtree_600SemiBold',
+              fontSize: 11,
+              lineHeight: 15,
+              marginTop: 2,
+              color,
+            }}
+            numberOfLines={1}
+          >
+            {children}
+          </Text>
+        ),
         tabBarLabelPosition: 'below-icon',
       }}
     >
