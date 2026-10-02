@@ -113,7 +113,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Time zone setting — captured at onboarding; editable from Settings (picker sheet)
 - [x] Account: show email, sign out
 - [x] Account: delete account/data (calls purge routine) with confirm
-- [~] Data export (CSV/JSON) — _dropped: data lives in the DB and syncs on login, so a manual export isn't needed. Model still supports adding a backup file later._
+- [x] Data export (CSV) — Settings → Your data → Export (see Future enhancements)
 
 ## M8 — Polish, a11y, tests · [progress](PROGRESS.md#m8-home)
 - [x] Micro-interactions (tree level-up, streak increment, freeze use) — _streak count-up, win/freeze haptic + banner, and tree level-up celebration_
@@ -146,7 +146,8 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Dev-only auth bypass: `EXPO_PUBLIC_SKIP_AUTH=1` (+ `__DEV__` gate) jumps straight to tabs for Expo Go testing
 - [x] frontend-design skill pass: forest-at-dusk hero (the app's one bold dominant surface — dark gradient, glow, warm Fraunces numeral), editorial greeting headline, staggered page-load reveal on Home
 - [x] Google sign-in button commented out (untestable in Expo Go) — re-enable is the LAST TODO item
-- [ ] User must test both notification schedules on a device (needs dev build for full fidelity)
+- [x] Both notification schedules verified on a physical Android device (2026-09-28) —
+      confirmed working on the EAS release build, which Expo Go could not exercise
 
 ## Phase 5 · Complete app + release pipeline · [progress](PROGRESS.md#phase5-complete)
 - [x] UI kit: TextField, OptionList, ToggleRow, RowValue, icons; max-width layout; tab labels
@@ -169,7 +170,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [ ] _User step:_ phone smoke test (DEPLOY.md §4)
 - [x] Keyboard-aware screens on edge-to-edge Android; adaptive/themed + notification icons
 - [x] Never overwrite a day that failed to load (day screen, quick-add, one-tap win)
-- [x] CSV export; pull to refresh; ErrorBoundary; limit stepper; notification tap → today
+- [x] Pull to refresh; ErrorBoundary; limit stepper; notification tap → today (CSV export came from main)
 - [ ] Dark mode (deferred: see PROGRESS → Phase 5 decisions)
 - [ ] Mood on check-in (needs a migration)
 
@@ -187,17 +188,29 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
       and remove (remove moved off the long-press, which was undiscoverable)
 - [x] Photo indicator on the calendar — corner dot, so a day can show both a status and a photo
 
-## Future enhancements (when published to the App Store / Play Store)
-- [ ] **Apple sign-in** — add once there's a paid Apple Developer account + a dev/EAS build
-  (Apple requires it; "Sign in with Apple" is also mandatory for App Store apps that offer Google).
-- [ ] Remote push notifications (smart "log before midnight" nudges).
-- [ ] Data backup/export file (CSV/JSON) — model already supports it.
-- [ ] **LAST: re-enable Google sign-in** — the flow stays wired in `src/lib/auth.ts`
-  (`signInWithGoogle`; web was verified working), but the button is no longer in
-  `apps/mobile/app/(auth)/sign-in.tsx` — that screen was rewritten for email + password, so the
-  button + "or" divider need re-adding, not just uncommenting. Do this only once a custom
-  dev/EAS build exists so native can actually be tested (Expo Go can't run the `sobr://`
-  redirect).
+## Future enhancements — free, actionable now
+- [x] CSV export — Settings → Export my data. One row per day (date, status, units, drinks,
+      cost, note) via the OS share sheet. Verified by reading the file back off the device.
+- [ ] JSON export — full-fidelity backup (per-drink rows, photo captions). CSV covers the
+      spreadsheet case; add this only if a restore/import path is ever built.
+- [ ] Remote push on **Android** (smart "log before midnight" nudges). FCM is free; the iOS half
+  needs APNs, which is paid — see Parked.
+- [ ] Optional dedicated `apps/web` (Next.js) if the web view outgrows RN Web.
+
+## Parked — needs a paid account (skip until that changes)
+_Decision 2026-09-28: nothing that costs money for now. Do not re-surface these as "next up"._
+- [ ] **Apple sign-in** — needs the Apple Developer Program ($99/yr). Also mandatory for App Store
+  apps that offer Google, so it is coupled to any iOS store release.
+- [ ] **iOS device / TestFlight builds** — same membership. Apple's rule, not EAS's; no build
+  profile or flag avoids it. Android APKs via `eas build -p android --profile preview` stay free.
+- [ ] **Remote push on iOS** — APNs certificates require the paid membership.
+
+## Deferred by choice — free, but not wanted yet
+- [ ] **LAST: re-enable Google sign-in.** Free on Android — needs only a dev build, which EAS
+  produces at no cost. The flow stays wired in `src/lib/auth.ts` (`signInWithGoogle`; web was
+  verified working), but the button is no longer in `apps/mobile/app/(auth)/sign-in.tsx` — that
+  screen was rewritten for email + password, so the button + "or" divider need re-adding, not just
+  uncommenting. Expo Go can't run the `sobr://` redirect, so test on a dev build.
 
 ---
 

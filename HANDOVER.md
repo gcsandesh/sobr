@@ -12,7 +12,7 @@
 > [DEPLOY.md](./DEPLOY.md) (release checklist + phone smoke test).
 > Change history: `git log` (one commit per feature, with the why in the body).
 
-Last updated: **2026-09-26** (Phase 5b).
+Last updated: **2026-10-02** (Phase 5b merged with main's CSV export + paid-work decision).
 
 ---
 
@@ -22,14 +22,19 @@ Last updated: **2026-09-26** (Phase 5b).
 **Expo Router app for Android + iOS + web**, backed by **Supabase**. It is **screen-complete
 and in daily use on the owner's Android phone** (installed from a GitHub Release APK).
 
-- **Health:** `@sobr/core` **80/80** tests pass; the app typechecks with and without Expo's
+- **Health:** `@sobr/core` **82/82** tests pass; the app typechecks with and without Expo's
   generated typed routes; the Android JS bundle exports clean; CI builds a release APK.
 - **Users:** one (the owner). Sign-up is open; email confirmation is off.
 - **Active branch:** `claude/awesome-bohr-aos87s` (not merged to `main` yet; open a PR when
   the owner asks). Every push touching the app builds an APK on GitHub Actions.
 - **Latest APK:** build 7, https://github.com/gcsandesh/sobr/releases (tags `android-v<version>-<run>`).
-- **Not yet verified on a device:** the Phase 5 screens were verified by typecheck, bundling
-  and web screenshots only. The owner is running the phone smoke test (DEPLOY.md §4).
+- **Verified on a physical Android device (2026-09-28):** both notification schedules, on an EAS
+  release build made from the owner's Mac. Phase 5 screens were verified by typecheck, bundling
+  and web screenshots, and the owner has been using build 7 daily since 2026-09-26.
+- **Money decision (2026-09-28): nothing that costs money for now.** Apple Developer Program
+  work (Apple sign-in, iOS builds, iOS push) is parked; see TODO → Parked. Don't re-surface it
+  as "next up". The Play Store's one-time $25 fee falls under the same rule until the owner
+  says otherwise.
 
 ### What the app does, screen by screen
 
@@ -88,7 +93,7 @@ Units use the UK formula `volume_ml × abv% / 1000 × quantity`.
 | Validation | Zod (in `@sobr/core`) | |
 | Visuals | react-native-svg (tree, charts, icons), reanimated 4 + worklets | |
 | Keyboard | **react-native-keyboard-controller 1.18.5** | required on edge-to-edge Android (gotcha 12) |
-| Files | expo-file-system (new `File`/`Paths` API), expo-sharing | CSV export |
+| Files | expo-file-system (new `File`/`Paths` API), expo-sharing | CSV export (`src/lib/export.ts`) |
 | Notifications | expo-notifications, local only | daily check-in + 7 weekly motivation triggers |
 | Auth | **email + password** (no confirmation); code-based reset | Google wired but hidden; Apple deferred |
 | Tests | Vitest on `@sobr/core` | 80 tests |
@@ -111,7 +116,7 @@ apps/mobile/
   src/data/            SessionProvider (session, displayName, greetingName), hooks.ts
                        (queries + optimistic mutations), api.ts (Supabase I/O), useRefresh,
                        useNotificationPrefs (+ resyncNotificationSchedule), pledge/celebrations
-  src/lib/             supabase, account (name/password/reset), notifications, exportData,
+  src/lib/             supabase, account (name/password/reset), notifications, export (CSV),
                        dates (formatDay/formatMonth), errorMessage (+ authErrorMessage),
                        haptics, env, confirm, queryClient
   src/content/legal.ts privacy + terms text
@@ -154,6 +159,9 @@ Server-side jobs (migration 0002): `pg_cron` runs `app.run_email_jobs()` hourly;
 posts to Resend using the Vault secret `resend_api_key` (absent → rows logged as
 `skipped_no_key`). Sends from `onboarding@resend.dev`, so only the Resend account owner
 receives them until a domain is verified.
+
+`0005_time_zone_guard.sql` rejects unresolvable time zones at write time and isolates each
+user in the mail job (one bad zone used to abort the batch for everyone).
 
 Migrations are applied manually (Supabase SQL editor or `packages/db/apply-*.mjs`), in order
 0000 → 0005. **This environment has no access to the sobr Supabase project** (the connected
@@ -199,6 +207,14 @@ Supabase account only has an unrelated project), so schema changes must be hande
     live DB is handed to the owner.
 15. **The Expo CLI needs `--offline` / `EXPO_OFFLINE=1` here**, or it crashes fetching
     dependency versions through the proxy.
+16. **A UTF-8 BOM written as a string is dropped on native.** `File.write('\uFEFF' + csv)`
+    loses the BOM on Android (found by reading the export back off the device), so
+    `src/lib/export.ts` writes raw bytes. Excel needs the BOM to read `×`, emoji and
+    non-Latin notes. Web keeps a string BOM in a Blob.
+17. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
+    `main` (it built the CSV export while the cloud branch built its own). Always
+    `git fetch` and check `origin/main` before starting, and merge it in rather than
+    assuming your branch point is current.
 
 ---
 
@@ -225,7 +241,7 @@ Supabase account only has an unrelated project), so schema changes must be hande
 corepack enable pnpm && pnpm install
 pnpm web                      # web dev server (http://localhost:8081)
 pnpm app                      # Expo dev server for a device (Expo Go lacks notifications on Android)
-pnpm test:core                # 80 domain-logic tests
+pnpm test:core                # 82 domain-logic tests
 ```
 
 **Android release APK (how the owner installs):** push to `main` or `claude/**` (paths:
@@ -248,7 +264,7 @@ To check an APK's baked config without a phone:
 
 ## 9. Verification workflow (no device, no live DB here)
 
-1. `pnpm --filter @sobr/core test` (add tests for any logic change).
+1. `pnpm --filter @sobr/core test` (add tests for any logic change). Expect 82.
 2. `cd apps/mobile && pnpm exec tsc --noEmit`, and the CI variant (gotcha 10).
 3. `cd apps/mobile && EXPO_OFFLINE=1 pnpm exec expo export --platform android` catches bundling
    and resolution errors, including new native deps.
@@ -286,14 +302,16 @@ To check an APK's baked config without a phone:
 Owner actions outstanding (TODO.md has the live list):
 1. Custom SMTP + paste `packages/db/email/reset-password.html` into the Reset Password template.
 2. Phone smoke test (DEPLOY.md §4) and report anything broken.
-3. Later: verify a Resend domain before any other users; Play Store via EAS (DEPLOY.md §5).
+3. Later: verify a Resend domain before any other users. The Play Store (DEPLOY.md §5) costs a
+   one-time $25, so it waits for the owner to lift the no-paid-work rule.
 
 Engineering candidates, roughly by value:
 - Fix whatever the owner's smoke test turns up (top priority).
 - Merge `claude/awesome-bohr-aos87s` → `main` via PR once the owner approves.
 - Dark mode (see §9).
 - Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
-- Re-add Google sign-in (needs native OAuth testing) and Apple sign-in for iOS.
+- Re-add Google sign-in (free on Android; needs a dev build to test the native redirect).
+  Apple sign-in and iOS work are **parked** (paid).
 - Wire the `send-email` hook for branded auth mail once a Resend domain exists.
 
 ---
@@ -312,7 +330,7 @@ Engineering candidates, roughly by value:
 > Supabase from the cloud environment. The owner installs APKs from GitHub Releases built by
 > `.github/workflows/android-apk.yml`.
 >
-> Keep copy calm and non-triggering, commit per feature, update PROGRESS.md and TODO.md, and
+> Skip anything that costs money (TODO → Parked). Keep copy calm and non-triggering, commit per feature, update PROGRESS.md and TODO.md, and
 > end by telling the owner what changed and what they need to do.
 
 ---

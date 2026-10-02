@@ -38,11 +38,9 @@ import {
   deviceTimeZone,
   useAllEntries,
   useSettings,
-  useTimeZone,
   useUpdateSettings,
 } from '../../src/data/hooks';
-import { todayInTz } from '@sobr/core';
-import { exportCsv } from '../../src/lib/exportData';
+import { exportEntriesCsv } from '../../src/lib/export';
 import { errorMessage } from '../../src/lib/errorMessage';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
 import { notificationsSupported } from '../../src/lib/notifications';
@@ -89,13 +87,12 @@ type SheetKey = 'mode' | 'currency' | 'zone' | null;
 
 export default function Settings() {
   const router = useRouter();
-  const { email, greetingName } = useSession();
+  const { email, userId, greetingName } = useSession();
   const settings = useSettings();
   const update = useUpdateSettings();
   const notif = useNotificationPrefs();
   const [sheet, setSheet] = useState<SheetKey>(null);
   const entriesQ = useAllEntries();
-  const tz = useTimeZone();
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -103,7 +100,8 @@ export default function Settings() {
     setExportError(null);
     setExporting(true);
     try {
-      await exportCsv(entriesQ.data ?? [], todayInTz(tz));
+      // reads fresh from the server: a backup should reflect what's stored
+      if (userId) await exportEntriesCsv(userId, s?.currency);
     } catch (e) {
       setExportError(errorMessage(e, 'Couldn’t create the file. Try again?'));
     } finally {
