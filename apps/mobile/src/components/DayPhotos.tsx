@@ -17,14 +17,26 @@ const THUMB = 96;
 
 type Photo = { id: string; url: string; objectPath: string; caption: string | null };
 
+/** A photo picked on this device but not uploaded yet (the day isn't saved). */
+export type PendingPhoto = { uri: string; mimeType?: string | null };
+
 /**
  * Photo strip for one tracked day — "track memories as well".
  *
- * Photos hang off the day's entry row, so this stays a prompt until the day is
- * saved: without an entry id there is nothing to attach to, and the insert
- * policy's ownership check needs the parent row to exist.
+ * Photos hang off the day's entry row (the storage path and the insert
+ * policy both need it). Before the first save there is no row yet, so picks
+ * are held as `pending` local images and the day screen uploads them right
+ * after saving. Once the day exists, picks upload immediately.
  */
-export function DayPhotos({ entryId }: { entryId: string | undefined }) {
+export function DayPhotos({
+  entryId,
+  pending = [],
+  onPendingChange,
+}: {
+  entryId: string | undefined;
+  pending?: PendingPhoto[];
+  onPendingChange?: (next: PendingPhoto[]) => void;
+}) {
   const photos = useDayPhotos(entryId);
   const add = useAddDayPhoto(entryId);
   const [error, setError] = useState<string | null>(null);
@@ -58,23 +70,17 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
         ? await ImagePicker.launchCameraAsync(opts)
         : await ImagePicker.launchImageLibraryAsync(opts);
     if (res.canceled || !res.assets?.[0]) return;
+    const asset = { uri: res.assets[0].uri, mimeType: res.assets[0].mimeType };
 
+    if (!entryId) {
+      onPendingChange?.([...pending, asset]);
+      return;
+    }
     try {
-      await add.mutateAsync({ uri: res.assets[0].uri, mimeType: res.assets[0].mimeType });
+      await add.mutateAsync(asset);
     } catch (e) {
       setError(`Couldn’t add that photo — ${errorMessage(e, 'upload failed.')}`);
     }
-  }
-
-  if (!entryId) {
-    return (
-      <View className="mt-6">
-        <SectionHeader title="Photos" className="mb-2" />
-        <Txt variant="bodyMuted" className="text-sm">
-          Save this day first, then you can add photos to it.
-        </Txt>
-      </View>
-    );
   }
 
   const items = (photos.data ?? []) as Photo[];
@@ -83,7 +89,9 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
     <View className="mt-6">
       <SectionHeader title="Photos" className="mb-2" />
       <Txt variant="bodyMuted" className="text-sm mb-3">
-        A few moments from the day — yours only.
+        {entryId
+          ? 'A few moments from the day — yours only.'
+          : 'Add a few moments from the day. They upload when you save.'}
       </Txt>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
@@ -105,6 +113,27 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
                   style={{ backgroundColor: colors.card }}
                 />
               ) : null}
+            </Pressable>
+          ))}
+
+          {/* picked before the first save: local previews, uploaded on Save */}
+          {pending.map((p, i) => (
+            <Pressable
+              key={`${p.uri}-${i}`}
+              onPress={() => onPendingChange?.(pending.filter((_, j) => j !== i))}
+              accessibilityLabel="Photo not saved yet. Tap to remove it"
+              style={{ width: THUMB, height: THUMB }}
+              className="rounded-xl overflow-hidden bg-surface-raised active:opacity-80"
+            >
+              <Image source={{ uri: p.uri }} style={{ width: THUMB, height: THUMB, opacity: 0.85 }} />
+              <View
+                className="absolute bottom-1 left-1 right-1 rounded-md items-center py-0.5"
+                style={{ backgroundColor: 'rgba(22,33,31,0.6)' }}
+              >
+                <Txt variant="caption" style={{ color: '#F4FAF8', fontSize: 10 }}>
+                  on save
+                </Txt>
+              </View>
             </Pressable>
           ))}
 
@@ -132,9 +161,11 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
       </ScrollView>
 
       <Txt variant="caption" className="mt-2">
-        {items.length > 0
-          ? 'Tap a photo to add a note or remove it · long press Add for the camera.'
-          : 'Long press Add for the camera.'}
+        {pending.length > 0 && !entryId
+          ? 'Tap an unsaved photo to remove it · long press Add for the camera.'
+          : items.length > 0
+            ? 'Tap a photo to add a note or remove it · long press Add for the camera.'
+            : 'Long press Add for the camera.'}
       </Txt>
 
       {photos.isError && (
@@ -148,7 +179,9 @@ export function DayPhotos({ entryId }: { entryId: string | undefined }) {
         </Txt>
       )}
 
-      <PhotoSheet entryId={entryId} photo={open} onClose={() => setOpen(null)} />
+      {entryId ? (
+        <PhotoSheet entryId={entryId} photo={open} onClose={() => setOpen(null)} />
+      ) : null}
     </View>
   );
 }
