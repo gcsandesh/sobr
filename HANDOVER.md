@@ -202,10 +202,14 @@ Supabase account only has an unrelated project), so schema changes must be hande
     Scrolling screens use `KeyboardAwareScrollView` (via `Screen scroll`), and the root is
     wrapped in `KeyboardProvider`. Avoid text inputs inside `BottomSheet` (a RN `Modal`):
     keyboard avoidance there is unverified, which is why the daily limit is a stepper.
-13. **Supabase won't let you edit email templates without custom SMTP.** The default Reset
-    Password email only has a link to the Site URL (`localhost:3000`), which is useless on a
-    phone. The app's reset is code-based and needs `{{ .Token }}` in that template (DEPLOY.md §1).
-    Until SMTP + template are set, reset a password via SQL:
+13. **Password reset works by link or by code.** The app asks Supabase to redirect the reset
+    link to `sobr://reset-password` (`resetRedirectUrl()` in `src/lib/account.ts`), handled by
+    `app/(auth)/reset-password.tsx` (PKCE code exchange, then new password). Supabase only
+    honours it once `sobr://reset-password` is in Authentication → URL Configuration →
+    Redirect URLs; until then the link goes to the Site URL (`localhost:3000`). The PKCE
+    verifier lives on the requesting device, so the link only works on that phone. The
+    code path (`{{ .Token }}` in the template) needs custom SMTP, because Supabase won't let
+    you edit templates without it. Emergency fallback, via SQL:
     `update auth.users set encrypted_password = crypt('<pw>', gen_salt('bf')) where email = '<email>';`
 14. **This cloud dev environment can't reach** `dl.google.com` (Android SDK), `api.expo.dev`
     (EAS) or `*.supabase.co`. Hence APKs are built on GitHub Actions, and anything touching the
