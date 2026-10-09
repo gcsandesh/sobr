@@ -319,7 +319,12 @@ Owner actions outstanding (TODO.md has the live list):
 
 Engineering candidates, roughly by value:
 - Fix whatever the owner's smoke test turns up (top priority).
-- Freeze grants per run (gotcha 17), then import from the owner's other app (needs a sample).
+- Freeze grants per run (gotcha 17).
+- History before sobr came from **Drink Control** (Android). Its JSON backup records clear
+  days as zero-volume `OTHER` drinks and drinks at local noon; `drinkingDate` in the backup's
+  `metadata.timezone` is the tracked day (not `drinkingDatetime`). A one-off SQL import was
+  generated for the owner (not committed: personal data). If an in-app importer is ever
+  built, reuse those rules.
 - Merge PR #2 once its build is green (the owner asked for PR + merge).
 - Dark mode (see §9).
 - Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
