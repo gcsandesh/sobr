@@ -5,8 +5,9 @@ import { LockIcon } from '../../src/components/icons';
 import { Button, Screen, TextField, Txt } from '../../src/components/ui';
 import {
   MIN_PASSWORD,
+  changePassword,
   requestPasswordReset,
-  resetPasswordWithCode,
+  verifyRecoveryCode,
 } from '../../src/lib/account';
 import { authErrorMessage } from '../../src/lib/errorMessage';
 import { haptics } from '../../src/lib/haptics';
@@ -29,14 +30,16 @@ export default function ForgotPassword() {
   const [error, setError] = useState<string | null>(null);
   const passwordRef = useRef<TextInput>(null);
   const completed = useRef(false);
+  const redeemed = useRef(false);
 
-  // Redeeming the code signs the user in before the new password is saved.
-  // Leaving this screen any other way than success (back button, gesture,
-  // "Back to sign in") must not leave that half-finished session behind,
-  // or the Gate would walk them into the app with no new password set.
+  // Redeeming a code here signs the user in before the new password is saved.
+  // Leaving without finishing must not leave that half-finished session
+  // behind, or the Gate would walk them in with no new password set. Only a
+  // session THIS screen created: if the email link opened /reset-password,
+  // that screen owns its own session.
   useEffect(
     () => () => {
-      if (!completed.current) void supabase.auth.signOut();
+      if (redeemed.current && !completed.current) void supabase.auth.signOut();
     },
     [],
   );
@@ -63,7 +66,9 @@ export default function ForgotPassword() {
       return setError(`Your new password needs at least ${MIN_PASSWORD} characters.`);
     setLoading(true);
     try {
-      await resetPasswordWithCode({ email, code, password });
+      await verifyRecoveryCode(email, code);
+      redeemed.current = true;
+      await changePassword(password);
       completed.current = true;
       haptics.success();
       router.replace('/');
@@ -85,8 +90,8 @@ export default function ForgotPassword() {
         <Txt variant="title">{step === 'email' ? 'Reset your password' : 'Check your email'}</Txt>
         <Txt variant="bodyMuted" className="mt-2 mb-6">
           {step === 'email'
-            ? 'Enter the email you signed up with and we’ll email you a short code.'
-            : `We sent a code to ${email.trim()}. It can take a minute to arrive, so check spam too.`}
+            ? 'Enter the email you signed up with and we’ll send you a reset email.'
+            : `We emailed ${email.trim()}. Open the link in it on this phone, or if it shows a code, enter it below. It can take a minute, so check spam too.`}
         </Txt>
 
         <View className="gap-4">
@@ -141,12 +146,12 @@ export default function ForgotPassword() {
           )}
 
           {step === 'email' ? (
-            <Button label="Send code" onPress={sendCode} loading={loading} />
+            <Button label="Send reset email" onPress={sendCode} loading={loading} />
           ) : (
             <>
               <Button label="Set new password" onPress={reset} loading={loading} />
               <Button
-                label="Send a new code"
+                label="Send another email"
                 tone="ghost"
                 disabled={loading}
                 onPress={() => {

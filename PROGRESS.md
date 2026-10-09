@@ -6,6 +6,26 @@ its task groups here.
 
 ---
 
+<a id="reset-link"></a>
+## Password reset by link (no SMTP) ✅ done (2026-10-09)
+
+**Why:** Supabase won't let the email template be edited without custom SMTP, so the reset
+email stayed link-only, and its link went to `localhost:3000`.
+
+**Achieved**
+- `resetPasswordForEmail` now passes `redirectTo: sobr://reset-password`; the new
+  `(auth)/reset-password` screen exchanges the link's PKCE code and asks for a new password.
+  The code path still works if the template is ever changed.
+- The forgot-password screen only signs out a session it created itself, so it can't kill the
+  session the link just opened.
+
+**What you need to do**
+1. Supabase → Authentication → URL Configuration → Redirect URLs → add `sobr://reset-password`.
+2. Install the newest APK. Then Forgot password → Send reset email → open the link **on the
+   same phone**.
+
+---
+
 <a id="phase6-streak"></a>
 ## Phase 6 · Streak with stakes, flame, sobriety icon, photos before save ✅ done (2026-10-02)
 

@@ -31,15 +31,15 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 ### Supabase dashboard
 - [ ] Authentication → Providers → Email → **Confirm email OFF** (password sign-up must
       return a session; see HANDOVER → "Auth: email + password").
-- [ ] **Custom SMTP** (Supabase requires it before templates can be edited):
-      Authentication → Emails → SMTP Settings → enable; host `smtp.resend.com`, port `465`,
-      username `resend`, password = the Resend API key, sender `onboarding@resend.dev`
-      (delivers only to the Resend account owner until a domain is verified). Gmail with an
-      App Password (`smtp.gmail.com:465`) also works and can deliver to anyone.
-- [ ] **Reset Password email shows a code.** Authentication → Emails → Templates →
-      Reset Password → paste `packages/db/email/reset-password.html`. The app's Forgot
-      password screen needs the `{{ .Token }}` code; the default template only has a link
-      to the Site URL (localhost), which is useless on a phone.
+- [ ] **Password reset link opens the app** (no SMTP needed): Authentication → URL
+      Configuration → **Redirect URLs** → add `sobr://reset-password`. The default Reset
+      Password email's link then opens the app's reset screen instead of `localhost:3000`.
+      The link only works on the phone that requested the reset.
+- [ ] *(Optional)* Code-in-email instead of a link: enable **custom SMTP** (Supabase requires
+      it before templates can be edited; Resend: host `smtp.resend.com`, port `465`, user
+      `resend`, password = API key, sender `onboarding@resend.dev`; or Gmail with an App
+      Password), then paste `packages/db/email/reset-password.html` into Templates → Reset
+      Password. The app accepts the code too.
 - [ ] *(Optional, later)* Authentication → Hooks → **Send Email** → the `send-email`
       function, to send all auth mail through Resend with the app's own design. Not needed
       while you're the only user: Supabase's built-in mailer plus the template above works.
