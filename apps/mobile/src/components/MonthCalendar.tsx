@@ -12,6 +12,7 @@ import {
 } from '@sobr/core';
 import { IconButton, Row, Txt } from './ui';
 import { colors, statusColors } from '../theme';
+import { FlameIcon } from './StreakFlame';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -27,6 +28,7 @@ export function MonthCalendar({
   selected,
   onSelect,
   photoDates,
+  streakStart,
 }: {
   entries: DailyEntryWithDrinks[];
   today: LocalDate;
@@ -34,6 +36,8 @@ export function MonthCalendar({
   onSelect: (date: LocalDate) => void;
   /** Dates carrying at least one photo; marked so memories are findable later. */
   photoDates?: ReadonlySet<string>;
+  /** First day of the live streak: those days glow as a chain of flames. */
+  streakStart?: LocalDate | null;
 }) {
   const [anchor, setAnchor] = useState<LocalDate>(today);
 
@@ -95,7 +99,15 @@ export function MonthCalendar({
           const future = isAfter(d, today);
           const isToday = d === today;
           const isSelected = d === selected;
-          const sc = info ? statusColors[info.status] : null;
+          // part of the live streak: warm amber with a flame, so the chain
+          // you're protecting is visible at a glance
+          const inStreak =
+            !!streakStart && !!info && info.status !== 'slip' && d >= streakStart && d <= today;
+          const sc = inStreak
+            ? { fg: colors.flameDeep, bg: colors.flameBg }
+            : info
+              ? statusColors[info.status]
+              : null;
           return (
             <Pressable
               key={d}
@@ -133,7 +145,9 @@ export function MonthCalendar({
                   Without this, a win was only a faint tint and read as "nothing
                   happened here".
                 */}
-                {info?.status === 'win' && !info.hasDrinks ? (
+                {inStreak ? (
+                  <FlameIcon streak={5} size={11} />
+                ) : info?.status === 'win' && !info.hasDrinks ? (
                   <Txt style={{ color: sc!.fg, fontSize: 9, lineHeight: 11, fontWeight: '700' }}>
                     ✓
                   </Txt>
@@ -173,6 +187,7 @@ export function MonthCalendar({
       </View>
 
       <Row className="gap-4 mt-4 flex-wrap">
+        {streakStart ? <Legend color={colors.flame} label="Current streak" /> : null}
         <Legend color={statusColors.win.fg} label="Win" />
         <Legend color={statusColors.slip.fg} label="Slip" />
         <Legend color={statusColors.freeze.fg} label="Frozen" />

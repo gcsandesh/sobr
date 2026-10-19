@@ -182,10 +182,11 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Streak flame (tiers) + flame color family; colored stat pills/cards
 - [x] "The chip" sobriety icon + all Android icon variants
 - [x] Photos can be added before the day's first save
-- [ ] **Fix freeze grants:** one award per milestone *per run*, not per account (migration 0006)
+- [x] **Freeze grants per streak** (migration 0006 + app); legacy once-per-account rule only as a fallback
+- [x] UI pass: living flame, real snowflake, warm hero glow, streak chain on the calendar, +1 burst, gradient win button
+- [ ] _User step:_ run `sobr-update-freeze-and-import.sql` (migration 0006 + delete before Sep 16 + Drink Control import)
 - [x] Import from Drink Control (2026-10-09): one-off SQL generated from the owner's backup
       (173 days, Mar 29 to Sep 19), tested on PGlite; kept out of the repo (personal data)
-- [ ] _User step:_ run `sobr-import-drink-control.sql` in the Supabase SQL Editor
 - [ ] In-app importer for Drink Control JSON (only if imports become a repeat need)
 - [x] Test data cleanup folded into the Drink Control import SQL
 

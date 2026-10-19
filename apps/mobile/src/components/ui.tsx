@@ -620,3 +620,69 @@ export function ToggleRow({
     </Row>
   );
 }
+
+/**
+ * The one celebratory button (e.g. "It was a clear day"): a vivid gradient with
+ * a soft colored shadow and a springy press, so the best action on the screen
+ * also feels like the best action.
+ */
+export function GradientButton({
+  label,
+  onPress,
+  loading = false,
+  icon,
+  colors: stops = ['#5BA83A', '#2E7D5B'],
+  shadow = '#2E7D5B',
+}: {
+  label: string;
+  onPress?: PressableProps['onPress'];
+  loading?: boolean;
+  icon?: ReactNode;
+  colors?: [string, string];
+  shadow?: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={loading}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ busy: loading }}
+      style={({ pressed }) => ({
+        transform: [{ scale: pressed ? 0.97 : 1 }],
+        borderRadius: 18,
+        shadowColor: shadow,
+        shadowOpacity: 0.35,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 6,
+      })}
+    >
+      <LinearGradient
+        colors={stops}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          minHeight: 56,
+          borderRadius: 18,
+          paddingHorizontal: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+        }}
+      >
+        {loading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <>
+            {icon}
+            <Text className="font-bold text-base" style={{ color: '#FFFFFF' }}>
+              {label}
+            </Text>
+          </>
+        )}
+      </LinearGradient>
+    </Pressable>
+  );
+}

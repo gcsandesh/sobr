@@ -28,14 +28,25 @@ import { MilestoneCelebration } from '../../src/components/MilestoneCelebration'
 import { MonthCalendar } from '../../src/components/MonthCalendar';
 import { Tree } from '../../src/components/Tree';
 import {
+  CheckIcon,
   ChevronRightIcon,
   HomeLeafIcon,
   PlusIcon,
   SnowflakeIcon,
   SparkIcon,
 } from '../../src/components/icons';
-import { FlameIcon, StreakPill } from '../../src/components/StreakFlame';
-import { Button, Card, Notice, Row, Screen, StatusPill, Txt } from '../../src/components/ui';
+import { FlameIcon, LiveFlame, StreakPill } from '../../src/components/StreakFlame';
+import { WinBurst } from '../../src/components/WinBurst';
+import {
+  Button,
+  Card,
+  GradientButton,
+  Notice,
+  Row,
+  Screen,
+  StatusPill,
+  Txt,
+} from '../../src/components/ui';
 import {
   useAllEntries,
   useDayEntry,
@@ -83,6 +94,7 @@ export default function Today() {
   const photoDatesQ = usePhotoDates();
   const photoDates = useMemo(() => new Set(photoDatesQ.data ?? []), [photoDatesQ.data]);
   const [celebrate, setCelebrate] = useState<string | null>(null);
+  const [burst, setBurst] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<LocalDate | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const growth = useGrowthCelebration(
@@ -105,6 +117,7 @@ export default function Today() {
 
   function celebrateWin(message: string) {
     haptics.success();
+    setBurst(Date.now()); // fresh key: replays even on back-to-back wins
     setCelebrate(message);
     setTimeout(() => setCelebrate(null), 2600);
   }
@@ -227,8 +240,22 @@ export default function Today() {
               <Glow size={340} color="#8FD9CF" opacity={0.42} />
             </View>
             <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={176} />
+            {/* warm glow behind the streak: hotter the longer it burns */}
+            {stats.streak.current > 0 ? (
+              <View
+                className="absolute items-center justify-center"
+                style={{ left: 0, right: 0, bottom: 40 }}
+                pointerEvents="none"
+              >
+                <Glow
+                  size={300}
+                  color="#FBBF24"
+                  opacity={Math.min(0.55, 0.25 + stats.streak.current / 60)}
+                />
+              </View>
+            ) : null}
             <Row className="mt-2 items-center">
-              <FlameIcon streak={stats.streak.current} size={44} />
+              <LiveFlame streak={stats.streak.current} size={44} />
               <AnimatedNumber
                 value={stats.streak.current}
                 variant="display"
@@ -412,6 +439,7 @@ export default function Today() {
                 selected={activeDate}
                 onSelect={setSelectedDate}
                 photoDates={photoDates}
+                streakStart={stats.streak.currentStartDate}
               />
             )}
           </Card>
@@ -487,9 +515,9 @@ export default function Today() {
             <View className="gap-3">
               {activeDate === stats.today ? (
                 <>
-                  <Button
+                  <GradientButton
                     label="It was a clear day"
-                    tone="win"
+                    icon={<CheckIcon color="#FFFFFF" size={22} />}
                     loading={saveDay.isPending}
                     onPress={() =>
                       saveDay.mutate(
@@ -541,6 +569,10 @@ export default function Today() {
       >
         <PlusIcon color="#F4FAF8" size={24} />
       </Pressable>
+
+      {burst !== null ? (
+        <WinBurst key={burst} streak={stats.streak.current} onDone={() => setBurst(null)} />
+      ) : null}
 
       <BottomSheet
         visible={quickAddOpen}
