@@ -118,7 +118,7 @@ export default function Settings() {
     s?.winMode === 'limit' ? `${modeTitle} · ${s.dailyLimitUnits}u` : modeTitle ?? '';
 
   return (
-    <Screen scroll>
+    <Screen edges={['top']} scroll>
       <Txt variant="title" className="mt-2 mb-6">
         Settings
       </Txt>

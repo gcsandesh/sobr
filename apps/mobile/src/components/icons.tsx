@@ -325,3 +325,23 @@ export function InfoIcon({ color, size = 22 }: IconProps) {
     </Stroke>
   );
 }
+
+export function CameraIcon({ color, size = 12 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 8.5A2.5 2.5 0 016.5 6h1.6l1.4-2h5l1.4 2h1.6A2.5 2.5 0 0120 8.5v8a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 16.5z"
+        fill={color}
+      />
+      <Circle cx={12} cy={12.5} r={3.4} fill="#FFFFFF" />
+    </Svg>
+  );
+}
+
+export function TrashIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Stroke size={size}>
+      <Path d="M4.5 7h15M9.5 7V4.8h5V7M6.5 7l.9 12.2a1.5 1.5 0 001.5 1.3h6.2a1.5 1.5 0 001.5-1.3L17.5 7M10 11v6M14 11v6" {...line(color)} />
+    </Stroke>
+  );
+}

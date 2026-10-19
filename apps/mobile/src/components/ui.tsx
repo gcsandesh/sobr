@@ -80,7 +80,11 @@ export function Screen({
   className?: string;
   /** Pull-to-refresh, for scrolling screens that show server data. */
   refreshControl?: React.ReactElement<RefreshControlProps>;
-  /** Pushed screens with a native header only need the bottom inset. */
+  /**
+   * Which safe-area insets to pad. Tab screens use ['top']: the tab bar
+   * already sits above the home indicator, so a bottom inset here doubled up
+   * as an empty strip above the bar. Pushed screens with a header use ['bottom'].
+   */
   edges?: ('top' | 'bottom')[];
 }) {
   const inner = (
@@ -93,10 +97,14 @@ export function Screen({
   );
   return (
     <View className="flex-1 bg-bg">
-      {/* barely-there vertical tint — keeps the cream calm instead of flat */}
+      {/*
+        Soft wash instead of flat grey: fresh mint at the top fading through
+        near-white to a faint warm cream, which echoes the streak flame. (The
+        old grey bottom also showed as a dull strip above the tab bar.)
+      */}
       <LinearGradient
-        colors={['#FAFDFC', '#F0F5F3', '#E3EDE9']}
-        locations={[0, 0.4, 1]}
+        colors={['#E4F4EE', '#F7FBF9', '#FBF8F1']}
+        locations={[0, 0.38, 1]}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />

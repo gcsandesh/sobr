@@ -47,7 +47,7 @@ export default function Progress() {
   const isEmpty = !stats.isError && !stats.isLoading && !stats.hasAnyData;
 
   return (
-    <Screen scroll refreshControl={refresh}>
+    <Screen edges={['top']} scroll refreshControl={refresh}>
       <Txt variant="title" className="mt-2 mb-6">
         Progress
       </Txt>
