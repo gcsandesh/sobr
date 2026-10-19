@@ -44,7 +44,7 @@ export function WinBurst({ streak, onDone }: { streak: number; onDone: () => voi
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none" className="items-center justify-center">
-      <Animated.View style={style} className="items-center">
+      <Animated.View style={[{ alignItems: 'center' }, style]}>
         <View
           className="items-center justify-center rounded-full"
           style={{

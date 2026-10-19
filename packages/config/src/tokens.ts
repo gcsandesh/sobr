@@ -16,9 +16,9 @@ export const palette = {
   // Elevation ladder by LIGHTNESS: the canvas is a cool mist and raised surfaces
   // go *lighter* toward white. Cards must never share the canvas value or the
   // whole screen reads flat and dull.
-  background: '#F0F5F3', // canvas — cool mist
+  background: '#F4F9F7', // canvas — bright mist (was #F0F5F3, read as dull grey)
   surface: '#FAFDFC', // cards — near-white with a green cast
-  surfaceRaised: '#E3EDE9', // sunken: inputs, chips, tab bar
+  surfaceRaised: '#E8F2EE', // sunken: inputs, chips
   surfaceOverlay: '#FAFDFC',
   border: '#D5E3DE',
   borderStrong: '#A9C3BB',
@@ -114,11 +114,11 @@ export const spacing = {
 
 /** Soft, generous corner radii — no sharp boxes. */
 export const radii = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  '2xl': 32,
+  sm: 6,
+  md: 10,
+  lg: 12,
+  xl: 16,
+  '2xl': 20,
   pill: 999,
   full: 9999,
 } as const;

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
@@ -13,9 +13,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   DRINK_PRESETS,
+  PRESET_GROUPS,
   PRESET_GROUP_LABELS,
   growthMetaForKey,
-  presetChipLabel,
   type DrinkPreset,
 } from '@sobr/config';
 import { type LocalDate, evaluateStatus, roundUnits, totalUnits } from '@sobr/core';
@@ -36,6 +36,7 @@ import {
   SparkIcon,
 } from '../../src/components/icons';
 import { FlameIcon, LiveFlame, StreakPill } from '../../src/components/StreakFlame';
+import { PresetChip } from '../../src/components/PresetChip';
 import { WinBurst } from '../../src/components/WinBurst';
 import {
   Button,
@@ -97,12 +98,21 @@ export default function Today() {
   const [burst, setBurst] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<LocalDate | null>(null);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const growth = useGrowthCelebration(
-    stats.progress.stageIndex,
-    stats.stage,
-    !stats.isLoading && !stats.isError,
+  // Celebrations are full-screen modals, which draw over whatever screen is on
+  // top. Only run them while Home itself is in front: otherwise a reset link
+  // (which signs in briefly and stacks over Home) showed "42 clear days" over
+  // the password screen. Gating `ready` also keeps one from being "used up"
+  // unseen.
+  const [focused, setFocused] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      return () => setFocused(false);
+    }, []),
   );
-  const milestone = useMilestoneCelebration(stats.lifetimeWins, !stats.isLoading && !stats.isError);
+  const celebrationReady = focused && !stats.isLoading && !stats.isError;
+  const growth = useGrowthCelebration(stats.progress.stageIndex, stats.stage, celebrationReady);
+  const milestone = useMilestoneCelebration(stats.lifetimeWins, celebrationReady);
 
   const meta = growthMetaForKey(stats.stage);
   // only a name the user chose; an email-derived guess is too presumptuous here
@@ -166,7 +176,7 @@ export default function Today() {
 
   if (stats.isError) {
     return (
-      <Screen>
+      <Screen edges={['top']}>
         <View className="flex-1 justify-center">
           <Notice
             tone="error"
@@ -181,11 +191,11 @@ export default function Today() {
 
   return (
     <>
-      <Screen scroll refreshControl={refresh}>
-        {growth.celebration && (
+      <Screen edges={['top']} scroll refreshControl={refresh}>
+        {focused && growth.celebration && (
           <GrowthCelebration meta={growth.celebration} onDismiss={growth.dismiss} />
         )}
-        {!growth.celebration && milestone.celebration && (
+        {focused && !growth.celebration && milestone.celebration && (
           <MilestoneCelebration milestone={milestone.celebration} onDismiss={milestone.dismiss} />
         )}
 
@@ -593,26 +603,19 @@ export default function Today() {
             />
           </View>
         )}
-        {(['beer', 'wine', 'spirits', 'local'] as const).map((group) => (
+        {PRESET_GROUPS.map((group) => (
           <View key={group} className="mb-4">
             <Txt variant="label" className="mb-2">
               {PRESET_GROUP_LABELS[group]}
             </Txt>
             <View className="flex-row flex-wrap gap-2">
               {DRINK_PRESETS.filter((p) => p.group === group).map((p) => (
-                <Pressable
+                <PresetChip
                   key={p.key}
+                  preset={p}
                   onPress={() => quickAdd(p)}
                   disabled={!todayEntry.isSuccess}
-                  accessibilityLabel={`Add ${p.name}`}
-                  accessibilityState={{ disabled: !todayEntry.isSuccess }}
-                  className="bg-surface border border-border rounded-full px-4 min-h-[44px] justify-center active:opacity-70"
-                >
-                  <Txt variant="body" className="text-sm">
-                    {p.glyph ? `${p.glyph} ` : ''}
-                    {presetChipLabel(p.name)}
-                  </Txt>
-                </Pressable>
+                />
               ))}
             </View>
           </View>
@@ -678,7 +681,7 @@ function LoadingHero() {
   }, [pulse]);
   const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
   return (
-    <Screen>
+    <Screen edges={['top']}>
       <View className="flex-1 items-center justify-center">
         <Animated.View style={style}>
           <Logo size={72} />

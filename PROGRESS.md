@@ -6,6 +6,25 @@ its task groups here.
 
 ---
 
+<a id="ui-feedback-oct"></a>
+## Owner UI feedback round ✅ done (2026-10-19)
+
+- Calendar: **Today** button (whenever you're off today), rounded-square day cells, photo days
+  marked with a small camera (was a clipped dot), "Photo" in the legend.
+- Drink picker: shared `PresetChip`, compact rounded rectangles with name + "330ml · 5%";
+  presets grew from 11 to 27 (cans, large bottles, strong beer, wine bottle/sparkling, Nepal
+  pegs: small 30ml, large 60ml, patiala 90ml, quarter/half/full bottle, raksi large, cider,
+  seltzer, RTD, cocktail) plus an "Other" group. Existing preset keys unchanged.
+- Brighter canvas (mint → near-white → warm cream wash) instead of flat grey; radii trimmed
+  (cards 32 → 20px, xl 24 → 16px).
+- Tab screens no longer add a bottom safe-area inset (it doubled up above the tab bar).
+- App-styled confirm dialog for every destructive action (`ConfirmHost` + `confirmAction`);
+  account deletion requires typing DELETE. Account screen: delete second-to-last, sign out last.
+- Fix: Home's celebration modals only run while Home is focused (a reset link stacked over Home
+  showed "42 clear days" on the password screen).
+
+---
+
 <a id="freeze-per-streak"></a>
 ## Freeze per streak, history import, livelier UI ✅ done (2026-10-19)
 

@@ -13,6 +13,7 @@ import {
 import { IconButton, Row, Txt } from './ui';
 import { colors, statusColors } from '../theme';
 import { FlameIcon } from './StreakFlame';
+import { CameraIcon } from './icons';
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -65,17 +66,34 @@ export function MonthCalendar({
       <Row className="justify-between mb-3">
         <Txt variant="heading">{monthLabel}</Txt>
         <Row className="gap-2">
+          {/* back to today: shown whenever you've wandered off it */}
+          {(startOfMonth(anchor) !== startOfMonth(today) || selected !== today) && (
+            <Pressable
+              onPress={() => {
+                setAnchor(today);
+                onSelect(today);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Go to today"
+              className="min-h-[44px] px-3 rounded-lg items-center justify-center active:opacity-70"
+              style={{ backgroundColor: colors.accentBg }}
+            >
+              <Txt variant="label" style={{ color: colors.accent, fontFamily: 'Figtree_600SemiBold' }}>
+                Today
+              </Txt>
+            </Pressable>
+          )}
           <IconButton
             accessibilityLabel="Previous month"
             onPress={() => setAnchor(addDays(startOfMonth(anchor), -1))}
-            className="bg-surface-raised"
+            className="bg-surface-raised rounded-lg"
           >
             <Txt variant="heading">‹</Txt>
           </IconButton>
           <IconButton
             accessibilityLabel="Next month"
             onPress={() => setAnchor(addDays(endOfMonth(anchor), 1))}
-            className="bg-surface-raised"
+            className="bg-surface-raised rounded-lg"
           >
             <Txt variant="heading">›</Txt>
           </IconButton>
@@ -119,11 +137,13 @@ export function MonthCalendar({
               style={{ width: `${100 / 7}%`, aspectRatio: 1, padding: 3 }}
             >
               <View
-                className="flex-1 rounded-xl items-center justify-center overflow-hidden"
+                // rounded square, not a circle: the corner markers have room
+                className="flex-1 items-center justify-center"
                 style={{
                   // `card` is now the same warm white as the enclosing Card, so
                   // unlogged cells need their own tint to read as tiles — kept
                   // light (canvas tone) so colored status days stay dominant
+                  borderRadius: 10,
                   backgroundColor: sc ? sc.bg : colors.bg,
                   opacity: future ? 0.35 : 1,
                   borderWidth: isSelected ? 2 : isToday ? 1.5 : 0,
@@ -169,16 +189,11 @@ export function MonthCalendar({
                 */}
                 {photoDates?.has(d) ? (
                   <View
-                    style={{
-                      position: 'absolute',
-                      top: 3,
-                      right: 3,
-                      width: 5,
-                      height: 5,
-                      borderRadius: 3,
-                      backgroundColor: colors.accent,
-                    }}
-                  />
+                    style={{ position: 'absolute', top: 2, right: 2 }}
+                    accessibilityElementsHidden
+                  >
+                    <CameraIcon color={colors.accent} size={11} />
+                  </View>
                 ) : null}
               </View>
             </Pressable>
@@ -191,6 +206,12 @@ export function MonthCalendar({
         <Legend color={statusColors.win.fg} label="Win" />
         <Legend color={statusColors.slip.fg} label="Slip" />
         <Legend color={statusColors.freeze.fg} label="Frozen" />
+        {photoDates && photoDates.size > 0 ? (
+          <Row className="gap-1.5">
+            <CameraIcon color={colors.accent} size={13} />
+            <Txt variant="caption">Photo</Txt>
+          </Row>
+        ) : null}
       </Row>
     </View>
   );

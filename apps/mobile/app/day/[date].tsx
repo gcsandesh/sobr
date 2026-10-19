@@ -4,10 +4,10 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   DRINK_PRESETS,
+  PRESET_GROUPS,
   PRESET_GROUP_LABELS,
   currencyByCode,
   formatCurrency,
-  presetChipLabel,
   type DrinkPreset,
 } from '@sobr/config';
 import {
@@ -18,6 +18,7 @@ import {
   totalCost,
   totalUnits,
 } from '@sobr/core';
+import { PresetChip } from '../../src/components/PresetChip';
 import { DayPhotos, type PendingPhoto } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon } from '../../src/components/icons';
 import {
@@ -314,24 +315,18 @@ export default function DayLogger() {
           title={isToday ? 'Add to today' : 'Add to this day'}
           className="mt-6 mb-3"
         />
-        {(['beer', 'wine', 'spirits', 'local'] as const).map((group) => (
+        {PRESET_GROUPS.map((group) => (
           <View key={group} className="mb-3">
             <Txt variant="label" className="mb-2">
               {PRESET_GROUP_LABELS[group]}
             </Txt>
             <View className="flex-row flex-wrap gap-2">
               {DRINK_PRESETS.filter((p) => p.group === group).map((p) => (
-                <Pressable
+                <PresetChip
                   key={p.key}
+                  preset={p}
                   onPress={() => addPreset(p)}
-                  accessibilityLabel={`Add ${p.name}`}
-                  className="bg-surface border border-border rounded-full px-4 min-h-[44px] justify-center active:opacity-70"
-                >
-                  <Txt variant="body" className="text-sm">
-                    {p.glyph ? `${p.glyph} ` : ''}
-                    {presetChipLabel(p.name)}
-                  </Txt>
-                </Pressable>
+                />
               ))}
             </View>
           </View>

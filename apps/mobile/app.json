@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "backgroundColor": "#F0F5F3",
+    "backgroundColor": "#F4F9F7",
     "icon": "./assets/brand/icon.png",
     "ios": {
       "supportsTablet": true,
@@ -44,7 +44,7 @@
           "image": "./assets/brand/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#F0F5F3"
+          "backgroundColor": "#F4F9F7"
         }
       ],
       [

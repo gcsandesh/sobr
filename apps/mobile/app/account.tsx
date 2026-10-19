@@ -6,7 +6,6 @@ import {
   Avatar,
   Button,
   Card,
-  Divider,
   ListRow,
   Screen,
   SectionHeader,
@@ -75,10 +74,12 @@ export default function Account() {
 
   function confirmDelete() {
     confirmAction({
-      title: 'Delete everything?',
+      title: 'Delete your account?',
       message:
-        'This permanently removes your account, every day you’ve logged, and your photos. It can’t be undone.',
-      confirmLabel: 'Delete',
+        'This permanently removes your account, every day you’ve logged, your notes and your photos. It can’t be undone.',
+      confirmLabel: 'Delete forever',
+      cancelLabel: 'Keep my account',
+      requireText: 'DELETE',
       onConfirm: () => deleteAccount.mutate(),
     });
   }
@@ -175,7 +176,28 @@ export default function Account() {
           />
         </Card>
 
-        <Card className="mb-3">
+        <SectionHeader title="Delete account" />
+        <Card className="mb-6" style={{ borderColor: colors.slipBg }}>
+          <Txt variant="bodyMuted" className="text-sm">
+            Erases your account and everything in it: every day, note and photo. There’s no
+            undo and no copy kept.
+          </Txt>
+          <Button
+            label="Delete account & data"
+            tone="danger"
+            className="mt-4"
+            loading={deleteAccount.isPending}
+            onPress={confirmDelete}
+          />
+          {deleteAccount.isError && (
+            <Txt variant="caption" className="text-slip mt-2" accessibilityRole="alert">
+              Couldn’t delete right now: {errorMessage(deleteAccount.error)}. Nothing was removed.
+            </Txt>
+          )}
+        </Card>
+
+        {/* last, on its own: the everyday exit */}
+        <Card className="mb-4">
           <ListRow
             icon={<LogOutIcon color={colors.textMuted} />}
             title="Sign out"
@@ -183,24 +205,6 @@ export default function Account() {
             onPress={() => void signOut()}
           />
         </Card>
-
-        <Divider className="my-6" />
-
-        <SectionHeader title="Delete account" />
-        <Txt variant="bodyMuted" className="mb-3">
-          Erases your account and everything in it, for good. There’s no undo and no copy kept.
-        </Txt>
-        <Button
-          label="Delete account & data"
-          tone="danger"
-          loading={deleteAccount.isPending}
-          onPress={confirmDelete}
-        />
-        {deleteAccount.isError && (
-          <Txt variant="caption" className="text-slip mt-2" accessibilityRole="alert">
-            Couldn’t delete right now: {errorMessage(deleteAccount.error)}. Nothing was removed.
-          </Txt>
-        )}
       </Screen>
     </>
   );

@@ -38,7 +38,7 @@ export default function Profile() {
     : null;
 
   return (
-    <Screen scroll refreshControl={refresh}>
+    <Screen edges={['top']} scroll refreshControl={refresh}>
       {/* identity */}
       <View className="items-center mt-6 mb-8">
         <Pressable

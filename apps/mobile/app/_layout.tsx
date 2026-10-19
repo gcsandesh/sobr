@@ -20,6 +20,7 @@ import { asyncStoragePersister, queryClient } from '../src/lib/queryClient';
 import { completeSessionFromUrl } from '../src/lib/auth';
 import { isSupabaseConfigured } from '../src/lib/env';
 import { SessionProvider, useSession } from '../src/data/SessionProvider';
+import { ConfirmHost } from '../src/components/ConfirmHost';
 import { useSettings, useTimeZone } from '../src/data/hooks';
 import { onCheckinTapped } from '../src/lib/notifications';
 import { resyncNotificationSchedule } from '../src/data/useNotificationPrefs';
@@ -189,6 +190,7 @@ export default function RootLayout() {
           <SessionProvider>
             <StatusBar style="dark" />
             <Gate />
+            <ConfirmHost />
           </SessionProvider>
         </PersistQueryClientProvider>
         </KeyboardProvider>

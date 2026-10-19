@@ -10,9 +10,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: '#F0F5F3',
+        bg: '#F4F9F7',
         surface: '#FAFDFC',
-        'surface-raised': '#E3EDE9',
+        'surface-raised': '#E8F2EE',
         overlay: '#FAFDFC',
         border: '#D5E3DE',
         'border-strong': '#A9C3BB',
@@ -40,12 +40,14 @@ module.exports = {
         semibold: ['Figtree_600SemiBold'],
         bold: ['Figtree_700Bold'],
       },
+      // a touch less round than before (cards were 32px): still soft, with
+      // less dead space in the corners. Mirrors radii in @sobr/config.
       borderRadius: {
-        sm: '8px',
-        md: '12px',
-        lg: '16px',
-        xl: '24px',
-        '2xl': '32px',
+        sm: '6px',
+        md: '10px',
+        lg: '12px',
+        xl: '16px',
+        '2xl': '20px',
       },
     },
   },
