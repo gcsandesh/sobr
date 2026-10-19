@@ -8,8 +8,10 @@ import type { FreezeGrant } from './schemas';
  * spend a token and have room again (a deliberately generous, on-brand choice
  * for a supportive app — you never feel robbed of a token you earned).
  *
- * `grantedForStreak` on each grant records the milestone that earned it, so the
- * same milestone is never granted twice even as the streak keeps growing.
+ * `grantedForStreak` on each grant records the milestone that earned it, and
+ * `runStart` the streak it was earned in. A milestone is granted at most once
+ * PER STREAK: a new streak can earn its 7-day token again. (Before migration
+ * 0006 it was once per account, so a second 7-day streak earned nothing.)
  */
 
 export const FREEZE_INTERVAL = 7;
@@ -55,4 +57,17 @@ export function computeFreezeAward(input: FreezeAwardInput): number[] {
     banked += 1;
   }
   return toAward;
+}
+
+/**
+ * Milestones already granted in the streak that started on `runStart`. Grants
+ * from other streaks (and legacy grants with no runStart) don't count, so a
+ * fresh streak earns its own tokens.
+ */
+export function milestonesGrantedInRun(
+  grants: ReadonlyArray<Pick<FreezeGrant, 'grantedForStreak' | 'runStart'>>,
+  runStart: string | null,
+): Set<number> {
+  if (!runStart) return new Set();
+  return new Set(grants.filter((g) => g.runStart === runStart).map((g) => g.grantedForStreak));
 }

@@ -169,7 +169,7 @@ receives them until a domain is verified.
 user in the mail job (one bad zone used to abort the batch for everyone).
 
 Migrations are applied manually (Supabase SQL editor or `packages/db/apply-*.mjs`), in order
-0000 → 0005. **This environment has no access to the sobr Supabase project** (the connected
+0000 → 0006. **This environment has no access to the sobr Supabase project** (the connected
 Supabase account only has an unrelated project), so schema changes must be handed to the owner.
 
 ---
@@ -220,9 +220,10 @@ Supabase account only has an unrelated project), so schema changes must be hande
     loses the BOM on Android (found by reading the export back off the device), so
     `src/lib/export.ts` writes raw bytes. Excel needs the BOM to read `×`, emoji and
     non-Latin notes. Web keeps a string BOM in a Blob.
-17. **Freeze grants are unique per (user, milestone) forever.** So each of the 7/14/21-day freezes
-    can be earned once per account; a second 7-day streak earns nothing. Fixing it needs a
-    migration (run start date in the grant + unique key). TODO → Phase 6.
+17. **Freeze tokens are per streak (migration 0006).** `freeze_grants.run_start` records the
+    streak that earned a token; uniqueness is (user, run_start, milestone), so every new
+    streak can earn its 7/14/21 tokens again. The app falls back to the old once-per-account
+    rule only while the `run_start` column is missing (`hasRunStartColumn()` in `api.ts`).
 18. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
     `main` (it built the CSV export while the cloud branch built its own). Always
     `git fetch` and check `origin/main` before starting, and merge it in rather than
@@ -319,10 +320,14 @@ Owner actions outstanding (TODO.md has the live list):
 
 Engineering candidates, roughly by value:
 - Fix whatever the owner's smoke test turns up (top priority).
-- Freeze grants per run (gotcha 17), then import from the owner's other app (needs a sample).
+- History before sobr came from **Drink Control** (Android). Its JSON backup records clear
+  days as zero-volume `OTHER` drinks and drinks at local noon; `drinkingDate` in the backup's
+  `metadata.timezone` is the tracked day (not `drinkingDatetime`). A one-off SQL import was
+  generated for the owner (not committed: personal data). If an in-app importer is ever
+  built, reuse those rules.
 - Merge PR #2 once its build is green (the owner asked for PR + merge).
 - Dark mode (see §9).
-- Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
+- Mood on check-in + a "how you felt" trend (needs migration `0007_*`).
 - Re-add Google sign-in (free on Android; needs a dev build to test the native redirect).
   Apple sign-in and iOS work are **parked** (paid).
 - Wire the `send-email` hook for branded auth mail once a Resend domain exists.

@@ -52,15 +52,26 @@ export function GearIcon({ color, size = 24 }: IconProps) {
   );
 }
 
+/**
+ * A proper snowflake: six arms, each ending in a small V. The old version was
+ * three crossing lines and read as an asterisk.
+ */
 export function SnowflakeIcon({ color, size = 20 }: IconProps) {
+  const arm = 'M12 12V3.2M12 6l-2.2-2M12 6l2.2-2M12 9l-1.6-1.4M12 9l1.6-1.4';
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
+      {[0, 60, 120, 180, 240, 300].map((deg) => (
+        <Path
+          key={deg}
+          d={arm}
+          stroke={color}
+          strokeWidth={1.7}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          transform={`rotate(${deg} 12 12)`}
+        />
+      ))}
+      <Circle cx={12} cy={12} r={1.6} fill={color} />
     </Svg>
   );
 }

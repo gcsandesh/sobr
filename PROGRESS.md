@@ -6,6 +6,28 @@ its task groups here.
 
 ---
 
+<a id="freeze-per-streak"></a>
+## Freeze per streak, history import, livelier UI ✅ done (2026-10-19)
+
+**Achieved**
+- **Freeze fix:** migration `0006_freeze_per_run.sql` + app logic: each 7/14/21-day token is
+  earned once per *streak* (it was once per account). Pre-migration databases fall back to the
+  old rule instead of failing.
+- **History import:** one SQL file (migration 0006 + delete everything before 2026-09-16 +
+  Drink Control backup, Mar 29 to Sep 19; on/after Sep 16 sobr entries win). Tested twice on
+  PGlite; not committed (personal data).
+- **UI:** the flame flickers while the streak is lit; real snowflake icon (the old one read as
+  `*`); amber glow behind the hero number that grows with the streak; current streak shown as
+  an amber chain of flames on the calendar; "+1 day" burst on a win; gradient "It was a clear
+  day" button and streak pill.
+- Verified: 90/90 core tests, typecheck (both modes), web screenshots.
+
+**What you need to do**
+1. Run `sobr-update-freeze-and-import.sql` in the Supabase SQL Editor.
+2. Install the newest APK over the old one (no uninstall needed).
+
+---
+
 <a id="reset-link"></a>
 ## Password reset by link (no SMTP) ✅ done (2026-10-09)
 

@@ -1,5 +1,21 @@
+import { useEffect } from 'react';
 import { View } from 'react-native';
-import Svg, { Defs, LinearGradient, Path, RadialGradient, Stop } from 'react-native-svg';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Path,
+  RadialGradient,
+  Stop,
+} from 'react-native-svg';
 import { Txt } from './ui';
 import { colors } from '../theme';
 
@@ -34,10 +50,10 @@ export function FlameIcon({ streak, size = 24 }: { streak: number; size?: number
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24">
       <Defs>
-        <LinearGradient id={`${id}-o`} x1="0" y1="0" x2="0" y2="1">
+        <SvgLinearGradient id={`${id}-o`} x1="0" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor={c.outer[0]} />
           <Stop offset="1" stopColor={c.outer[1]} />
-        </LinearGradient>
+        </SvgLinearGradient>
         <RadialGradient id={`${id}-g`} cx="50%" cy="60%" r="55%">
           <Stop offset="0" stopColor={colors.flameGlow} stopOpacity={0.45} />
           <Stop offset="1" stopColor={colors.flameGlow} stopOpacity={0} />
@@ -58,16 +74,51 @@ export function FlameIcon({ streak, size = 24 }: { streak: number; size?: number
   );
 }
 
+/**
+ * The flame, alive: a slow, uneven flicker (stretch + sway) while the streak
+ * is lit, still when it isn't. Anchored at the base so it dances like a real
+ * flame instead of pulsing from the middle.
+ */
+export function LiveFlame({ streak, size = 24 }: { streak: number; size?: number }) {
+  const lit = streak > 0;
+  const t = useSharedValue(0);
+  useEffect(() => {
+    if (!lit) {
+      t.value = 0;
+      return;
+    }
+    t.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 520, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.35, { duration: 380, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0.8, { duration: 460, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: 600, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+    );
+  }, [lit, t]);
+  const style = useAnimatedStyle(() => ({
+    transform: [
+      { translateY: size / 2 },
+      { scaleY: 1 + t.value * 0.09 },
+      { scaleX: 1 - t.value * 0.04 },
+      { rotate: `${(t.value - 0.5) * 5}deg` },
+      { translateY: -size / 2 },
+    ],
+  }));
+  return (
+    <Animated.View style={style}>
+      <FlameIcon streak={streak} size={size} />
+    </Animated.View>
+  );
+}
+
 /** Flame + number pill: the streak, readable from across the room. */
 export function StreakPill({ streak }: { streak: number }) {
   const live = streak > 0;
-  return (
-    <View
-      className="flex-row items-center rounded-full pl-2 pr-3 py-1.5"
-      style={{ backgroundColor: live ? colors.flameBg : colors.cardRaised }}
-      accessibilityLabel={live ? `${streak} day streak` : 'No streak yet'}
-    >
-      <FlameIcon streak={streak} size={22} />
+  const body = (
+    <>
+      <LiveFlame streak={streak} size={22} />
       <Txt
         variant="heading"
         className="ml-1"
@@ -75,6 +126,50 @@ export function StreakPill({ streak }: { streak: number }) {
       >
         {streak}
       </Txt>
+    </>
+  );
+  return (
+    <View
+      accessibilityLabel={live ? `${streak} day streak` : 'No streak yet'}
+      style={
+        live
+          ? {
+              borderRadius: 999,
+              shadowColor: colors.flame,
+              shadowOpacity: 0.3,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 4,
+            }
+          : undefined
+      }
+    >
+      {live ? (
+        <LinearGradient
+          colors={['#FFF7D6', '#FFE2BD']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 999,
+            paddingLeft: 8,
+            paddingRight: 12,
+            paddingVertical: 6,
+            borderWidth: 1,
+            borderColor: '#FDBA74',
+          }}
+        >
+          {body}
+        </LinearGradient>
+      ) : (
+        <View
+          className="flex-row items-center rounded-full pl-2 pr-3 py-1.5"
+          style={{ backgroundColor: colors.cardRaised }}
+        >
+          {body}
+        </View>
+      )}
     </View>
   );
 }
