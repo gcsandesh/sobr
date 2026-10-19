@@ -131,6 +131,11 @@ export const freezeGrantSchema = z.object({
   userId: z.string().uuid(),
   grantedAt: z.string().datetime(),
   grantedForStreak: z.number().int().positive(),
+  /**
+   * First day of the streak that earned this token (migration 0006). Null on
+   * grants made before per-streak awards existed.
+   */
+  runStart: z.string().nullable().optional(),
   usedAt: z.string().datetime().nullable(),
   usedOnEntryId: z.string().uuid().nullable(),
 });

@@ -1,5 +1,6 @@
 import {
   computeFreezeAward,
+  milestonesGrantedInRun,
   type DailyEntryWithDrinks,
   type Drink,
   type DrinkInput,
@@ -73,6 +74,8 @@ function mapGrant(r: Record<string, unknown>): FreezeGrant {
     userId: String(r.user_id),
     grantedAt: String(r.granted_at),
     grantedForStreak: num(r.granted_for_streak),
+    // absent (undefined) until migration 0006 adds the column
+    runStart: (r.run_start as string | null | undefined) ?? null,
     usedAt: (r.used_at as string | null) ?? null,
     usedOnEntryId: (r.used_on_entry_id as string | null) ?? null,
   };
@@ -378,24 +381,55 @@ export async function fetchFreezeGrants(userId: string): Promise<FreezeGrant[]> 
 
 /**
  * Award any freeze milestones newly reached by `currentStreak`, respecting the
- * banked cap. Inserts are idempotent via the unique(user_id, granted_for_streak)
- * constraint, so concurrent calls can't double-grant.
+ * banked cap, once per milestone per streak. Inserts are idempotent via the
+ * unique(user_id, run_start, granted_for_streak) key (unique(user_id,
+ * granted_for_streak) before migration 0006), so concurrent calls can't
+ * double-grant.
  */
 export async function reconcileFreezeAwards(
   userId: string,
   currentStreak: number,
+  runStart: LocalDate | null,
   grants: FreezeGrant[],
 ): Promise<number> {
-  const grantedMilestones = new Set(grants.map((g) => g.grantedForStreak));
   const bankedCount = grants.filter((g) => g.usedAt === null).length;
+  const perRun = await hasRunStartColumn();
+  // Per streak (0006): only this streak's grants block a milestone. Before the
+  // migration, fall back to the old once-per-account rule so saving never fails.
+  const grantedMilestones = perRun
+    ? milestonesGrantedInRun(grants, runStart)
+    : new Set(grants.map((g) => g.grantedForStreak));
+  if (perRun && !runStart) return 0; // no live streak, nothing to earn
   const toAward = computeFreezeAward({ currentStreak, grantedMilestones, bankedCount });
   if (toAward.length === 0) return 0;
-  const rows = toAward.map((m) => ({ user_id: userId, granted_for_streak: m }));
-  const { error } = await supabase
-    .from('freeze_grants')
-    .upsert(rows, { onConflict: 'user_id,granted_for_streak', ignoreDuplicates: true });
+  const { error } = perRun
+    ? await supabase.from('freeze_grants').upsert(
+        toAward.map((m) => ({ user_id: userId, granted_for_streak: m, run_start: runStart })),
+        { onConflict: 'user_id,run_start,granted_for_streak', ignoreDuplicates: true },
+      )
+    : await supabase.from('freeze_grants').upsert(
+        toAward.map((m) => ({ user_id: userId, granted_for_streak: m })),
+        { onConflict: 'user_id,granted_for_streak', ignoreDuplicates: true },
+      );
   if (error) throw error;
   return toAward.length;
+}
+
+/**
+ * Has migration 0006 been applied? Probed once per app run by selecting the
+ * column: PostgREST rejects an unknown column with an error rather than nulls.
+ */
+let runStartColumn: Promise<boolean> | null = null;
+function hasRunStartColumn(): Promise<boolean> {
+  runStartColumn ??= (async () => {
+    const { error } = await supabase.from('freeze_grants').select('run_start').limit(1);
+    if (!error) return true;
+    // 42703 = undefined column: the migration simply isn't applied yet
+    if (error.code === '42703' || /run_start/.test(error.message ?? '')) return false;
+    runStartColumn = null; // anything else (offline…): ask again next time
+    throw error;
+  })();
+  return runStartColumn;
 }
 
 /** Spend one banked freeze to protect a slip day (marks the day 'freeze'). */

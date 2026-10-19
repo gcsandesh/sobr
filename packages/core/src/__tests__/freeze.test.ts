@@ -4,6 +4,7 @@ import {
   bankedFreezes,
   canUseFreeze,
   computeFreezeAward,
+  milestonesGrantedInRun,
   milestonesUpTo,
 } from '../freeze';
 
@@ -76,5 +77,26 @@ describe('computeFreezeAward', () => {
       bankedCount: 2,
     });
     expect(award).toEqual([7]);
+  });
+});
+
+describe('per-streak milestones (migration 0006)', () => {
+  const g = (grantedForStreak: number, runStart: string | null) => ({ grantedForStreak, runStart });
+
+  it('only counts grants from the current streak', () => {
+    const grants = [g(7, '2026-08-01'), g(14, '2026-08-01'), g(7, '2026-09-20')];
+    expect(milestonesGrantedInRun(grants, '2026-09-20')).toEqual(new Set([7]));
+    expect(milestonesGrantedInRun(grants, '2026-08-01')).toEqual(new Set([7, 14]));
+  });
+
+  it('lets a new streak earn its 7-day token again', () => {
+    const grants = [g(7, '2026-08-01')]; // an earlier streak already earned 7
+    const granted = milestonesGrantedInRun(grants, '2026-10-01');
+    expect(computeFreezeAward({ currentStreak: 7, grantedMilestones: granted, bankedCount: 0 })).toEqual([7]);
+  });
+
+  it('ignores legacy grants with no run, and grants nothing without a live streak', () => {
+    expect(milestonesGrantedInRun([g(7, null)], '2026-10-01')).toEqual(new Set());
+    expect(milestonesGrantedInRun([g(7, '2026-10-01')], null)).toEqual(new Set());
   });
 });

@@ -85,6 +85,8 @@ export const freezeGrants = pgTable('freeze_grants', {
   userId: uuid('user_id').notNull(),
   grantedAt: timestamp('granted_at', { withTimezone: true }).notNull().defaultNow(),
   grantedForStreak: integer('granted_for_streak').notNull(),
+  /** First day of the streak that earned it (0006); null on legacy grants. */
+  runStart: date('run_start'),
   usedAt: timestamp('used_at', { withTimezone: true }),
   usedOnEntryId: uuid('used_on_entry_id').references(() => dailyEntries.id, {
     onDelete: 'set null',

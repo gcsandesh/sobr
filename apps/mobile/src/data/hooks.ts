@@ -245,7 +245,7 @@ export function useSaveDay() {
         entries.map((e) => ({ entryDate: e.entryDate, status: e.status })),
         todayInTz(tz),
       );
-      await api.reconcileFreezeAwards(u, streak.current, grants);
+      await api.reconcileFreezeAwards(u, streak.current, streak.currentStartDate, grants);
       // the caller may need it, e.g. to attach photos picked before the first save
       return entryId;
     },
