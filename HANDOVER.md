@@ -327,7 +327,7 @@ Engineering candidates, roughly by value:
   built, reuse those rules.
 - Merge PR #2 once its build is green (the owner asked for PR + merge).
 - Dark mode (see §9).
-- Mood on check-in + a "how you felt" trend (needs migration `0006_*`).
+- Mood on check-in + a "how you felt" trend (needs migration `0007_*`).
 - Re-add Google sign-in (free on Android; needs a dev build to test the native redirect).
   Apple sign-in and iOS work are **parked** (paid).
 - Wire the `send-email` hook for branded auth mail once a Resend domain exists.
