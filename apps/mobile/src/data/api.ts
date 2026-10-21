@@ -35,6 +35,9 @@ function mapSettings(r: Record<string, unknown>): UserSettings {
     // email migration doesn't read back as opted-out
     emailReminders: r.email_reminders === undefined ? true : Boolean(r.email_reminders),
     emailWeekly: r.email_weekly === undefined ? true : Boolean(r.email_weekly),
+    // migration 0007; undefined (column absent) reads as "not set"
+    pausedAt: (r.paused_at as string | null | undefined) ?? null,
+    deletionRequestedAt: (r.deletion_requested_at as string | null | undefined) ?? null,
     createdAt: r.created_at ? String(r.created_at) : undefined,
     updatedAt: r.updated_at ? String(r.updated_at) : undefined,
   };
@@ -102,6 +105,8 @@ export async function updateSettings(userId: string, patch: UserSettingsUpdate):
   if (patch.onboarded !== undefined) row.onboarded = patch.onboarded;
   if (patch.emailReminders !== undefined) row.email_reminders = patch.emailReminders;
   if (patch.emailWeekly !== undefined) row.email_weekly = patch.emailWeekly;
+  if (patch.pausedAt !== undefined) row.paused_at = patch.pausedAt;
+  if (patch.deletionRequestedAt !== undefined) row.deletion_requested_at = patch.deletionRequestedAt;
 
   // Upsert, not update: a plain UPDATE against a missing row "succeeds" with
   // zero rows changed, which made onboarding silently fail to stick for any
@@ -454,4 +459,76 @@ export async function deleteAccount(): Promise<void> {
   const { error } = await supabase.rpc('delete_account');
   if (error) throw error;
   await supabase.auth.signOut();
+}
+
+/* ── account lifecycle (migration 0007) ───────────────────────────────────── */
+
+/**
+ * Remove every photo file and row for a user. Runs when deletion is
+ * requested: the database rows are erased by the 30-day purge, but storage
+ * files can't be removed from SQL, so the app removes them while it still can.
+ */
+export async function deleteAllDayPhotos(userId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from('day_photos')
+    .select('id, object_path')
+    .eq('user_id', userId);
+  if (error) throw error;
+  const rows = data ?? [];
+  for (let i = 0; i < rows.length; i += 100) {
+    const chunk = rows.slice(i, i + 100);
+    const rm = await supabase.storage
+      .from(DAY_PHOTOS_BUCKET)
+      .remove(chunk.map((r) => String(r.object_path)));
+    if (rm.error) throw rm.error;
+    const del = await supabase
+      .from('day_photos')
+      .delete()
+      .in('id', chunk.map((r) => String(r.id)));
+    if (del.error) throw del.error;
+  }
+}
+
+/**
+ * Restore backup days that aren't already logged. Inserts with
+ * ignore-duplicates, so a day logged meanwhile always wins, then attaches the
+ * drinks of the days that were actually inserted. Returns how many days.
+ */
+export async function restoreBackupEntries(
+  userId: string,
+  entries: { date: LocalDate; status: EntryStatus; note: string | null; drinks: DrinkInput[] }[],
+): Promise<number> {
+  let restored = 0;
+  for (let i = 0; i < entries.length; i += 200) {
+    const chunk = entries.slice(i, i + 200);
+    const { data, error } = await supabase
+      .from('daily_entries')
+      .upsert(
+        chunk.map((e) => ({ user_id: userId, entry_date: e.date, status: e.status, note: e.note })),
+        { onConflict: 'user_id,entry_date', ignoreDuplicates: true },
+      )
+      .select('id, entry_date');
+    if (error) throw error;
+    const idByDate = new Map((data ?? []).map((r) => [String(r.entry_date), String(r.id)]));
+    restored += idByDate.size;
+    const drinks = chunk.flatMap((e) => {
+      const id = idByDate.get(e.date);
+      return id
+        ? e.drinks.map((d) => ({
+            daily_entry_id: id,
+            preset_key: d.presetKey,
+            name: d.name,
+            volume_ml: d.volumeMl,
+            abv: d.abv,
+            cost: d.cost,
+            quantity: d.quantity,
+          }))
+        : [];
+    });
+    if (drinks.length) {
+      const ins = await supabase.from('drinks').insert(drinks);
+      if (ins.error) throw ins.error;
+    }
+  }
+  return restored;
 }

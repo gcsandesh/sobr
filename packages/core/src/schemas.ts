@@ -105,6 +105,10 @@ export const userSettingsSchema = z.object({
    */
   emailReminders: z.boolean().default(true),
   emailWeekly: z.boolean().default(true),
+  /** Set while the user is taking a break (migration 0007). */
+  pausedAt: z.string().nullable().optional(),
+  /** Set when deletion was requested; erased 30 days later (migration 0007). */
+  deletionRequestedAt: z.string().nullable().optional(),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
 });
@@ -120,6 +124,8 @@ export const userSettingsUpdateSchema = userSettingsSchema
     onboarded: true,
     emailReminders: true,
     emailWeekly: true,
+    pausedAt: true,
+    deletionRequestedAt: true,
   })
   .partial();
 export type UserSettingsUpdate = z.infer<typeof userSettingsUpdateSchema>;

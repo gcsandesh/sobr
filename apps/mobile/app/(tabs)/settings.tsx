@@ -7,6 +7,7 @@ import { BottomSheet } from '../../src/components/BottomSheet';
 import { LimitStepper } from '../../src/components/LimitStepper';
 import {
   BellIcon,
+  BookIcon,
   ChartIcon,
   DocIcon,
   GlobeIcon,
@@ -41,6 +42,8 @@ import {
   useUpdateSettings,
 } from '../../src/data/hooks';
 import { exportEntriesCsv } from '../../src/lib/export';
+import { exportBackup, restoreFromBackup } from '../../src/lib/lifecycle';
+import { useQueryClient } from '@tanstack/react-query';
 import { errorMessage } from '../../src/lib/errorMessage';
 import { useNotificationPrefs } from '../../src/data/useNotificationPrefs';
 import { notificationsSupported } from '../../src/lib/notifications';
@@ -95,6 +98,38 @@ export default function Settings() {
   const entriesQ = useAllEntries();
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+
+  const qc = useQueryClient();
+  const [dataBusy, setDataBusy] = useState<'backup' | 'restore' | null>(null);
+  const [dataNote, setDataNote] = useState<string | null>(null);
+
+  async function dataAction(kind: 'backup' | 'restore') {
+    if (!userId) return;
+    setExportError(null);
+    setDataNote(null);
+    setDataBusy(kind);
+    try {
+      if (kind === 'backup') {
+        await exportBackup(userId);
+      } else {
+        const res = await restoreFromBackup(userId);
+        if (res.status === 'error') setExportError(res.message);
+        if (res.status === 'done') {
+          setDataNote(
+            res.restored === 0
+              ? 'Nothing to add: every day in that backup is already logged.'
+              : `Restored ${res.restored} ${res.restored === 1 ? 'day' : 'days'}` +
+                  (res.skipped ? ` (${res.skipped} already logged were kept as they are).` : '.'),
+          );
+          await qc.invalidateQueries();
+        }
+      }
+    } catch (e) {
+      setExportError(errorMessage(e, 'Something went wrong. Nothing was changed.'));
+    } finally {
+      setDataBusy(null);
+    }
+  }
 
   async function doExport() {
     setExportError(null);
@@ -259,9 +294,30 @@ export default function Settings() {
           right={<RowValue />}
           onPress={exporting || !entriesQ.data ? undefined : () => void doExport()}
         />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<ShieldIcon color={colors.accent} />}
+          title={dataBusy === 'backup' ? 'Preparing your backup…' : 'Download a full backup'}
+          subtitle="Everything, in a file you can restore later"
+          right={<RowValue />}
+          onPress={dataBusy || !userId ? undefined : () => void dataAction('backup')}
+        />
+        <Divider className="my-1" />
+        <ListRow
+          icon={<BookIcon color={colors.accent} />}
+          title={dataBusy === 'restore' ? 'Restoring…' : 'Restore from a backup'}
+          subtitle="Adds days you haven’t logged; never overwrites"
+          right={<RowValue />}
+          onPress={dataBusy || !userId ? undefined : () => void dataAction('restore')}
+        />
         {exportError ? (
           <Txt variant="caption" className="text-slip mt-1" accessibilityRole="alert">
             {exportError}
+          </Txt>
+        ) : null}
+        {dataNote ? (
+          <Txt variant="caption" className="text-win mt-1" accessibilityLiveRegion="polite">
+            {dataNote}
           </Txt>
         ) : null}
       </Card>

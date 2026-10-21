@@ -181,3 +181,14 @@ export function onCheckinTapped(handler: () => void): () => void {
   const sub = N.addNotificationResponseReceivedListener(handle);
   return () => sub.remove();
 }
+
+/** Cancel every scheduled reminder (taking a break). Prefs stay stored, so
+ * resuming re-applies them via resyncNotificationSchedule. */
+export async function cancelAllNotifications(): Promise<void> {
+  if (!Notifications) return;
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch {
+    // best effort
+  }
+}

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import { Stack } from 'expo-router';
-import { LockIcon, LogOutIcon, UserIcon } from '../src/components/icons';
+import { Stack, useRouter } from 'expo-router';
+import { HomeLeafIcon, LockIcon, LogOutIcon, TrashIcon, UserIcon } from '../src/components/icons';
 import {
   Avatar,
   Button,
   Card,
+  Divider,
   ListRow,
   Screen,
   SectionHeader,
@@ -13,9 +14,9 @@ import {
   Txt,
 } from '../src/components/ui';
 import { useSession } from '../src/data/SessionProvider';
-import { useDeleteAccount } from '../src/data/hooks';
 import { MIN_PASSWORD, changePassword, updateDisplayName } from '../src/lib/account';
 import { confirmAction } from '../src/lib/confirm';
+import { takeBreak } from '../src/lib/lifecycle';
 import { authErrorMessage, errorMessage } from '../src/lib/errorMessage';
 import { haptics } from '../src/lib/haptics';
 import { colors } from '../src/theme';
@@ -25,8 +26,9 @@ import { colors } from '../src/theme';
  * the exits (sign out, delete). Preferences stay in Settings.
  */
 export default function Account() {
-  const { email, displayName, greetingName, signOut } = useSession();
-  const deleteAccount = useDeleteAccount();
+  const router = useRouter();
+  const { email, userId, displayName, greetingName, signOut } = useSession();
+  const [breakError, setBreakError] = useState<string | null>(null);
 
   const [name, setName] = useState(displayName ?? '');
   const [nameState, setNameState] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -72,17 +74,7 @@ export default function Account() {
     }
   }
 
-  function confirmDelete() {
-    confirmAction({
-      title: 'Delete your account?',
-      message:
-        'This permanently removes your account, every day you’ve logged, your notes and your photos. It can’t be undone.',
-      confirmLabel: 'Delete forever',
-      cancelLabel: 'Keep my account',
-      requireText: 'DELETE',
-      onConfirm: () => deleteAccount.mutate(),
-    });
-  }
+
 
   const nameDirty = name.trim() !== (displayName ?? '');
 
@@ -176,22 +168,37 @@ export default function Account() {
           />
         </Card>
 
-        <SectionHeader title="Delete account" />
-        <Card className="mb-6" style={{ borderColor: colors.slipBg }}>
-          <Txt variant="bodyMuted" className="text-sm">
-            Erases your account and everything in it: every day, note and photo. There’s no
-            undo and no copy kept.
-          </Txt>
-          <Button
-            label="Delete account & data"
-            tone="danger"
-            className="mt-4"
-            loading={deleteAccount.isPending}
-            onPress={confirmDelete}
+        <SectionHeader title="Leaving for a while?" />
+        <Card className="mb-6">
+          <ListRow
+            icon={<HomeLeafIcon color={colors.win} />}
+            title="Take a break"
+            subtitle="Pause reminders and sign out. Nothing is deleted."
+            onPress={() =>
+              confirmAction({
+                tone: 'calm',
+                title: 'Take a break?',
+                message:
+                  'Reminders and emails stop and you’ll be signed out. Everything stays exactly as it is, with no time limit. Sign in whenever you’re ready.',
+                confirmLabel: 'Take a break',
+                cancelLabel: 'Cancel',
+                onConfirm: () => {
+                  if (userId) void takeBreak(userId).catch((e) => setBreakError(errorMessage(e)));
+                },
+              })
+            }
           />
-          {deleteAccount.isError && (
-            <Txt variant="caption" className="text-slip mt-2" accessibilityRole="alert">
-              Couldn’t delete right now: {errorMessage(deleteAccount.error)}. Nothing was removed.
+          <Divider className="my-1" />
+          <ListRow
+            icon={<TrashIcon color={colors.slip} />}
+            title="Delete account"
+            subtitle="Save a backup first; 30 days to change your mind"
+            destructive
+            onPress={() => router.push('/delete-account')}
+          />
+          {breakError && (
+            <Txt variant="caption" className="text-slip mt-1" accessibilityRole="alert">
+              Couldn’t start your break: {breakError}
             </Txt>
           )}
         </Card>

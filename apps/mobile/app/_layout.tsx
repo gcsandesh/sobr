@@ -35,6 +35,7 @@ const DETAIL_SCREENS = [
   'support',
   'legal/privacy',
   'legal/terms',
+  'delete-account',
 ] as const;
 
 const detailHeader = {
@@ -77,6 +78,7 @@ function Gate() {
   const segments = useSegments();
   const { session, initializing } = useSession();
   const settings = useSettings();
+  const accountHeld = !!(settings.data?.pausedAt || settings.data?.deletionRequestedAt);
 
   useEffect(() => {
     if (DEV_SKIP_AUTH) {
@@ -110,16 +112,29 @@ function Gate() {
     if (settings.isLoading) return;
     const onboarded = settings.data?.onboarded ?? false;
 
+    // On a break, or deletion requested (migration 0007): hold on the status
+    // screen until the user resumes / restores or signs out.
+    if (accountHeld) {
+      if (group !== 'account-status') router.replace('/account-status');
+      return;
+    }
+
     if (!onboarded) {
       if (group !== '(onboarding)') router.replace('/(onboarding)');
-    } else if (group === '(auth)' || group === '(onboarding)' || group === 'setup' || !group) {
+    } else if (
+      group === '(auth)' ||
+      group === '(onboarding)' ||
+      group === 'setup' ||
+      group === 'account-status' ||
+      !group
+    ) {
       router.replace('/(tabs)');
     }
-  }, [router, segments, session, initializing, settings.isLoading, settings.data?.onboarded]);
+  }, [router, segments, session, initializing, settings.isLoading, settings.data?.onboarded, accountHeld]);
 
   // A tapped check-in reminder opens today's check-in, once the user is in.
   const tz = useTimeZone();
-  const ready = !!session && !!settings.data?.onboarded;
+  const ready = !!session && !!settings.data?.onboarded && !accountHeld;
   useEffect(() => {
     if (ready) void resyncNotificationSchedule();
   }, [ready]);
@@ -144,6 +159,7 @@ function Gate() {
         <Stack.Screen key={name} name={name} options={detailHeader} />
       ))}
       <Stack.Screen name="steady" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="account-status" />
     </Stack>
   );
 }

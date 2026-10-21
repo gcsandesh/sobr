@@ -169,7 +169,7 @@ receives them until a domain is verified.
 user in the mail job (one bad zone used to abort the batch for everyone).
 
 Migrations are applied manually (Supabase SQL editor or `packages/db/apply-*.mjs`), in order
-0000 → 0006. **This environment has no access to the sobr Supabase project** (the connected
+0000 → 0007. **This environment has no access to the sobr Supabase project** (the connected
 Supabase account only has an unrelated project), so schema changes must be handed to the owner.
 
 ---
@@ -224,7 +224,15 @@ Supabase account only has an unrelated project), so schema changes must be hande
     streak that earned a token; uniqueness is (user, run_start, milestone), so every new
     streak can earn its 7/14/21 tokens again. The app falls back to the old once-per-account
     rule only while the `run_start` column is missing (`hasRunStartColumn()` in `api.ts`).
-18. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
+18. **Account lifecycle (migration 0007).** `user_settings.paused_at` (take a break: no
+    deletion, no time limit, emails skip it) and `deletion_requested_at` (photos removed by the
+    app at request time, since storage files can't be deleted from SQL; everything else erased
+    30 days later by the daily `app.purge_deleted_accounts()` pg_cron job). The Gate holds such
+    accounts on `/account-status` (Resume / Restore). Do **not** keep deleted users' data longer
+    than the 30-day window: Play's deletion policy and PROJECT.md's privacy principle. Return
+    after deletion is via the user's own JSON backup (`@sobr/core` backup.ts; Settings → Your
+    data → Restore), never via data we retain.
+19. **Work happens in parallel sessions.** The owner also runs a local agent that pushes to
     `main` (it built the CSV export while the cloud branch built its own). Always
     `git fetch` and check `origin/main` before starting, and merge it in rather than
     assuming your branch point is current.

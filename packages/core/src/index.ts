@@ -13,3 +13,4 @@ export * from './milestones';
 export * from './aggregates';
 export * from './export';
 export * from './forest';
+export * from './backup';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
-import { TrashIcon } from './icons';
+import { HomeLeafIcon as LeafIcon, TrashIcon } from './icons';
 import { Txt } from './ui';
 import { colors } from '../theme';
 
@@ -19,6 +19,8 @@ export type ConfirmRequest = {
   cancelLabel?: string;
   /** Make the user type this word before the confirm button enables. */
   requireText?: string;
+  /** 'calm' for non-destructive confirms (teal, no trash icon). Default 'danger'. */
+  tone?: 'danger' | 'calm';
   onConfirm: () => void;
 };
 
@@ -46,6 +48,7 @@ export function ConfirmHost() {
   }, []);
 
   const close = () => setReq(null);
+  const calm = req?.tone === 'calm';
   const unlocked = !req?.requireText || typed.trim().toUpperCase() === req.requireText.toUpperCase();
 
   return (
@@ -81,9 +84,18 @@ export function ConfirmHost() {
           >
             <View
               className="items-center justify-center mb-4"
-              style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: colors.slipBg }}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                backgroundColor: calm ? colors.accentBg : colors.slipBg,
+              }}
             >
-              <TrashIcon color={colors.slip} size={24} />
+              {calm ? (
+                <LeafIcon color={colors.accent} size={24} />
+              ) : (
+                <TrashIcon color={colors.slip} size={24} />
+              )}
             </View>
             <Txt variant="title">{req.title}</Txt>
             <Txt variant="bodyMuted" className="mt-2">
@@ -123,7 +135,8 @@ export function ConfirmHost() {
               <DialogButton label={req.cancelLabel ?? 'Cancel'} onPress={close} />
               <DialogButton
                 label={req.confirmLabel}
-                danger
+                danger={!calm}
+                calm={calm}
                 disabled={!unlocked}
                 onPress={() => {
                   const run = req.onConfirm;
@@ -143,11 +156,13 @@ function DialogButton({
   label,
   onPress,
   danger = false,
+  calm = false,
   disabled = false,
 }: {
   label: string;
   onPress: () => void;
   danger?: boolean;
+  calm?: boolean;
   disabled?: boolean;
 }) {
   return (
@@ -162,7 +177,7 @@ function DialogButton({
         borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: danger ? colors.slip : colors.cardRaised,
+        backgroundColor: danger ? colors.slip : calm ? colors.accent : colors.cardRaised,
         opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
         transform: [{ scale: pressed && !disabled ? 0.97 : 1 }],
       })}
@@ -171,7 +186,7 @@ function DialogButton({
         style={{
           fontFamily: 'Figtree_700Bold',
           fontSize: 15.5,
-          color: danger ? '#FFFFFF' : colors.text,
+          color: danger || calm ? '#FFFFFF' : colors.text,
         }}
       >
         {label}
