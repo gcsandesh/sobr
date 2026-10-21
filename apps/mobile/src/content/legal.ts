@@ -5,7 +5,7 @@
  * in the same commit. Review before each store submission (DEPLOY.md).
  */
 
-export const LEGAL_UPDATED = '25 September 2026';
+export const LEGAL_UPDATED = '21 October 2026';
 export const LEGAL_CONTACT_URL = 'https://github.com/gcsandesh/sobr/issues';
 
 export type LegalSection = { heading: string; body: string[] };
@@ -51,7 +51,9 @@ export const PRIVACY: LegalSection[] = [
     heading: 'Your choices',
     body: [
       'Turn emails off any time in Settings → Email.',
-      'Delete your account in Settings → Account. This permanently erases your account, every logged day, notes and photos. There is no backup copy kept.',
+      'Take a break in Settings → Account: reminders and emails stop and nothing is deleted, with no time limit.',
+      'Delete your account in Settings → Account. Photos are removed immediately. Everything else (your account, every logged day and note) is permanently erased 30 days later; signing in during those 30 days lets you restore it. After that there is no copy kept.',
+      'Before deleting, you can download a full backup file. It stays with you; we don’t keep it.',
     ],
   },
   {

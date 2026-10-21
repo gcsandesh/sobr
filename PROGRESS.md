@@ -6,6 +6,28 @@ its task groups here.
 
 ---
 
+<a id="lifecycle"></a>
+## Take a break, delete with a 30-day undo, backup + restore ✅ done (2026-10-21)
+
+- Migration `0007_account_lifecycle.sql`: `paused_at`, `deletion_requested_at`; email jobs skip
+  both; `app.purge_deleted_accounts()` scheduled daily via pg_cron (erases accounts 30 days after
+  the request, cascading every table). Tested on PGlite (only expired requests purged; idempotent).
+- App: Account → "Take a break" (signs out, cancels reminders) and "Delete account" (guided
+  screen: download backup, break-instead, what happens, type DELETE). Gate holds paused/deleting
+  accounts on `/account-status` with Resume / Restore / Download a backup.
+- Photo files are removed at deletion request time (they can't be removed from SQL). Also closes
+  an older gap: the immediate `delete_account()` never removed photo files.
+- Full JSON backup (`@sobr/core` backup.ts, versioned + validated, tested) and Settings → Your
+  data → Download a full backup / Restore from a backup (adds missing days only).
+- Privacy policy updated (21 October 2026).
+- Decision: no 1–2 year support recovery after deletion (Play policy + privacy promise); a break
+  covers "come back anytime" and the user's own backup covers return after deletion.
+
+**What you need to do:** run `packages/db/migrations/0007_account_lifecycle.sql` in the SQL
+Editor (before relying on Take a break / Delete), then install the new APK.
+
+---
+
 <a id="ui-feedback-oct"></a>
 ## Owner UI feedback round ✅ done (2026-10-19)
 

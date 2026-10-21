@@ -44,7 +44,7 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
       function, to send all auth mail through Resend with the app's own design. Not needed
       while you're the only user: Supabase's built-in mailer plus the template above works.
 - [ ] All migrations applied, in order: `0000_init` → `0001_grants` → `0002_email` →
-      `0003_email_visuals` → `0004_day_photos` → `0005_time_zone_guard` → `0006_freeze_per_run`.
+      `0003_email_visuals` → `0004_day_photos` → `0005_time_zone_guard` → `0006_freeze_per_run` → `0007_account_lifecycle`.
       Verify grants: `select table_name, privilege_type from information_schema.role_table_grants where grantee='authenticated' and table_schema='public';`
       (every app table needs SELECT/INSERT/UPDATE/DELETE, or nothing saves).
 - [ ] Resend: until a domain is verified, `onboarding@resend.dev` only delivers to the
