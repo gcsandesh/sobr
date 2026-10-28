@@ -11,9 +11,9 @@ module.exports = {
     extend: {
       colors: {
         bg: '#F4F9F7',
-        surface: '#FAFDFC',
+        surface: '#FFFFFF',
         'surface-raised': '#E8F2EE',
-        overlay: '#FAFDFC',
+        overlay: '#FFFFFF',
         border: '#D5E3DE',
         'border-strong': '#A9C3BB',
         text: '#16211F',

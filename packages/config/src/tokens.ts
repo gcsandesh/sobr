@@ -17,9 +17,9 @@ export const palette = {
   // go *lighter* toward white. Cards must never share the canvas value or the
   // whole screen reads flat and dull.
   background: '#F4F9F7', // canvas — bright mist (was #F0F5F3, read as dull grey)
-  surface: '#FAFDFC', // cards — near-white with a green cast
+  surface: '#FFFFFF', // cards: clean white, lifted by shadow rather than a border
   surfaceRaised: '#E8F2EE', // sunken: inputs, chips
-  surfaceOverlay: '#FAFDFC',
+  surfaceOverlay: '#FFFFFF',
   border: '#D5E3DE',
   borderStrong: '#A9C3BB',
 
