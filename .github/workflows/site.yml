@@ -1,0 +1,50 @@
+# Publishes sobr's public pages (home, privacy policy, terms, account deletion)
+# to GitHub Pages. The policy text comes from apps/mobile/src/content/legal.ts,
+# so the web and the app always say the same thing.
+#
+# One-time setup: repo → Settings → Pages → Build and deployment → Source:
+# "GitHub Actions". The site is then at https://gcsandesh.github.io/sobr/.
+# For the custom domain later, add site/CNAME and set it under Settings → Pages.
+
+name: Site
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'apps/mobile/src/content/legal.ts'
+      - 'apps/mobile/assets/brand/icon.svg'
+      - '.github/workflows/site.yml'
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # build.mjs imports legal.ts directly, which needs Node's type stripping
+          node-version: '22'
+      - run: node site/build.mjs
+      - name: Custom domain
+        run: if [ -f site/CNAME ]; then cp site/CNAME site/dist/CNAME; fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

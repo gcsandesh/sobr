@@ -10,7 +10,8 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 | Target | How | Where it lands |
 | --- | --- | --- |
 | **Android APK (sideload)** | `.github/workflows/android-apk.yml` on every push to `main` / `claude/**` touching the app, or *Run workflow* by hand | GitHub **Releases** (tag `android-v<version>-<run>`) + a workflow artifact |
-| Android Play Store | `eas build -p android --profile production` then `eas submit` | Play Console |
+| Android Play Store | `.github/workflows/android-aab.yml` (*Run workflow*), or EAS | Workflow artifact (`.aab`) → Play Console |
+| Public pages | `.github/workflows/site.yml` on push to `main` | GitHub Pages |
 | iOS | `eas build -p ios` (paid Apple Developer account required) | TestFlight |
 | Web | `pnpm --filter @sobr/mobile export:web` → static `dist/` | Any static host (Vercel/Netlify/Cloudflare Pages) |
 | Backend | SQL in `packages/db/migrations/`, edge function in `supabase/functions/send-email` | Supabase project `uqozokfjfstsfuelgzcy` |
@@ -115,21 +116,50 @@ which manages a real upload key.
 
 ---
 
-## 5. Play Store (when ready)
+## 5. Play Store
 
-- [ ] Google Play developer account ($25 one-time).
-- [ ] `cd apps/mobile && eas init` (links the project), then set env on EAS:
-      `eas env:create --name EXPO_PUBLIC_SUPABASE_URL …` and `…_ANON_KEY …` (plaintext is
-      correct; see HANDOVER → "Building with EAS").
-- [ ] `eas build -p android --profile production` (AAB, EAS-managed upload key).
-- [ ] Play Console: app content → **Health** declarations, data safety form (matches
-      `legal.ts`), target audience **18+**, privacy policy URL (host the policy on the web
-      build or a static page first).
-- [ ] Internal testing track → closed testing → production.
-- [ ] Before store submission: Sign in with Apple is required on iOS if Google sign-in is
-      re-enabled (TODO → Future enhancements).
+Listing text, Data safety answers and every Play form: **[STORE_LISTING.md](./STORE_LISTING.md)**.
 
----
+### Signed bundle (.aab), without EAS
+`.github/workflows/android-aab.yml` builds a Play-ready bundle signed with your own upload
+key. One-time setup, on your computer (needs Java; Android Studio includes `keytool`):
+
+```sh
+keytool -genkeypair -v -keystore upload-keystore.jks -alias upload \
+  -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 upload-keystore.jks > upload-keystore.b64   # macOS: base64 -i upload-keystore.jks
+```
+
+Then add four repo secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+| --- | --- |
+| `ANDROID_UPLOAD_KEYSTORE_BASE64` | contents of `upload-keystore.b64` |
+| `ANDROID_UPLOAD_KEYSTORE_PASSWORD` | the keystore password you chose |
+| `ANDROID_UPLOAD_KEY_ALIAS` | `upload` |
+| `ANDROID_UPLOAD_KEY_PASSWORD` | the key password (same as the keystore one if you pressed Enter) |
+
+Keep `upload-keystore.jks` and its password somewhere safe besides GitHub (a password
+manager). With Play App Signing, Google holds the real app key; a lost upload key can be
+reset, but it takes days.
+
+Run it: **Actions → Android AAB (Play Store) → Run workflow**, then download the `.aab`
+from the run's artifacts. The workflow fails early if a secret is missing, and checks the
+bundle really is signed with your key. versionCode is `1000 + run number`, always rising.
+
+The Play build and the sideload APK are signed differently, so a phone can't update one
+from the other: uninstall the sideloaded app before installing from Play (data is safe in
+the account).
+
+### Checklist
+- [ ] Google Play developer account ($25 one-time, personal account).
+- [ ] Public pages live (§6b): privacy policy and account deletion URLs.
+- [ ] `LEGAL_CONTACT_EMAIL` set in `legal.ts` once the domain email works.
+- [ ] Upload keystore + four secrets above; run the AAB workflow.
+- [ ] Play Console forms per STORE_LISTING.md; reviewer test account created.
+- [ ] Closed testing with 12+ testers for 14 days → apply for production.
+- [ ] (Alternative to the workflow) EAS: `eas build -p android --profile production`
+      manages the upload key for you; needs an Expo account and `eas init`.
 
 ## 6. Web
 
@@ -138,6 +168,17 @@ which manages a real upload key.
 - [ ] Add the site origin to Supabase → Authentication → URL Configuration → Redirect URLs.
 
 ---
+
+## 6b. Public pages (GitHub Pages)
+
+`site/build.mjs` renders home, privacy, terms and account deletion from `legal.ts`;
+`.github/workflows/site.yml` publishes them on every change to main.
+
+- [ ] One-time: repo → Settings → Pages → Source: **GitHub Actions**, then run the **Site**
+      workflow once. Live at https://gcsandesh.github.io/sobr/.
+- [ ] Domain later: put the domain in `site/CNAME`, set it under Settings → Pages, and
+      point DNS at GitHub Pages.
+- Local preview: `node site/build.mjs` (Node 22.18+) and open `site/dist/index.html`.
 
 ## 7. Rollback
 
