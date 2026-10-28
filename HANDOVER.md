@@ -249,6 +249,10 @@ Supabase account only has an unrelated project), so schema changes must be hande
     `site/src/main.js`; keep them in step. Play builds come from `android-aab.yml`
     (upload-key signed); the sideload APK stays debug-signed. See DEPLOY.md §5 and §6b,
     and STORE_LISTING.md.
+22. **Branch APK prereleases skip themselves when a branch changes workflow files.** GitHub
+    won't let `GITHUB_TOKEN` create the release tag on a commit whose workflows differ from
+    main (403, despite `contents: write`). The publish step is `continue-on-error` on branches
+    only; grab the APK from the run's artifacts instead. Main always publishes.
 
 ---
 
