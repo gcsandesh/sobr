@@ -63,6 +63,7 @@ import { useDailyPledge } from '../../src/data/useDailyPledge';
 import { haptics } from '../../src/lib/haptics';
 import { formatDay } from '../../src/lib/dates';
 import { useSession } from '../../src/data/SessionProvider';
+import { useTabBarSpace } from '../../src/components/tabBarSpace';
 import { colors } from '../../src/theme';
 import { useRefresh } from '../../src/data/useRefresh';
 
@@ -84,6 +85,7 @@ const HERO = {
 } as const;
 
 export default function Today() {
+  const tabBarSpace = useTabBarSpace();
   const refresh = useRefresh();
   const router = useRouter();
   const { displayName } = useSession();
@@ -230,7 +232,7 @@ export default function Today() {
       */}
         <Animated.View entering={FadeInDown.delay(80).duration(500)}>
           <View
-            className="items-center pt-5 pb-5 px-5 rounded-2xl overflow-hidden"
+            className="p-5 rounded-2xl overflow-hidden"
             style={{
               backgroundColor: HERO.bg,
               shadowColor: HERO.bg,
@@ -246,49 +248,68 @@ export default function Today() {
               style={StyleSheet.absoluteFill}
               pointerEvents="none"
             />
-            <View className="absolute top-0 items-center justify-center" pointerEvents="none">
-              <Glow size={340} color="#8FD9CF" opacity={0.42} />
+            {/*
+              Compact, two-column hero: the streak reads first (left, big and
+              warm), the tree grows beside it. Half the height of the old
+              stacked layout, so today's actions show without scrolling.
+            */}
+            <View
+              className="absolute items-center justify-center"
+              style={{ right: -70, top: -60 }}
+              pointerEvents="none"
+            >
+              <Glow size={300} color="#8FD9CF" opacity={0.42} />
             </View>
-            <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={176} />
-            {/* warm glow behind the streak: hotter the longer it burns */}
             {stats.streak.current > 0 ? (
               <View
                 className="absolute items-center justify-center"
-                style={{ left: 0, right: 0, bottom: 40 }}
+                style={{ left: -80, top: -40 }}
                 pointerEvents="none"
               >
                 <Glow
-                  size={300}
+                  size={280}
                   color="#FBBF24"
-                  opacity={Math.min(0.55, 0.25 + stats.streak.current / 60)}
+                  opacity={Math.min(0.5, 0.22 + stats.streak.current / 60)}
                 />
               </View>
             ) : null}
-            <Row className="mt-2 items-center">
-              <LiveFlame streak={stats.streak.current} size={44} />
-              <AnimatedNumber
-                value={stats.streak.current}
-                variant="display"
-                className="ml-1"
-                style={{ color: HERO.text }}
-              />
+            <Row className="w-full items-center">
+              <View className="flex-1 pr-2">
+                <Txt variant="label" style={{ color: HERO.textMuted }}>
+                  {stats.streak.current === 0 ? 'Start a streak today' : 'Current streak'}
+                </Txt>
+                <Row className="items-center mt-1">
+                  <LiveFlame streak={stats.streak.current} size={40} />
+                  <AnimatedNumber
+                    value={stats.streak.current}
+                    variant="display"
+                    className="ml-1"
+                    style={{ color: HERO.text }}
+                  />
+                  <Txt variant="body" className="ml-2 mt-3" style={{ color: HERO.textMuted }}>
+                    {stats.streak.current === 1 ? 'day' : 'days'}
+                  </Txt>
+                </Row>
+                <View
+                  className="self-start mt-3 px-2.5 py-1 rounded-md"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}
+                >
+                  <Txt variant="caption" style={{ color: HERO.text }}>
+                    {meta.label}
+                  </Txt>
+                </View>
+              </View>
+              <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={136} />
             </Row>
-            <Txt variant="label" className="-mt-1" style={{ color: HERO.textMuted }}>
-              {stats.streak.current === 0 ? 'start a streak today' : 'day streak'}
-            </Txt>
             <Txt
-              variant="bodyMuted"
-              className="mt-3 text-center px-2"
+              variant="caption"
+              className="mt-3 w-full"
               style={{ color: HERO.textMuted }}
             >
-              {meta.label} · {meta.blurb}
+              {meta.blurb}
             </Txt>
             {stats.streak.current === 0 && stats.forest[0] ? (
-              <Txt
-                variant="caption"
-                className="mt-2 text-center px-4"
-                style={{ color: HERO.textFaint }}
-              >
+              <Txt variant="caption" className="mt-1 w-full" style={{ color: HERO.textFaint }}>
                 Your {stats.forest[0].length}-day tree is planted in your forest. A new seed is in
                 the ground.
               </Txt>
@@ -296,7 +317,7 @@ export default function Today() {
 
             {/* progress to the next stage */}
             {stats.progress.winDaysToNext !== null && (
-              <View className="w-full mt-5 px-2">
+              <View className="w-full mt-4">
                 <View
                   className="h-2 rounded-full overflow-hidden"
                   style={{ backgroundColor: HERO.track }}
@@ -310,11 +331,7 @@ export default function Today() {
                     }}
                   />
                 </View>
-                <Txt
-                  variant="caption"
-                  className="mt-2 text-center"
-                  style={{ color: HERO.textFaint }}
-                >
+                <Txt variant="caption" className="mt-2" style={{ color: HERO.textFaint }}>
                   {stats.progress.winDaysToNext} more{' '}
                   {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} in a row to grow further
                 </Txt>
@@ -565,10 +582,10 @@ export default function Today() {
         className="absolute items-center justify-center active:opacity-85"
         style={{
           right: 20,
-          bottom: 24,
+          bottom: tabBarSpace + 4,
           width: 56,
           height: 56,
-          borderRadius: 28,
+          borderRadius: 18,
           backgroundColor: colors.accent,
           shadowColor: '#16211F',
           shadowOpacity: 0.25,

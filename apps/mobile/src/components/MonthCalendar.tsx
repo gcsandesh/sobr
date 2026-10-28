@@ -86,14 +86,14 @@ export function MonthCalendar({
           <IconButton
             accessibilityLabel="Previous month"
             onPress={() => setAnchor(addDays(startOfMonth(anchor), -1))}
-            className="bg-surface-raised rounded-lg"
+            className="rounded-lg"
           >
             <Txt variant="heading">‹</Txt>
           </IconButton>
           <IconButton
             accessibilityLabel="Next month"
             onPress={() => setAnchor(addDays(endOfMonth(anchor), 1))}
-            className="bg-surface-raised rounded-lg"
+            className="rounded-lg"
           >
             <Txt variant="heading">›</Txt>
           </IconButton>

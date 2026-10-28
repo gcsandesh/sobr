@@ -18,15 +18,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CheckIcon, ChevronRightIcon, EyeIcon, HomeLeafIcon } from './icons';
+import { useTabBarSpace } from './tabBarSpace';
 import { colors } from '../theme';
 
 /** Soft, low-opacity elevation — never a harsh drop shadow. */
 const softShadow = {
-  shadowColor: '#16211F',
-  shadowOpacity: 0.08,
-  shadowRadius: 18,
-  shadowOffset: { width: 0, height: 8 },
-  elevation: 2,
+  shadowColor: '#1B3A35',
+  shadowOpacity: 0.07,
+  shadowRadius: 22,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 3,
 } as const;
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
@@ -87,6 +88,7 @@ export function Screen({
    */
   edges?: ('top' | 'bottom')[];
 }) {
+  const tabBarSpace = useTabBarSpace();
   const inner = (
     <View
       className={`flex-1 px-5 w-full self-center ${className ?? ''}`}
@@ -115,7 +117,7 @@ export function Screen({
           // into view instead of leaving it under the keys.
           <KeyboardAwareScrollView
             className="flex-1"
-            contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+            contentContainerStyle={{ paddingBottom: 40 + tabBarSpace, flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             bottomOffset={24}
@@ -139,11 +141,13 @@ export function Card({
 }: ViewProps & { children: ReactNode; className?: string }) {
   return (
     <View
-      // Cards sit on `surface` (warm white), one step LIGHTER than the cream
-      // canvas — that luminance gap is what gives the screen depth. Default
-      // border is a faint hairline so callers can override with border-win /
-      // border-accent etc.
-      className={`relative overflow-hidden rounded-2xl border border-border bg-surface p-5 ${className ?? ''}`}
+      // Cards sit on `surface`, one step LIGHTER than the canvas, and lift off
+      // it with a soft shadow alone: no hairline border, which read as dated
+      // and busy. A caller asking for a colored edge (border-win etc.) still
+      // gets one.
+      className={`relative overflow-hidden rounded-2xl bg-surface p-5 ${
+        /\bborder-/.test(className ?? '') ? 'border' : ''
+      } ${className ?? ''}`}
       style={[softShadow, style]}
       {...props}
     >

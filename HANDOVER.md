@@ -236,6 +236,12 @@ Supabase account only has an unrelated project), so schema changes must be hande
     `main` (it built the CSV export while the cloud branch built its own). Always
     `git fetch` and check `origin/main` before starting, and merge it in rather than
     assuming your branch point is current.
+20. **The tab bar floats over the content.** It is `position: absolute` (a rounded white pill),
+    so tab screens scroll *under* it. `Screen` pads its scroll content by
+    `useTabBarSpace()` (from `src/components/tabBarSpace.ts`, provided by the tabs layout),
+    and anything pinned to the bottom of a tab screen (Home's + button) must sit at
+    `tabBarSpace + n`, not a fixed offset. Cards have no border by default: they lift off the
+    canvas with a soft shadow; pass a `border-*` color class to `Card` to get an edge.
 
 ---
 
