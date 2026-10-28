@@ -11,7 +11,7 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 | --- | --- | --- |
 | **Android APK (sideload)** | `.github/workflows/android-apk.yml` on every push to `main` / `claude/**` touching the app, or *Run workflow* by hand | GitHub **Releases** (tag `android-v<version>-<run>`) + a workflow artifact |
 | Android Play Store | `.github/workflows/android-aab.yml` (*Run workflow*), or EAS | Workflow artifact (`.aab`) → Play Console |
-| Public pages | `.github/workflows/site.yml` on push to `main` | GitHub Pages |
+| Website (marketing + legal) | Vercel, from `vercel.json` on push to `main` | `https://<project>.vercel.app` |
 | iOS | `eas build -p ios` (paid Apple Developer account required) | TestFlight |
 | Web | `pnpm --filter @sobr/mobile export:web` → static `dist/` | Any static host (Vercel/Netlify/Cloudflare Pages) |
 | Backend | SQL in `packages/db/migrations/`, edge function in `supabase/functions/send-email` | Supabase project `uqozokfjfstsfuelgzcy` |
@@ -153,7 +153,7 @@ the account).
 
 ### Checklist
 - [ ] Google Play developer account ($25 one-time, personal account).
-- [ ] Public pages live (§6b): privacy policy and account deletion URLs.
+- [ ] Website live on Vercel (§6b): privacy policy and account deletion URLs.
 - [ ] `LEGAL_CONTACT_EMAIL` set in `legal.ts` once the domain email works.
 - [ ] Upload keystore + four secrets above; run the AAB workflow.
 - [ ] Play Console forms per STORE_LISTING.md; reviewer test account created.
@@ -169,16 +169,26 @@ the account).
 
 ---
 
-## 6b. Public pages (GitHub Pages)
+## 6b. Website (Vercel)
 
-`site/build.mjs` renders home, privacy, terms and account deletion from `legal.ts`;
-`.github/workflows/site.yml` publishes them on every change to main.
+One Vercel project serves the marketing site at `/` plus `/privacy`, `/terms` and
+`/delete-account`. `site/build.mjs` assembles it: the marketing page from `site/src/`, the
+legal pages rendered from the app's `legal.ts`. `vercel.json` holds the build settings, so
+nothing needs typing into the dashboard.
 
-- [ ] One-time: repo → Settings → Pages → Source: **GitHub Actions**, then run the **Site**
-      workflow once. Live at https://gcsandesh.github.io/sobr/.
-- [ ] Domain later: put the domain in `site/CNAME`, set it under Settings → Pages, and
-      point DNS at GitHub Pages.
-- Local preview: `node site/build.mjs` (Node 22.18+) and open `site/dist/index.html`.
+- [ ] One-time: vercel.com → **Add New → Project** → import `gcsandesh/sobr`. Leave Root
+      Directory as the repo root; the framework preset becomes "Other" from `vercel.json`.
+      Deploy. The site is then at `https://<project>.vercel.app`.
+- [ ] Node version: Project → Settings → **Node.js Version 22.x or newer** (the build
+      imports a `.ts` file and fails with a clear message on older Node).
+- Every push to `main` touching `site/`, `legal.ts`, the icon or `vercel.json` redeploys
+  (other pushes are skipped by `ignoreCommand`); branches get preview URLs.
+- [ ] Domain later: Project → Settings → **Domains** → add it, then set the DNS records
+      Vercel shows (at Cloudflare: DNS only, grey cloud).
+- Local preview: `node site/build.mjs && npx serve site/dist` (clean URLs like `/privacy`
+  need a server; opening the file directly breaks those links).
+- The "Download" buttons point at GitHub Releases; switch `DOWNLOAD_URL` in
+  `site/build.mjs` to the Play Store link at launch.
 
 ## 7. Rollback
 

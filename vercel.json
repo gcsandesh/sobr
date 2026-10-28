@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node site/build.mjs",
+  "outputDirectory": "site/dist",
+  "installCommand": "echo 'site needs no dependencies'",
+  "framework": null,
+  "cleanUrls": true,
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- site apps/mobile/src/content/legal.ts apps/mobile/assets/brand/icon.svg vercel.json"
+}

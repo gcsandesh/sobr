@@ -52,8 +52,8 @@ Use **contact@** (for users and Google) and **no-reply@** (for app emails).
 1. Domain → set up the public pages and email on it.
 2. ~~Signed Play Store builds~~: done, `android-aab.yml` (DEPLOY.md §5). Owner makes the
    upload keystore and adds four secrets.
-3. ~~Public privacy policy + account-deletion page~~: done, GitHub Pages (DEPLOY.md §6b).
-   Owner turns on Pages once. Moves to the domain with a CNAME later.
+3. ~~Website: marketing page + privacy, terms, account deletion~~: done, on Vercel
+   (DEPLOY.md §6b). Owner imports the repo into Vercel once; the domain attaches there.
 4. Custom SMTP (Resend), then turn email confirmation back on.
 5. ~~Store listing text~~: done, STORE_LISTING.md. Screenshots still to take from a real
    account.

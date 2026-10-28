@@ -48,7 +48,8 @@ Data safety answers below change in the same PR.
 **Category:** Health & Fitness
 **Tags:** Habit tracker, Health, Self-improvement
 **Contact email:** contact@<domain> (once the domain exists)
-**Privacy policy URL:** https://gcsandesh.github.io/sobr/privacy.html (later https://<domain>/privacy.html)
+**Website:** https://<project>.vercel.app (later https://<domain>)
+**Privacy policy URL:** https://<project>.vercel.app/privacy (later https://<domain>/privacy)
 
 ### Graphics
 - App icon 512×512 PNG: export `apps/mobile/assets/brand/icon.svg` at 512.
@@ -71,7 +72,7 @@ Data safety answers below change in the same PR.
 | Government app | No |
 | Financial features | None |
 | Data safety | Below |
-| Account deletion | URL: https://gcsandesh.github.io/sobr/delete-account.html. In-app path: Settings → Your account → Delete account. |
+| Account deletion | URL: https://<project>.vercel.app/delete-account (later https://<domain>/delete-account). In-app path: Settings → Your account → Delete account. |
 
 ## Data safety form
 

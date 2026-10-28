@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sobr · Clear days, counted</title>
+<meta name="description" content="sobr is a calm companion for drinking less, or not at all. One tap a day, a streak that grows into a tree, and no judgement on the days that slip.">
+<meta name="theme-color" content="#E4F4EE">
+<meta property="og:title" content="sobr · Clear days, counted">
+<meta property="og:description" content="A calm companion for drinking less, or not at all. One tap a day, a streak that grows into a tree.">
+<meta property="og:type" content="website">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="home.css">
+<script>document.documentElement.classList.remove('no-js')</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="./"><img src="icon.svg" alt="">sobr</a>
+    <nav aria-label="Main">
+      <a href="#grow">The tree</a>
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="{{DOWNLOAD_URL}}">Get the app</a>
+  </div>
+</header>
+
+<main>
+<!-- ── Hero ─────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div>
+      <span class="eyebrow rise" style="--i:0"><span class="dot"></span>A calm sobriety tracker</span>
+      <h1 class="rise" style="--i:1">Clear days, <em>counted.</em></h1>
+      <p class="lede rise" style="--i:2">For drinking less, or not at all. One tap a day, a streak that grows into a tree, and no judgement on the days that slip.</p>
+      <div class="cta-row rise" style="--i:3">
+        <a class="btn btn-primary" href="{{DOWNLOAD_URL}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download for Android
+        </a>
+        <a class="btn btn-ghost" href="#grow">See the tree grow</a>
+      </div>
+      <p class="cta-note rise" style="--i:4">Free, with no ads. Google Play listing coming soon.</p>
+    </div>
+
+    <div class="phone-wrap rise" style="--i:2" aria-label="The sobr Home screen, showing a 23-day streak">
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="s-head">
+            <div><small>sobr</small><b>Good evening</b></div>
+            <span class="s-pill"><svg class="flame" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#F97316"/></svg>23</span>
+          </div>
+          <div class="s-hero">
+            <div class="s-row">
+              <div>
+                <small>Current streak</small>
+                <div class="s-streak">
+                  <svg class="flame" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#F97316"/></linearGradient></defs><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="url(#fl)"/><path d="M12 13c.5 2 3 3 3 5.5a3 3 0 1 1-6 0c0-1.5 1-2.5 1.5-3 0 1 .5 1.5 1 1.5 0-2-.5-3 .5-4z" fill="#FFEDD5"/></svg>
+                  <b>23</b><span>days</span>
+                </div>
+                <span class="s-stage">Young tree</span>
+              </div>
+              <div data-tree="23" style="width:96px;height:96px"></div>
+            </div>
+            <div class="s-bar"><i></i></div>
+          </div>
+          <div class="s-stats">
+            <div style="background:var(--flame-soft);color:var(--flame-deep)"><b>31</b>best</div>
+            <div style="background:var(--win-soft);color:var(--win)"><b>64</b>clear days</div>
+            <div style="background:var(--frozen-soft);color:var(--frozen)"><b>2/3</b>freezes</div>
+          </div>
+          <div class="s-card">
+            <div class="t">October</div>
+            <div class="s-cal" aria-hidden="true">
+              <i></i><i></i><i></i><i class="w"></i><i class="w"></i><i class="s"></i><i class="w"></i>
+              <i class="w"></i><i class="w"></i><i class="w"></i><i class="f"></i><i class="w"></i><i class="w"></i><i class="w"></i>
+              <i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i>
+              <i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i><i class="w"></i>
+              <i class="w"></i><i class="w"></i><i class="w"></i><i class="today"></i><i></i><i></i><i></i>
+            </div>
+          </div>
+          <div class="s-tabs" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <div class="float-chip chip-a"><span class="ico" style="background:var(--win-soft)">🌿</span><div>It was a clear day<small>one tap, done</small></div></div>
+      <div class="float-chip chip-b"><span class="ico" style="background:var(--frozen-soft)">❄️</span><div>Freeze earned<small>a week in a row</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── The tree ─────────────────────────────────────────────────────── -->
+<section class="section grow" id="grow">
+  <div class="container">
+    <div class="kicker reveal">The tree</div>
+    <h2 class="reveal" style="--i:1">Every clear day <em>grows something.</em></h2>
+    <p class="sub reveal" style="--i:2">Your streak is a tree. It starts as a seed and grows with each clear day in a row. Drag the slider and watch it.</p>
+
+    <div class="grow-stage reveal" style="--i:1">
+      <div class="tree-box" id="tree-box" role="img" aria-label="The sobr tree"></div>
+      <div class="grow-read">
+        <div class="day"><svg class="flame" width="54" height="54" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="fl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#F97316"/></linearGradient></defs><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="url(#fl2)"/></svg><b id="day-num">0</b><span id="day-word">days</span></div>
+        <div class="stage" id="stage-name">Seed</div>
+        <p class="blurb" id="stage-blurb">Every forest starts here. Plant your first win.</p>
+        <label class="kicker" for="days" style="display:block;margin-bottom:12px">Clear days in a row</label>
+        <input class="slider" id="days" type="range" min="0" max="60" value="0" step="1">
+        <div class="ticks" id="ticks">
+          <button type="button" data-d="0">0</button><button type="button" data-d="3">3</button><button type="button" data-d="7">7</button><button type="button" data-d="14">14</button><button type="button" data-d="30">30</button><button type="button" data-d="60">60</button>
+        </div>
+        <div class="grow-foot"><span aria-hidden="true">🌲</span><span><b>A slip doesn't take it away.</b> When a streak ends, its tree is planted in your forest and a new seed goes in. Everything you grew stays grown.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ─────────────────────────────────────────────────── -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="kicker reveal">How it works</div>
+    <h2 class="reveal" style="--i:1">A minute a day. <em>That's all.</em></h2>
+    <div class="steps">
+      <div class="step reveal" style="--i:0">
+        <div class="ico" style="background:var(--accent-soft)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#1F6F6B" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="#1F6F6B" stroke-width="2"/><circle cx="12" cy="12" r="1.6" fill="#1F6F6B"/></svg></div>
+        <h3>Choose your rule</h3>
+        <p>No drinks at all, staying within your own daily limit, or simply how the day felt. You decide what counts as a win.</p>
+      </div>
+      <div class="step reveal" style="--i:1">
+        <div class="ico" style="background:var(--win-soft)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="#457029" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Check in each day</h3>
+        <p>Tap "It was a clear day", or log what you had from a list of everyday drinks. Add a note or a photo if you like.</p>
+      </div>
+      <div class="step reveal" style="--i:2">
+        <div class="ico" style="background:var(--flame-soft)"><svg class="flame" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#F97316"/></svg></div>
+        <h3>Watch it grow</h3>
+        <p>Your streak burns brighter and your tree grows. Milestones mark the first day, the first week, the first month, and on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ─────────────────────────────────────────────────────── -->
+<section class="section" id="features" style="padding-top:0">
+  <div class="container">
+    <div class="kicker reveal">Features</div>
+    <h2 class="reveal" style="--i:1">Small things that <em>keep you going.</em></h2>
+    <div class="bento">
+      <div class="tile t-wide t-flame reveal">
+        <h3>A streak you can see</h3>
+        <p>The flame grows with you, from a small ember to a full blaze, so you always know how far you've come.</p>
+        <div class="tiers" aria-hidden="true">
+          <div><svg class="flame" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#FDBA74"/></svg>ember</div>
+          <div><svg class="flame" width="32" height="32" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#FB923C"/></svg>spark</div>
+          <div><svg class="flame" width="44" height="44" viewBox="0 0 24 24"><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="#F97316"/></svg>flame</div>
+          <div><svg class="flame" width="58" height="58" viewBox="0 0 24 24"><defs><linearGradient id="fl3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBBF24"/><stop offset="1" stop-color="#C2410C"/></linearGradient></defs><path d="M12 2c1 4 6 6 6 12a6 6 0 1 1-12 0c0-3 2-5 3-6 0 2 1 3 2 3 0-4-1-6 1-9z" fill="url(#fl3)"/></svg>blaze</div>
+        </div>
+      </div>
+      <div class="tile t-narrow t-frost reveal" style="--i:1">
+        <span class="badge" style="background:#fff">❄️</span>
+        <h3>Freezes</h3>
+        <p>Every 7 days in a row earns a freeze that protects your streak through one hard day. Bank up to three.</p>
+        <span class="snow" aria-hidden="true">❄</span>
+      </div>
+      <div class="tile t-half t-steady reveal">
+        <div class="copy">
+          <span class="badge" style="background:rgba(255,255,255,.14)">✦</span>
+          <h3>Steady, for the hard moments</h3>
+          <p>Craving something? One tap opens a minute of slow, guided breathing. Helplines are a tap away too.</p>
+        </div>
+        <div class="breath" aria-hidden="true"></div>
+      </div>
+      <div class="tile t-half reveal" style="--i:1">
+        <span class="badge" style="background:var(--win-soft)">📈</span>
+        <h3>Progress that adds up</h3>
+        <p>Clear days, units and money saved, by week and month.</p>
+        <div class="bars" aria-hidden="true"><i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:70%"></i><i style="height:66%"></i><i class="hi" style="height:88%"></i><i class="hi" style="height:100%"></i></div>
+      </div>
+      <div class="tile t-narrow reveal">
+        <span class="badge" style="background:var(--accent-soft)">📅</span>
+        <h3>Your days, at a glance</h3>
+        <p>A calendar of every day, with notes and photos to remember how it went.</p>
+      </div>
+      <div class="tile t-narrow reveal" style="--i:1">
+        <span class="badge" style="background:var(--flame-soft)">🔔</span>
+        <h3>Gentle reminders</h3>
+        <p>A daily check-in nudge and a weekly summary, only if you want them.</p>
+      </div>
+      <div class="tile t-narrow reveal" style="--i:2">
+        <span class="badge" style="background:var(--raised)">⏸️</span>
+        <h3>Take a break</h3>
+        <p>Step away without losing anything. Reminders pause until you're back.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Manifesto ────────────────────────────────────────────────────── -->
+<section class="section band">
+  <div class="container">
+    <blockquote class="reveal">A slip is a slip. <em>Never a failure.</em></blockquote>
+    <p class="attrib reveal" style="--i:1">sobr never shames, never scolds, and never fills your screen with drinks. It counts the good days and keeps them, because that's what builds the next one.</p>
+  </div>
+</section>
+
+<!-- ── Privacy ──────────────────────────────────────────────────────── -->
+<section class="section" id="privacy">
+  <div class="container privacy-grid">
+    <div>
+      <div class="kicker reveal">Privacy</div>
+      <h2 class="reveal" style="--i:1">Yours, and <em>only yours.</em></h2>
+      <p class="sub reveal" style="--i:2">What you log is about as personal as it gets. So it stays private to your account, protected at the database level, and never used for anything but showing it back to you.</p>
+      <p class="reveal" style="--i:3;margin-top:24px"><a href="/privacy">Read the privacy policy →</a></p>
+    </div>
+    <ul class="promises">
+      <li class="reveal"><span class="tick">✓</span><div><b>No ads. No analytics.</b><span>No tracking SDKs in the app, and your data is never sold.</span></div></li>
+      <li class="reveal" style="--i:1"><span class="tick">✓</span><div><b>Locked to your account</b><span>Row-level security means your account can only ever read its own data. Photos sit in private storage.</span></div></li>
+      <li class="reveal" style="--i:2"><span class="tick">✓</span><div><b>Take it with you</b><span>Export every day as a spreadsheet, or download a full backup any time.</span></div></li>
+      <li class="reveal" style="--i:3"><span class="tick">✓</span><div><b>Delete means delete</b><span>Remove your account in the app and everything is erased within 30 days. <a href="/delete-account">How it works</a>.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── FAQ ──────────────────────────────────────────────────────────── -->
+<section class="section" id="faq" style="padding-top:0">
+  <div class="container">
+    <div class="kicker reveal">FAQ</div>
+    <h2 class="reveal" style="--i:1">Questions, <em>answered.</em></h2>
+    <div class="faq reveal" style="--i:2">
+      <details><summary>Is sobr only for quitting completely?</summary><p>No. You choose what counts as a win: no drinks at all, staying within a daily limit you set, or marking each day yourself. Change it any time in Settings.</p></details>
+      <details><summary>What happens if I slip?</summary><p>The day is marked as a slip, never a failure. If you have a freeze banked, it can protect your streak. If the streak ends, its tree is planted in your forest and a new seed goes in. Your clear days, all-time, never go down.</p></details>
+      <details><summary>Does it cost anything?</summary><p>sobr is free to use, with no ads.</p></details>
+      <details><summary>Is there an iPhone version?</summary><p>Android comes first. iPhone is planned once the Android app is settled.</p></details>
+      <details><summary>Is this medical advice?</summary><p>No. sobr is a habit companion, not a treatment. If you drink heavily and want to stop, talk to a doctor first, as stopping suddenly can be risky. If you're in crisis, contact local emergency services.</p></details>
+      <details><summary>How do I delete my account?</summary><p>In the app: Settings → Your account → Delete account. You can download a backup first. Without the app, see <a href="/delete-account">delete your account</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ── Final CTA ────────────────────────────────────────────────────── -->
+<section class="final">
+  <div class="container">
+    <img class="reveal" src="icon.svg" alt="sobr app icon">
+    <h2 class="reveal" style="--i:1;font:900 clamp(34px,5.4vw,60px)/1.02 var(--display);letter-spacing:-.03em;margin:0 auto;max-width:12em">Plant your first <em style="font-style:italic;font-weight:400;color:var(--accent)">clear day.</em></h2>
+    <div class="cta-row reveal" style="--i:2">
+      <a class="btn btn-primary" href="{{DOWNLOAD_URL}}">Download for Android</a>
+    </div>
+  </div>
+</section>
+</main>
+
+{{FOOTER}}
+
+<script src="main.js" defer></script>
+</body>
+</html>
