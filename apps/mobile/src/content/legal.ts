@@ -7,6 +7,12 @@
 
 export const LEGAL_UPDATED = '21 October 2026';
 export const LEGAL_CONTACT_URL = 'https://github.com/gcsandesh/sobr/issues';
+/**
+ * Support address for privacy and deletion requests (e.g. contact@<domain>).
+ * null until the domain exists; the public deletion page then falls back to
+ * LEGAL_CONTACT_URL. Google Play expects an email here before launch.
+ */
+export const LEGAL_CONTACT_EMAIL: string | null = null;
 
 export type LegalSection = { heading: string; body: string[] };
 

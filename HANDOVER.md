@@ -242,6 +242,17 @@ Supabase account only has an unrelated project), so schema changes must be hande
     and anything pinned to the bottom of a tab screen (Home's + button) must sit at
     `tabBarSpace + n`, not a fixed offset. Cards have no border by default: they lift off the
     canvas with a soft shadow; pass a `border-*` color class to `Card` to get an edge.
+21. **`legal.ts` also feeds the website.** `site/build.mjs` builds the Vercel site
+    (`vercel.json`): the marketing page from `site/src/` plus privacy, terms and deletion
+    pages rendered from `legal.ts`, so a policy edit ships to the web on merge. It needs
+    Node 22.18+ (it imports a `.ts` file). The site's tree is a JS port of `Tree.tsx` in
+    `site/src/main.js`; keep them in step. Play builds come from `android-aab.yml`
+    (upload-key signed); the sideload APK stays debug-signed. See DEPLOY.md §5 and §6b,
+    and STORE_LISTING.md.
+22. **Branch APK prereleases skip themselves when a branch changes workflow files.** GitHub
+    won't let `GITHUB_TOKEN` create the release tag on a commit whose workflows differ from
+    main (403, despite `contents: write`). The publish step is `continue-on-error` on branches
+    only; grab the APK from the run's artifacts instead. Main always publishes.
 
 ---
 

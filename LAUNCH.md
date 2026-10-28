@@ -50,9 +50,12 @@ Use **contact@** (for users and Google) and **no-reply@** (for app emails).
 
 ## 4. Engineering (next session)
 1. Domain → set up the public pages and email on it.
-2. EAS signing for Play Store builds (AAB with a real upload key).
-3. Public privacy policy + account-deletion request page, hosted free on the domain.
+2. ~~Signed Play Store builds~~: done, `android-aab.yml` (DEPLOY.md §5). Owner makes the
+   upload keystore and adds four secrets.
+3. ~~Website: marketing page + privacy, terms, account deletion~~: done, on Vercel
+   (DEPLOY.md §6b). Owner imports the repo into Vercel once; the domain attaches there.
 4. Custom SMTP (Resend), then turn email confirmation back on.
-5. Store listing text and screenshots.
+5. ~~Store listing text~~: done, STORE_LISTING.md. Screenshots still to take from a real
+   account.
 
 **From the owner:** run 0007, buy the domain, create the Play developer account.

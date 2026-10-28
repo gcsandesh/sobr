@@ -114,6 +114,13 @@ jobs:
 
       - name: Publish GitHub Release
         if: steps.cfg.outputs.configured == 'true'
+        # A branch build that changes .github/workflows can't publish: GitHub
+        # refuses to let GITHUB_TOKEN create a tag that would bring in workflow
+        # changes main doesn't have yet (403 "Resource not accessible by
+        # integration", even with contents: write). Branch prereleases are a
+        # convenience (the APK is still a workflow artifact), so they may fail;
+        # main's release must not.
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-v${{ steps.apk.outputs.version }}-${{ github.run_number }}
