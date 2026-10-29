@@ -134,7 +134,7 @@ ${
 }
 </div>
 <h2>What gets deleted, and when</h2>
-<p><strong>Right away:</strong> every photo you attached to a day.</p>
+<p><strong>Right away:</strong> every photo you attached to a day, and your profile photo.</p>
 <p><strong>After 30 days:</strong> your account, email address, display name, settings, and every logged day, drink and note are permanently erased. Signing in during those 30 days lets you cancel and restore everything.</p>
 <p><strong>What we keep:</strong> nothing. No copy of your data is retained after the 30 days.</p>
 <p>If you only want a pause, use <strong>Take a break</strong> on the same screen instead: reminders and emails stop and nothing is deleted.</p>`,

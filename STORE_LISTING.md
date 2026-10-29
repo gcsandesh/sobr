@@ -53,7 +53,7 @@ Data safety answers below change in the same PR.
 
 ### Graphics
 - App icon 512×512 PNG: export `apps/mobile/assets/brand/icon.svg` at 512.
-- Feature graphic 1024×500: teal gradient, the chip icon, "Clear days, counted."
+- Feature graphic 1024×500: teal gradient, the sprouting-check logo, "Clear days, counted."
 - Phone screenshots (2 to 8, 9:16): Home with a streak, the day logger, the
   calendar, Progress, the forest on Profile, Steady. Use a real account with a
   few weeks of data; avoid showing drink-heavy days first.

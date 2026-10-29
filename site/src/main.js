@@ -54,7 +54,7 @@
           : '') +
         c.map(([cx, cy, r]) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${id})"/>`).join('') +
         (c[0]
-          ? `<circle cx="${c[0][0] - c[0][2] * 0.3}" cy="${c[0][1] - c[0][2] * 0.3}" r="${c[0][2] * 0.28}" fill="#CCDBB2" opacity="0.5"/>`
+          ? `<circle cx="${c[0][0] - c[0][2] * 0.3}" cy="${c[0][1] - c[0][2] * 0.3}" r="${c[0][2] * 0.28}" fill="#D7EBB5" opacity="0.5"/>`
           : '');
     }
     const ground = i > 0
@@ -62,7 +62,7 @@
       : '';
     return (
       `<svg viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="${id}" x1="100" y1="40" x2="100" y2="140" gradientUnits="userSpaceOnUse">` +
-      `<stop offset="0" stop-color="#AEBF92"/><stop offset="1" stop-color="#457029"/></linearGradient></defs>` +
+      `<stop offset="0" stop-color="#9CCB6B"/><stop offset="1" stop-color="#3E7A35"/></linearGradient></defs>` +
       `${ground}<g class="breathe">${body}</g></svg>`
     );
   }

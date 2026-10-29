@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { HomeLeafIcon, LockIcon, LogOutIcon, TrashIcon, UserIcon } from '../src/components/icons';
 import {
-  Avatar,
   Button,
   Card,
   Divider,
@@ -20,6 +19,7 @@ import { takeBreak } from '../src/lib/lifecycle';
 import { authErrorMessage, errorMessage } from '../src/lib/errorMessage';
 import { haptics } from '../src/lib/haptics';
 import { colors } from '../src/theme';
+import { ProfilePhoto } from '../src/components/ProfilePhoto';
 
 /**
  * Everything about *who* you are, in one place: your name, your password, and
@@ -83,7 +83,7 @@ export default function Account() {
       <Stack.Screen options={{ title: 'Account' }} />
       <Screen scroll edges={['bottom']}>
         <View className="items-center mt-4 mb-8">
-          <Avatar name={greetingName} size={72} />
+          <ProfilePhoto size={80} />
           <Txt variant="heading" className="mt-3">
             {greetingName ?? 'You'}
           </Txt>

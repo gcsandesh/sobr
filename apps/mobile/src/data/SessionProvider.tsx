@@ -2,10 +2,13 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useState } fr
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { nameFromEmail } from '../lib/account';
+import { DEMO_DATA, DEMO_USER_ID } from './demo';
 
 type SessionContextValue = {
   session: Session | null;
   userId: string | null;
+  /** Storage path of the profile photo (auth user_metadata.avatar_path). */
+  avatarPath: string | null;
   email: string | null;
   /** The name the user chose, or null if they never set one. */
   displayName: string | null;
@@ -41,12 +44,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const email = session?.user.email ?? null;
     const raw = session?.user.user_metadata?.display_name;
     const displayName = typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+    const rawAvatar = session?.user.user_metadata?.avatar_path;
+    const avatarPath = typeof rawAvatar === 'string' && rawAvatar ? rawAvatar : null;
     return {
       session,
-      userId: session?.user.id ?? null,
-      email,
-      displayName,
-      greetingName: displayName ?? nameFromEmail(email),
+      // demo mode (dev only) runs signed out, so it gets a stand-in identity
+      userId: session?.user.id ?? (DEMO_DATA ? DEMO_USER_ID : null),
+      email: email ?? (DEMO_DATA ? 'alex@example.com' : null),
+      displayName: displayName ?? (DEMO_DATA ? 'Alex' : null),
+      greetingName: displayName ?? (DEMO_DATA ? 'Alex' : nameFromEmail(email)),
+      avatarPath,
       initializing,
       signOut: async () => {
         await supabase.auth.signOut();

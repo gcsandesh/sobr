@@ -17,7 +17,7 @@ import {
   Txt,
 } from '../../src/components/ui';
 import { useAllEntries, useHomeStats, useSettings, useTimeZone } from '../../src/data/hooks';
-import { colors } from '../../src/theme';
+import { colors, milestoneHues, spectrum, type SpectrumColor } from '../../src/theme';
 import { useRefresh } from '../../src/data/useRefresh';
 
 const WEEKDAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -83,18 +83,22 @@ export default function Progress() {
 
           <SectionHeader title="This month" caption={`~${Math.min(100, winRate)}% clear`} />
           <View className="flex-row flex-wrap gap-3 mb-6">
-            <Stat label="Clear wins" value={String(m.wins)} />
-            <Stat label="Units" value={String(roundUnits(m.totalUnits))} />
-            <Stat label="Spent" value={formatCurrency(m.totalSpent, currency)} />
-            <Stat label="Avg units / day out" value={String(roundUnits(m.avgUnitsPerDrinkingDay))} />
+            <Stat label="Clear wins" value={String(m.wins)} hue={spectrum.lime} />
+            <Stat label="Units" value={String(roundUnits(m.totalUnits))} hue={spectrum.sky} />
+            <Stat label="Spent" value={formatCurrency(m.totalSpent, currency)} hue={spectrum.amber} />
+            <Stat
+              label="Avg units / day out"
+              value={String(roundUnits(m.avgUnitsPerDrinkingDay))}
+              hue={spectrum.violet}
+            />
           </View>
 
           <SectionHeader title="All time" />
           <View className="flex-row flex-wrap gap-3 mb-6">
-            <Stat label="Longest streak" value={String(a.longestStreak)} accent />
-            <Stat label="Total clear days" value={String(a.totalWinDays)} accent />
-            <Stat label="Total units" value={String(roundUnits(a.totalUnits))} />
-            <Stat label="Total spent" value={formatCurrency(a.totalSpent, currency)} />
+            <Stat label="Longest streak" value={String(a.longestStreak)} hue={spectrum.rose} />
+            <Stat label="Total clear days" value={String(a.totalWinDays)} hue={spectrum.teal} />
+            <Stat label="Total units" value={String(roundUnits(a.totalUnits))} hue={spectrum.indigo} />
+            <Stat label="Total spent" value={formatCurrency(a.totalSpent, currency)} hue={spectrum.amber} />
           </View>
         </>
       )}
@@ -137,59 +141,78 @@ function Milestones({ totalWinDays }: { totalWinDays: number }) {
       />
       <Card>
         {items.map(({ milestone, reached }, i) => {
-          // the next unreached milestone gets an accent ring — a flat beige list
-          // gives no sense of where you are on the road
+          // each milestone has its own hue along the spectrum, so the road
+          // reads as a journey rather than one long green list
+          const hue = milestoneHues[i % milestoneHues.length]!;
           const isNext = !reached && milestone.days === next?.days;
+          const isLast = i === items.length - 1;
           return (
-            <Row key={milestone.days} className={`items-center ${i > 0 ? 'mt-3' : ''}`}>
-              <View
-                className="items-center justify-center rounded-full"
-                style={{
-                  width: 34,
-                  height: 34,
-                  backgroundColor: reached
-                    ? colors.accent
-                    : isNext
-                      ? colors.accentBg
-                      : colors.border,
-                  borderWidth: isNext ? 2 : 0,
-                  borderColor: colors.accent,
-                }}
-              >
-                <Txt
-                  variant="caption"
+            <View key={milestone.days} className="flex-row">
+              <View className="items-center mr-3" style={{ width: 40 }}>
+                <View
+                  className="items-center justify-center"
                   style={{
-                    color: reached ? '#F4FAF8' : isNext ? colors.accent : colors.textMuted,
-                    fontWeight: '700',
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    backgroundColor: reached ? hue.solid : isNext ? hue.bg : colors.bg,
+                    borderWidth: isNext ? 2 : reached ? 0 : 1,
+                    borderColor: isNext ? hue.solid : colors.border,
                   }}
                 >
-                  {milestone.days}
-                </Txt>
+                  <Txt
+                    variant="caption"
+                    style={{
+                      color: reached ? '#FFFFFF' : isNext ? hue.fg : colors.textFaint,
+                      fontFamily: 'Figtree_700Bold',
+                      fontSize: milestone.days >= 100 ? 11 : 13,
+                    }}
+                  >
+                    {milestone.days}
+                  </Txt>
+                </View>
+                {!isLast && (
+                  <View
+                    style={{
+                      flex: 1,
+                      minHeight: 10,
+                      width: 2,
+                      marginVertical: 3,
+                      borderRadius: 1,
+                      backgroundColor: reached ? hue.solid : colors.border,
+                      opacity: reached ? 0.45 : 1,
+                    }}
+                  />
+                )}
               </View>
-              <View className="flex-1 ml-3">
-                <Txt
-                  variant="body"
-                  className={reached ? '' : isNext ? 'font-semibold' : 'text-text-muted'}
-                  style={isNext ? { color: colors.accent } : undefined}
-                >
-                  {milestone.label}
-                </Txt>
+              <View className={`flex-1 pt-2 ${isLast ? '' : 'pb-3'}`}>
+                <Row className="justify-between">
+                  <Txt
+                    variant="body"
+                    className={reached || isNext ? 'font-semibold' : 'text-text-muted'}
+                    style={isNext ? { color: hue.fg } : undefined}
+                  >
+                    {milestone.label}
+                  </Txt>
+                  {reached ? (
+                    <View className="px-2 py-0.5 rounded-md" style={{ backgroundColor: hue.bg }}>
+                      <Txt variant="caption" style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}>
+                        reached
+                      </Txt>
+                    </View>
+                  ) : isNext ? (
+                    <Txt variant="caption" style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}>
+                      next
+                    </Txt>
+                  ) : null}
+                </Row>
                 {(reached || isNext) && (
                   <Txt variant="caption" className="mt-0.5">
                     {milestone.blurb}
                   </Txt>
                 )}
               </View>
-              {reached ? (
-                <Txt variant="caption" className="text-accent">
-                  reached
-                </Txt>
-              ) : isNext ? (
-                <Txt variant="caption" style={{ color: colors.accent }}>
-                  next
-                </Txt>
-              ) : null}
-            </Row>
+            </View>
           );
         })}
       </Card>
@@ -197,10 +220,20 @@ function Milestones({ totalWinDays }: { totalWinDays: number }) {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value, hue }: { label: string; value: string; hue: SpectrumColor }) {
   return (
     <Card className="flex-1 min-w-[45%]">
-      <Txt variant="displaySm" className={accent ? 'text-accent' : ''}>
+      {/* a thin hue bar on top tells the cards apart at a glance */}
+      <View
+        style={{
+          width: 28,
+          height: 4,
+          borderRadius: 2,
+          backgroundColor: hue.solid,
+          marginBottom: 10,
+        }}
+      />
+      <Txt variant="displaySm" style={{ color: hue.fg }}>
         {value}
       </Txt>
       <Txt variant="label" className="mt-1">
@@ -222,8 +255,8 @@ function UnitsBars({ data }: { data: { date: string; units: number }[] }) {
       <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}>
         <Defs>
           <LinearGradient id="unitsBar" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={colors.accentBright} stopOpacity={1} />
-            <Stop offset="1" stopColor={colors.accent} stopOpacity={0.85} />
+            <Stop offset="0" stopColor={spectrum.sky.solid} stopOpacity={1} />
+            <Stop offset="1" stopColor={spectrum.indigo.solid} stopOpacity={0.9} />
           </LinearGradient>
         </Defs>
         {/* baseline: without it, a run of clear days renders as blank space */}
@@ -241,8 +274,8 @@ function UnitsBars({ data }: { data: { date: string; units: number }[] }) {
               rx={barW / 2.4}
               // a clear day is a *good* day — show it as a small green tick,
               // never as an absence
-              fill={isZero ? colors.win : 'url(#unitsBar)'}
-              opacity={isZero ? 0.35 : 1}
+              fill={isZero ? spectrum.lime.solid : 'url(#unitsBar)'}
+              opacity={isZero ? 0.55 : 1}
             />
           );
         })}

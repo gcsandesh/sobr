@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, Keyframe } from 'react-native-reanimated';
 import { HomeLeafIcon as LeafIcon, TrashIcon } from './icons';
 import { Txt } from './ui';
 import { colors } from '../theme';
@@ -25,6 +25,18 @@ export type ConfirmRequest = {
 };
 
 let present: ((req: ConfirmRequest) => void) | null = null;
+
+// A short, quiet settle: fade in while rising a few points and easing from
+// 97% to full size. No spring, no overshoot; a destructive question should feel
+// steady, not bouncy.
+const settleIn = new Keyframe({
+  0: { opacity: 0, transform: [{ translateY: 10 }, { scale: 0.97 }] },
+  100: {
+    opacity: 1,
+    transform: [{ translateY: 0 }, { scale: 1 }],
+    easing: Easing.out(Easing.cubic),
+  },
+}).duration(200);
 
 /** Show the dialog. Returns false when no host is mounted (caller falls back). */
 export function presentConfirm(req: ConfirmRequest): boolean {
@@ -56,49 +68,51 @@ export function ConfirmHost() {
       {req ? (
         // plain styles: className doesn't reach reanimated's Animated.View
         <Animated.View
-          entering={FadeIn.duration(160)}
+          entering={FadeIn.duration(180)}
           style={{
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
             paddingHorizontal: 24,
-            backgroundColor: 'rgba(22,33,31,0.5)',
+            backgroundColor: 'rgba(22,33,31,0.42)',
           }}
         >
           <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Cancel" />
           <Animated.View
-            entering={ZoomIn.springify().damping(16)}
+            entering={settleIn}
             accessibilityRole="alert"
             style={{
               width: '100%',
               maxWidth: 380,
-              borderRadius: 20,
+              borderRadius: 18,
               padding: 22,
               backgroundColor: colors.card,
               shadowColor: '#16211F',
-              shadowOpacity: 0.25,
-              shadowRadius: 30,
+              shadowOpacity: 0.18,
+              shadowRadius: 28,
               shadowOffset: { width: 0, height: 14 },
               elevation: 16,
             }}
           >
             <View
-              className="items-center justify-center mb-4"
+              className="items-center justify-center mb-3"
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
+                width: 40,
+                height: 40,
+                borderRadius: 20,
                 backgroundColor: calm ? colors.accentBg : colors.slipBg,
               }}
             >
               {calm ? (
-                <LeafIcon color={colors.accent} size={24} />
+                <LeafIcon color={colors.accent} size={20} />
               ) : (
-                <TrashIcon color={colors.slip} size={24} />
+                <TrashIcon color={colors.slip} size={20} />
               )}
             </View>
-            <Txt variant="title">{req.title}</Txt>
-            <Txt variant="bodyMuted" className="mt-2">
+            <Txt variant="heading" style={{ fontSize: 19 }}>
+              {req.title}
+            </Txt>
+            <Txt variant="bodyMuted" className="mt-1.5" style={{ fontSize: 15, lineHeight: 22 }}>
               {req.message}
             </Txt>
 
@@ -173,19 +187,18 @@ function DialogButton({
       accessibilityState={{ disabled }}
       style={({ pressed }) => ({
         flex: 1,
-        minHeight: 50,
-        borderRadius: 14,
+        minHeight: 46,
+        borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: danger ? colors.slip : calm ? colors.accent : colors.cardRaised,
         opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
-        transform: [{ scale: pressed && !disabled ? 0.97 : 1 }],
       })}
     >
       <Text
         style={{
-          fontFamily: 'Figtree_700Bold',
-          fontSize: 15.5,
+          fontFamily: 'Figtree_600SemiBold',
+          fontSize: 15,
           color: danger || calm ? '#FFFFFF' : colors.text,
         }}
       >

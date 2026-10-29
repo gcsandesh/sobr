@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, useWindowDimensions } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChartIcon, GearIcon, HomeLeafIcon, UserIcon } from '../../src/components/icons';
@@ -13,6 +13,11 @@ export default function TabsLayout() {
   // above the device's bottom inset (gesture pill or the 3-button nav bar).
   // It sits over the content, so screens get its height via TabBarSpaceContext.
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  // a compact, centered pill: never wider than it needs to be, so it reads as
+  // a floating control rather than a stretched strip on wide screens
+  const barWidth = Math.min(width - 40, 340);
+  const side = (width - barWidth) / 2;
   const gap = Math.max(12, insets.bottom + 4);
   const space = BAR_HEIGHT + gap + 12;
 
@@ -27,8 +32,9 @@ export default function TabsLayout() {
           tabBarInactiveTintColor: colors.textFaint,
           tabBarStyle: {
             position: 'absolute',
-            left: 16,
-            right: 16,
+            left: side,
+            right: side,
+            width: barWidth,
             bottom: gap,
             height: BAR_HEIGHT,
             paddingTop: 0,
@@ -115,7 +121,7 @@ function TabIcon({ focused, children }: { focused: boolean; children: ReactNode 
   return (
     <View
       style={{
-        width: 52,
+        width: 48,
         height: 28,
         borderRadius: 14,
         alignItems: 'center',

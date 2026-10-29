@@ -31,8 +31,11 @@ export async function resumeAccount(userId: string): Promise<void> {
 }
 
 export async function requestAccountDeletion(userId: string): Promise<void> {
-  // Photos first: storage files can't be removed by the server's SQL purge.
+  // Photos first (day photos and the profile photo): storage files can't be
+  // removed by the server's SQL purge.
   await api.deleteAllDayPhotos(userId);
+  await api.removeAllAvatarFiles(userId);
+  await api.removeAvatar(null);
   await api.updateSettings(userId, { deletionRequestedAt: new Date().toISOString() });
   await cancelAllNotifications();
   await supabase.auth.signOut();

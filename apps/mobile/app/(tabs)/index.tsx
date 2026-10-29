@@ -12,9 +12,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {
-  DRINK_PRESETS,
-  PRESET_GROUPS,
-  PRESET_GROUP_LABELS,
   growthMetaForKey,
   type DrinkPreset,
 } from '@sobr/config';
@@ -36,7 +33,7 @@ import {
   SparkIcon,
 } from '../../src/components/icons';
 import { FlameIcon, LiveFlame, StreakPill } from '../../src/components/StreakFlame';
-import { PresetChip } from '../../src/components/PresetChip';
+import { PresetPicker } from '../../src/components/PresetPicker';
 import { WinBurst } from '../../src/components/WinBurst';
 import {
   Button,
@@ -620,23 +617,9 @@ export default function Today() {
             />
           </View>
         )}
-        {PRESET_GROUPS.map((group) => (
-          <View key={group} className="mb-4">
-            <Txt variant="label" className="mb-2">
-              {PRESET_GROUP_LABELS[group]}
-            </Txt>
-            <View className="flex-row flex-wrap gap-2">
-              {DRINK_PRESETS.filter((p) => p.group === group).map((p) => (
-                <PresetChip
-                  key={p.key}
-                  preset={p}
-                  onPress={() => quickAdd(p)}
-                  disabled={!todayEntry.isSuccess}
-                />
-              ))}
-            </View>
-          </View>
-        ))}
+        <View className="mb-3">
+          <PresetPicker onPick={(p) => quickAdd(p)} disabled={!todayEntry.isSuccess} />
+        </View>
         <Button
           label="Custom amount, or edit today"
           tone="ghost"

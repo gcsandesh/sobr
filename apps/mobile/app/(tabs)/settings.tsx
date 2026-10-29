@@ -40,6 +40,7 @@ import {
   useAllEntries,
   useSettings,
   useUpdateSettings,
+  useAvatarUrl,
 } from '../../src/data/hooks';
 import { exportEntriesCsv } from '../../src/lib/export';
 import { exportBackup, restoreFromBackup } from '../../src/lib/lifecycle';
@@ -91,6 +92,7 @@ type SheetKey = 'mode' | 'currency' | 'zone' | null;
 export default function Settings() {
   const router = useRouter();
   const { email, userId, greetingName } = useSession();
+  const avatarUrl = useAvatarUrl();
   const settings = useSettings();
   const update = useUpdateSettings();
   const notif = useNotificationPrefs();
@@ -161,7 +163,7 @@ export default function Settings() {
       {/* ── Account ─────────────────────────────────────────────────── */}
       <Card className="mb-6">
         <ListRow
-          icon={<Avatar name={greetingName} size={40} />}
+          icon={<Avatar name={greetingName} size={40} uri={avatarUrl.data ?? null} />}
           title={greetingName ?? 'Your account'}
           subtitle={email ?? undefined}
           right={<RowValue />}

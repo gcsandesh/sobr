@@ -436,3 +436,30 @@ export function useDeleteDayPhoto(entryId: string | undefined) {
 export function useDeleteAccount() {
   return useMutation({ mutationFn: () => api.deleteAccount() });
 }
+
+/* ── profile photo ───────────────────────────────────────────────────────── */
+
+/** A short-lived signed link to the profile photo, or nothing when there isn't one. */
+export function useAvatarUrl() {
+  const { avatarPath } = useSession();
+  return useQuery({
+    queryKey: ['avatar', avatarPath ?? 'none'],
+    queryFn: () => api.avatarSignedUrl(avatarPath as string),
+    enabled: !!avatarPath,
+    // same as day photos: refresh before the signed link's hour runs out
+    staleTime: 50 * 60 * 1000,
+  });
+}
+
+export function useSetAvatar() {
+  const { userId, avatarPath } = useSession();
+  return useMutation({
+    mutationFn: (asset: { uri: string; mimeType?: string | null }) =>
+      api.uploadAvatar({ userId: userId!, ...asset, previousPath: avatarPath }),
+  });
+}
+
+export function useRemoveAvatar() {
+  const { avatarPath } = useSession();
+  return useMutation({ mutationFn: () => api.removeAvatar(avatarPath) });
+}
