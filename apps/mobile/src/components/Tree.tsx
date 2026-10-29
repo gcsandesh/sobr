@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { View } from 'react-native';
 import Animated, {
   Easing,
@@ -76,15 +76,26 @@ function trunkTop(stageIndex: number): number {
   return [156, 134, 118, 96, 78, 76][stageIndex] ?? 96;
 }
 
+/** Default canopy: fresh green at the crown, deeper at the base. */
+const SUMMER: Foliage = { top: '#9CCB6B', bottom: '#3E7A35', light: '#D7EBB5' };
+
+export type Foliage = { top: string; bottom: string; light: string };
+
 export function Tree({
   stage,
   progress,
   size = 220,
+  foliage = SUMMER,
 }: {
   stage: GrowthStageKey;
   progress: number;
   size?: number;
+  /** Canopy colours; the forest tints each tree by the season it grew in. */
+  foliage?: Foliage;
 }) {
+  // unique per instance: on web every SVG shares one id namespace, so a fixed
+  // id would paint every tree on screen with the first tree's colours
+  const gid = `foliage${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const idx = STAGE_INDEX[stage];
   const clusters = canopy(idx, progress);
   const top = trunkTop(idx);
@@ -104,9 +115,16 @@ export function Tree({
       <Animated.View style={animStyle}>
         <Svg width={size} height={size} viewBox="0 0 200 200">
           <Defs>
-            <LinearGradient id="foliage" x1="100" y1="40" x2="100" y2="140">
-              <Stop offset="0" stopColor="#AEBF92" />
-              <Stop offset="1" stopColor={palette.win} />
+            <LinearGradient
+              id={gid}
+              x1="100"
+              y1="40"
+              x2="100"
+              y2="140"
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop offset="0" stopColor={foliage.top} />
+              <Stop offset="1" stopColor={foliage.bottom} />
             </LinearGradient>
           </Defs>
 
@@ -165,7 +183,7 @@ export function Tree({
               )}
               {/* canopy */}
               {clusters.map((c, i) => (
-                <Circle key={i} cx={c.cx} cy={c.cy} r={c.r} fill="url(#foliage)" />
+                <Circle key={i} cx={c.cx} cy={c.cy} r={c.r} fill={`url(#${gid})`} />
               ))}
               {/* soft highlight */}
               {clusters[0] && (
@@ -173,7 +191,7 @@ export function Tree({
                   cx={clusters[0].cx - clusters[0].r * 0.3}
                   cy={clusters[0].cy - clusters[0].r * 0.3}
                   r={clusters[0].r * 0.28}
-                  fill="#CCDBB2"
+                  fill={foliage.light}
                   opacity={0.5}
                 />
               )}

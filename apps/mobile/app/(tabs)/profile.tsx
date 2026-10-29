@@ -1,12 +1,12 @@
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GROWTH_STAGES } from '@sobr/config';
-import { BookIcon, HomeLeafIcon, PencilIcon, SnowflakeIcon } from '../../src/components/icons';
+import { BookIcon, HomeLeafIcon, SnowflakeIcon } from '../../src/components/icons';
 import { FlameIcon } from '../../src/components/StreakFlame';
+import { ForestScene } from '../../src/components/ForestScene';
+import { ProfilePhoto } from '../../src/components/ProfilePhoto';
 import { Tree } from '../../src/components/Tree';
-import { formatDay } from '../../src/lib/dates';
 import {
-  Avatar,
   Card,
   ListRow,
   Row,
@@ -17,7 +17,7 @@ import {
 } from '../../src/components/ui';
 import { useSession } from '../../src/data/SessionProvider';
 import { useHomeStats } from '../../src/data/hooks';
-import { colors } from '../../src/theme';
+import { colors, stageHues } from '../../src/theme';
 import { useRefresh } from '../../src/data/useRefresh';
 
 /**
@@ -41,19 +41,7 @@ export default function Profile() {
     <Screen edges={['top']} scroll refreshControl={refresh}>
       {/* identity */}
       <View className="items-center mt-6 mb-8">
-        <Pressable
-          onPress={() => router.push('/account')}
-          accessibilityRole="button"
-          accessibilityLabel="Edit your name and account"
-          className="active:opacity-80"
-        >
-          <Avatar name={greetingName} size={84} />
-          <View
-            className="absolute -right-1 -bottom-1 w-8 h-8 rounded-full items-center justify-center bg-surface border border-border"
-          >
-            <PencilIcon color={colors.accent} size={16} />
-          </View>
-        </Pressable>
+        <ProfilePhoto size={88} />
         <Txt variant="title" className="mt-4">
           {greetingName ?? 'You'}
         </Txt>
@@ -65,6 +53,16 @@ export default function Profile() {
             {memberSince ? `growing since ${memberSince}` : ''}
           </Txt>
         )}
+        <Pressable
+          onPress={() => router.push('/account')}
+          accessibilityRole="button"
+          className="mt-3 px-4 py-2 rounded-lg active:opacity-70"
+          style={{ backgroundColor: colors.accentBg }}
+        >
+          <Txt variant="label" style={{ color: colors.accent, fontFamily: 'Figtree_600SemiBold' }}>
+            Edit profile
+          </Txt>
+        </Pressable>
       </View>
 
       {/* stats grid */}
@@ -103,7 +101,9 @@ export default function Profile() {
       />
       <Card className="mb-6">
         {GROWTH_STAGES.map((stage, i) => {
-          // the tree follows the current streak: a slip starts a new one
+          // the tree follows the current streak: a slip starts a new one.
+          // Each stage has its own hue, warm earth to dusk violet.
+          const hue = stageHues[stage.key];
           const achieved = stats.streak.current >= stage.minWinDays;
           const isCurrent = stage.key === stats.stage;
           const isLast = i === GROWTH_STAGES.length - 1;
@@ -112,15 +112,15 @@ export default function Profile() {
             // stretch to the row's height, or a fixed-height connector falls
             // short of the next dot whenever a row wraps
             <View key={stage.key} className="flex-row">
-              <View className="items-center mr-3" style={{ width: 24 }}>
+              <View className="items-center mr-3" style={{ width: 28 }}>
                 <View
                   className="rounded-full items-center justify-center"
                   style={{
-                    width: 24,
-                    height: 24,
-                    backgroundColor: achieved ? colors.accent : colors.cardRaised,
+                    width: 28,
+                    height: 28,
+                    backgroundColor: achieved ? hue.solid : colors.bg,
                     borderWidth: achieved ? 0 : 2,
-                    borderColor: achieved ? colors.accent : colors.border,
+                    borderColor: isCurrent ? hue.solid : colors.border,
                   }}
                 >
                   {achieved && (
@@ -133,26 +133,37 @@ export default function Profile() {
                   <View
                     style={{
                       flex: 1,
-                      width: 2,
-                      marginTop: 3,
-                      borderRadius: 1,
-                      backgroundColor: achieved ? colors.accent : colors.border,
+                      width: 3,
+                      marginVertical: 3,
+                      borderRadius: 2,
+                      backgroundColor:
+                        stats.streak.current >= GROWTH_STAGES[i + 1]!.minWinDays
+                          ? hue.solid
+                          : colors.border,
                     }}
                   />
                 )}
               </View>
-              <View className={`flex-1 ${isLast ? '' : 'pb-5'}`}>
-                <Txt
-                  variant="body"
-                  className={isCurrent ? 'font-semibold' : ''}
-                  style={isCurrent ? { color: colors.accent } : undefined}
-                >
-                  {stage.label}
-                  {isCurrent ? '  ·  you are here' : ''}
-                </Txt>
-                <Txt variant="caption" className="mt-0.5">
-                  {stage.minWinDays === 0 ? 'Day one' : `${stage.minWinDays} days in a row`}
-                </Txt>
+              <View
+                className={`flex-1 flex-row items-center rounded-xl px-3 py-2 ${isLast ? '' : 'mb-2'}`}
+                style={isCurrent ? { backgroundColor: hue.bg } : undefined}
+              >
+                <View className="flex-1">
+                  <Txt
+                    variant="body"
+                    className={achieved ? 'font-semibold' : 'text-text-muted'}
+                    style={achieved ? { color: hue.fg } : undefined}
+                  >
+                    {stage.label}
+                    {isCurrent ? '  ·  you are here' : ''}
+                  </Txt>
+                  <Txt variant="caption" className="mt-0.5">
+                    {stage.minWinDays === 0 ? 'Day one' : `${stage.minWinDays} days in a row`}
+                  </Txt>
+                </View>
+                <View style={{ opacity: achieved ? 1 : 0.35 }}>
+                  <Tree stage={stage.key} progress={1} size={40} />
+                </View>
               </View>
             </View>
           );
@@ -165,36 +176,7 @@ export default function Profile() {
         caption={stats.forest.length ? `${stats.forest.length} planted` : undefined}
       />
       <Card className="mb-6">
-        {stats.forest.length === 0 ? (
-          <Txt variant="bodyMuted" className="text-sm">
-            When a streak of 3 days or more ends, its tree is planted here. A slip resets the
-            tree on Home, but what you grew stays.
-          </Txt>
-        ) : (
-          <View className="flex-row flex-wrap gap-3">
-            {stats.forest.slice(0, 12).map((t) => (
-              <View
-                key={t.start}
-                className="items-center rounded-2xl bg-surface-raised py-2"
-                style={{ width: 92 }}
-                accessibilityLabel={`${t.length} day streak, ${formatDay(t.start)} to ${formatDay(t.end)}`}
-              >
-                <Tree stage={t.stage} progress={1} size={64} />
-                <Txt variant="body" className="font-semibold text-sm">
-                  {t.length} days
-                </Txt>
-                <Txt variant="caption" style={{ fontSize: 10 }}>
-                  {formatDay(t.start).split(', ').pop()}
-                </Txt>
-              </View>
-            ))}
-          </View>
-        )}
-        {stats.forest.length > 12 ? (
-          <Txt variant="caption" className="mt-3">
-            and {stats.forest.length - 12} more
-          </Txt>
-        ) : null}
+        <ForestScene trees={stats.forest} />
       </Card>
 
       {/* freezes explainer */}

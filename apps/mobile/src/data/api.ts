@@ -11,6 +11,7 @@ import {
   type UserSettingsUpdate,
 } from '@sobr/core';
 import { supabase } from '../lib/supabase';
+import { DEMO_DATA, demoEntries, demoGrants, demoSettings } from './demo';
 
 /**
  * Supabase data access. Every call runs under the user's anon session, so RLS
@@ -87,6 +88,7 @@ function mapGrant(r: Record<string, unknown>): FreezeGrant {
 /* ── settings ────────────────────────────────────────────────────────────── */
 
 export async function fetchSettings(userId: string): Promise<UserSettings | null> {
+  if (DEMO_DATA) return demoSettings();
   const { data, error } = await supabase
     .from('user_settings')
     .select('*')
@@ -126,6 +128,7 @@ export async function fetchEntriesInRange(
   start: LocalDate,
   end: LocalDate,
 ): Promise<DailyEntryWithDrinks[]> {
+  if (DEMO_DATA) return demoEntries().filter((e) => e.entryDate >= start && e.entryDate <= end);
   const { data, error } = await supabase
     .from('daily_entries')
     .select(ENTRY_SELECT)
@@ -138,6 +141,7 @@ export async function fetchEntriesInRange(
 }
 
 export async function fetchAllEntries(userId: string): Promise<DailyEntryWithDrinks[]> {
+  if (DEMO_DATA) return demoEntries();
   const { data, error } = await supabase
     .from('daily_entries')
     .select(ENTRY_SELECT)
@@ -151,6 +155,7 @@ export async function fetchEntry(
   userId: string,
   date: LocalDate,
 ): Promise<DailyEntryWithDrinks | null> {
+  if (DEMO_DATA) return demoEntries().find((e) => e.entryDate === date) ?? null;
   const { data, error } = await supabase
     .from('daily_entries')
     .select(ENTRY_SELECT)
@@ -339,6 +344,7 @@ export async function addDayPhoto(params: {
  * days just so one of them can draw a dot.
  */
 export async function fetchPhotoDates(userId: string): Promise<string[]> {
+  if (DEMO_DATA) return [];
   const { data, error } = await supabase
     .from('day_photos')
     .select('daily_entries!inner(entry_date)')
@@ -375,6 +381,7 @@ export async function deleteDayPhoto(photo: { id: string; objectPath: string }):
 /* ── freeze grants ───────────────────────────────────────────────────────── */
 
 export async function fetchFreezeGrants(userId: string): Promise<FreezeGrant[]> {
+  if (DEMO_DATA) return demoGrants();
   const { data, error } = await supabase
     .from('freeze_grants')
     .select('*')
@@ -397,6 +404,7 @@ export async function reconcileFreezeAwards(
   runStart: LocalDate | null,
   grants: FreezeGrant[],
 ): Promise<number> {
+  if (DEMO_DATA) return 0;
   const bankedCount = grants.filter((g) => g.usedAt === null).length;
   const perRun = await hasRunStartColumn();
   // Per streak (0006): only this streak's grants block a milestone. Before the
@@ -531,4 +539,70 @@ export async function restoreBackupEntries(
     }
   }
   return restored;
+}
+
+/* ── profile photo ───────────────────────────────────────────────────────── */
+
+/**
+ * The profile photo lives in the same private bucket as day photos, under
+ * `<uid>/avatar/`, so the existing storage policies already confine it to its
+ * owner. Its path is kept in the auth user's metadata (identity, like the
+ * display name), so no table or migration is needed.
+ */
+export function avatarFolder(userId: string): string {
+  return `${userId}/avatar`;
+}
+
+export async function uploadAvatar(params: {
+  userId: string;
+  uri: string;
+  mimeType?: string | null;
+  previousPath?: string | null;
+}): Promise<string> {
+  const { userId, uri, previousPath } = params;
+  const mime = params.mimeType?.startsWith('image/') ? params.mimeType : 'image/jpeg';
+  const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg';
+  // a fresh name each time, so no cache anywhere can serve the old face
+  const objectPath = `${avatarFolder(userId)}/${randomId()}.${ext}`;
+  const body = await (await fetch(uri)).arrayBuffer();
+
+  const { error: upErr } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .upload(objectPath, body, { contentType: mime, upsert: false });
+  if (upErr) throw upErr;
+
+  const { error } = await supabase.auth.updateUser({ data: { avatar_path: objectPath } });
+  if (error) {
+    await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([objectPath]);
+    throw error;
+  }
+  // best effort: a leftover old file is swept by removeAllAvatarFiles later
+  if (previousPath) await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([previousPath]);
+  return objectPath;
+}
+
+export async function removeAvatar(path: string | null): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ data: { avatar_path: null } });
+  if (error) throw error;
+  if (path) await supabase.storage.from(DAY_PHOTOS_BUCKET).remove([path]);
+}
+
+export async function avatarSignedUrl(path: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .createSignedUrl(path, SIGNED_URL_TTL_SECONDS);
+  if (error) throw error;
+  return data.signedUrl;
+}
+
+/** Every file under the avatar folder, current or orphaned. Used at deletion. */
+export async function removeAllAvatarFiles(userId: string): Promise<void> {
+  const folder = avatarFolder(userId);
+  const { data, error } = await supabase.storage.from(DAY_PHOTOS_BUCKET).list(folder, { limit: 100 });
+  if (error) throw error;
+  const paths = (data ?? []).map((f) => `${folder}/${f.name}`);
+  if (paths.length) {
+    const rm = await supabase.storage.from(DAY_PHOTOS_BUCKET).remove(paths);
+    if (rm.error) throw rm.error;
+  }
 }

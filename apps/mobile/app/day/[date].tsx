@@ -3,9 +3,6 @@ import { Pressable, TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  DRINK_PRESETS,
-  PRESET_GROUPS,
-  PRESET_GROUP_LABELS,
   currencyByCode,
   formatCurrency,
   type DrinkPreset,
@@ -18,7 +15,7 @@ import {
   totalCost,
   totalUnits,
 } from '@sobr/core';
-import { PresetChip } from '../../src/components/PresetChip';
+import { PresetPicker } from '../../src/components/PresetPicker';
 import { DayPhotos, type PendingPhoto } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon } from '../../src/components/icons';
 import {
@@ -315,22 +312,9 @@ export default function DayLogger() {
           title={isToday ? 'Add to today' : 'Add to this day'}
           className="mt-6 mb-3"
         />
-        {PRESET_GROUPS.map((group) => (
-          <View key={group} className="mb-3">
-            <Txt variant="label" className="mb-2">
-              {PRESET_GROUP_LABELS[group]}
-            </Txt>
-            <View className="flex-row flex-wrap gap-2">
-              {DRINK_PRESETS.filter((p) => p.group === group).map((p) => (
-                <PresetChip
-                  key={p.key}
-                  preset={p}
-                  onPress={() => addPreset(p)}
-                />
-              ))}
-            </View>
-          </View>
-        ))}
+        <View className="mb-3">
+          <PresetPicker onPick={(p) => addPreset(p)} />
+        </View>
 
         <Pressable
           onPress={() => setShowCustom((s) => !s)}

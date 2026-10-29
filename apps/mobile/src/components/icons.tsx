@@ -345,3 +345,19 @@ export function TrashIcon({ color, size = 22 }: IconProps) {
     </Stroke>
   );
 }
+
+export function ImageIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x={3.5} y={4.5} width={17} height={15} rx={3} stroke={color} strokeWidth={1.8} />
+      <Circle cx={9} cy={10} r={1.7} stroke={color} strokeWidth={1.6} />
+      <Path
+        d="m4.5 17.5 4.6-4.4a1.5 1.5 0 0 1 2 0l2.2 2 2.4-2.3a1.5 1.5 0 0 1 2.1 0l2.7 2.6"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}

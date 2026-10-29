@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { forwardRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   PressableProps,
   RefreshControlProps,
@@ -370,10 +371,19 @@ export function Chip({
 }
 
 /**
- * Initials avatar on a terracotta disc. With no name to derive initials from it
- * falls back to the leaf mark rather than a bare "?", which read as an error.
+ * The profile photo when there is one, otherwise initials on a teal disc. With
+ * no name to derive initials from it falls back to the leaf mark rather than a
+ * bare "?", which read as an error.
  */
-export function Avatar({ name, size = 72 }: { name: string | null; size?: number }) {
+export function Avatar({
+  name,
+  size = 72,
+  uri,
+}: {
+  name: string | null;
+  size?: number;
+  uri?: string | null;
+}) {
   const initials = (name ?? '')
     .split(/[@\s._-]+/)
     .filter(Boolean)
@@ -382,11 +392,13 @@ export function Avatar({ name, size = 72 }: { name: string | null; size?: number
     .join('');
   return (
     <View
-      className="items-center justify-center rounded-full bg-accent"
+      className="items-center justify-center rounded-full bg-accent overflow-hidden"
       style={{ width: size, height: size }}
       accessibilityLabel={`Avatar for ${name ?? 'you'}`}
     >
-      {initials ? (
+      {uri ? (
+        <Image source={{ uri }} style={{ width: size, height: size }} accessibilityIgnoresInvertColors />
+      ) : initials ? (
         <Text
           className="font-display text-white"
           style={{ fontSize: size * 0.36, lineHeight: size * 0.46 }}
@@ -399,8 +411,6 @@ export function Avatar({ name, size = 72 }: { name: string | null; size?: number
     </View>
   );
 }
-
-/* ── Status pill ─────────────────────────────────────────────────────────── */
 
 export function StatusPill({ status }: { status: 'win' | 'slip' | 'freeze' }) {
   const map = {

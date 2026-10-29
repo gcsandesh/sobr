@@ -99,6 +99,48 @@ export const statusColors = {
   freeze: { fg: palette.frozen, bg: palette.frozenSoft, label: 'Frozen' },
 } as const;
 
+/**
+ * A restrained multi-hue spectrum for things that progress or need telling
+ * apart: growth stages, milestones, stat cards, charts. One hue per step, each
+ * with a text-safe `fg`, a tint `bg` and a `solid` for fills and gradients.
+ * Everyday chrome stays teal; the spectrum is for meaning, not decoration.
+ */
+export const spectrum = {
+  amber: { fg: '#B45309', bg: '#FEF3C7', solid: '#F59E0B' },
+  lime: { fg: '#4D7C0F', bg: '#ECFCCB', solid: '#84CC16' },
+  teal: { fg: '#0F766E', bg: '#CCFBF1', solid: '#14B8A6' },
+  sky: { fg: '#0369A1', bg: '#E0F2FE', solid: '#0EA5E9' },
+  indigo: { fg: '#4338CA', bg: '#E0E7FF', solid: '#6366F1' },
+  violet: { fg: '#6D28D9', bg: '#EDE9FE', solid: '#8B5CF6' },
+  rose: { fg: '#BE123C', bg: '#FFE4E6', solid: '#F43F5E' },
+} as const;
+
+export type SpectrumHue = keyof typeof spectrum;
+export type SpectrumColor = (typeof spectrum)[SpectrumHue];
+
+/** Growth stage → hue: warm earth at the start, cooling to dusk violet at the grove. */
+export const stageHues = {
+  seed: spectrum.amber,
+  sprout: spectrum.lime,
+  sapling: spectrum.teal,
+  young_tree: spectrum.sky,
+  tree: spectrum.indigo,
+  grove: spectrum.violet,
+} as const;
+
+/** Milestones walk the spectrum in order, so each one reached looks new. */
+export const milestoneHues: readonly SpectrumColor[] = [
+  spectrum.amber,
+  spectrum.lime,
+  spectrum.teal,
+  spectrum.sky,
+  spectrum.indigo,
+  spectrum.violet,
+  spectrum.rose,
+  spectrum.amber,
+  spectrum.violet,
+];
+
 /** 4px base spacing scale. */
 export const spacing = {
   none: 0,

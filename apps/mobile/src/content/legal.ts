@@ -5,7 +5,7 @@
  * in the same commit. Review before each store submission (DEPLOY.md).
  */
 
-export const LEGAL_UPDATED = '21 October 2026';
+export const LEGAL_UPDATED = '29 October 2026';
 export const LEGAL_CONTACT_URL = 'https://github.com/gcsandesh/sobr/issues';
 /**
  * Support address for privacy and deletion requests (e.g. contact@<domain>).
@@ -27,7 +27,7 @@ export const PRIVACY: LegalSection[] = [
     heading: 'What we store',
     body: [
       'Your email address and a password (stored hashed by our authentication provider, never readable by us).',
-      'An optional display name.',
+      'An optional display name and an optional profile photo.',
       'What you check in: each day’s status, anything you log for it, optional costs, optional notes, and photos you choose to attach.',
       'Your preferences: what counts as a win, daily limit, currency, time zone, and email settings.',
     ],
@@ -35,7 +35,7 @@ export const PRIVACY: LegalSection[] = [
   {
     heading: 'How it’s protected',
     body: [
-      'Data is stored with Supabase (a hosted Postgres database). Every table uses row-level security, so your account can only ever read or change its own rows. Photos sit in a private storage bucket and are only shown through short-lived signed links.',
+      'Data is stored with Supabase (a hosted Postgres database). Every table uses row-level security, so your account can only ever read or change its own rows. Photos (day photos and your profile photo) sit in a private storage bucket and are only shown through short-lived signed links.',
       'Data is encrypted in transit (HTTPS) and at rest by our hosting provider.',
     ],
   },
@@ -58,7 +58,7 @@ export const PRIVACY: LegalSection[] = [
     body: [
       'Turn emails off any time in Settings → Email.',
       'Take a break in Settings → Account: reminders and emails stop and nothing is deleted, with no time limit.',
-      'Delete your account in Settings → Account. Photos are removed immediately. Everything else (your account, every logged day and note) is permanently erased 30 days later; signing in during those 30 days lets you restore it. After that there is no copy kept.',
+      'Delete your account in Settings → Account. Photos, including your profile photo, are removed immediately. Everything else (your account, every logged day and note) is permanently erased 30 days later; signing in during those 30 days lets you restore it. After that there is no copy kept.',
       'Before deleting, you can download a full backup file. It stays with you; we don’t keep it.',
     ],
   },

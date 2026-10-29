@@ -253,6 +253,14 @@ Supabase account only has an unrelated project), so schema changes must be hande
     won't let `GITHUB_TOKEN` create the release tag on a commit whose workflows differ from
     main (403, despite `contents: write`). The publish step is `continue-on-error` on branches
     only; grab the APK from the run's artifacts instead. Main always publishes.
+23. **Several SVGs on one web page share an id namespace.** Gradient ids must be unique per
+    instance (`useId()` in `Tree` and `Logo`), or every tree on a screen paints with the first
+    one's colours. Native is unaffected; web screenshots are where it shows.
+24. **Demo mode for screenshots.** `EXPO_PUBLIC_SKIP_AUTH=1 EXPO_PUBLIC_DEMO_DATA=1` (dev
+    only, `__DEV__`-gated) gives a signed-out session a stand-in user and serves
+    `src/data/demo.ts` from the read paths in `api.ts`. Writes still go to Supabase and fail.
+    On web, a BottomSheet opened from inside a scrolling Screen is clipped (CSS transform
+    ancestor); native Modals are unaffected.
 
 ---
 

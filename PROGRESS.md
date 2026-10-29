@@ -7,6 +7,27 @@ its task groups here.
 ---
 
 <a id="lifecycle"></a>
+## Design round 3: colour, forest, photo, logo ✅ done (2026-10-29)
+- **Spectrum palette** (`spectrum`, `stageHues`, `milestoneHues` in `@sobr/config` tokens):
+  amber, lime, teal, sky, indigo, violet, rose, each with `fg`/`bg`/`solid`. Used for
+  growth stages, milestones, Progress stat cards and the units chart. Everyday chrome stays
+  teal.
+- **Profile**: the tree journey is coloured per stage with a small tree per row; the forest is
+  a dawn landscape (`ForestScene`) where each tree wears the season its streak began in
+  (spring lime, summer green, autumn amber, winter frost), plus counts and dated chips.
+- **Profile photo**: take or pick, square-crop in the system cropper, saved to
+  `day-photos/<uid>/avatar/` with the path in auth `user_metadata.avatar_path` (no
+  migration). Removed at account deletion along with day photos. Privacy policy updated.
+- **Drinks picker** (`PresetPicker`): group tabs over a divided list; replaces the chip cloud
+  on the day screen and Home's quick-add.
+- **Confirm dialog**: quiet fade-and-settle keyframe instead of the spring zoom; smaller icon,
+  sans title.
+- **Tab bar**: centred pill, max 340 wide.
+- **New logo**: a checkmark that sprouts (the tick ends in a warm leaf). All launcher,
+  adaptive, themed, notification, splash and favicon assets regenerated; `Logo.tsx` matches.
+- **Demo data (dev only)**: `EXPO_PUBLIC_DEMO_DATA=1` with `EXPO_PUBLIC_SKIP_AUTH=1` serves
+  sample entries from `src/data/demo.ts` for design review and store screenshots.
+
 ## Take a break, delete with a 30-day undo, backup + restore ✅ done (2026-10-21)
 
 - Migration `0007_account_lifecycle.sql`: `paused_at`, `deletion_requested_at`; email jobs skip
