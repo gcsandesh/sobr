@@ -24,6 +24,7 @@ export function entriesToCsv(
     'drinks',
     currency ? `cost (${currency})` : 'cost',
     'note',
+    'mood',
   ];
   const rows = [...entries]
     .sort((a, b) => (a.entryDate < b.entryDate ? -1 : a.entryDate > b.entryDate ? 1 : 0))
@@ -36,6 +37,7 @@ export function entriesToCsv(
         // cents, so cost × quantity float drift (0.1 × 3) never reaches the file
         Math.round(totalCost(e.drinks) * 100) / 100,
         e.note ?? '',
+        e.mood ?? '',
       ]
         .map(field)
         .join(','),

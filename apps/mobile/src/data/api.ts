@@ -66,6 +66,8 @@ function mapEntry(r: Record<string, unknown>): DailyEntryWithDrinks {
     entryDate: String(r.entry_date) as LocalDate,
     status: r.status as EntryStatus,
     note: (r.note as string | null) ?? null,
+    // migration 0008; absent (undefined) until it's applied
+    mood: (r.mood as number | null | undefined) ?? null,
     createdAt: r.created_at ? String(r.created_at) : undefined,
     updatedAt: r.updated_at ? String(r.updated_at) : undefined,
     drinks: drinks.map(mapDrink),
@@ -108,7 +110,8 @@ export async function updateSettings(userId: string, patch: UserSettingsUpdate):
   if (patch.emailReminders !== undefined) row.email_reminders = patch.emailReminders;
   if (patch.emailWeekly !== undefined) row.email_weekly = patch.emailWeekly;
   if (patch.pausedAt !== undefined) row.paused_at = patch.pausedAt;
-  if (patch.deletionRequestedAt !== undefined) row.deletion_requested_at = patch.deletionRequestedAt;
+  if (patch.deletionRequestedAt !== undefined)
+    row.deletion_requested_at = patch.deletionRequestedAt;
 
   // Upsert, not update: a plain UPDATE against a missing row "succeeds" with
   // zero rows changed, which made onboarding silently fail to stick for any
@@ -176,7 +179,10 @@ export async function upsertEntryStatus(
   date: LocalDate,
   status: EntryStatus,
   note?: string | null,
+  /** `undefined` leaves the stored mood alone. Dropped until migration 0008 runs. */
+  mood?: number | null,
 ): Promise<string> {
+  const withMood = mood !== undefined && (await hasMoodColumn());
   const { data, error } = await supabase
     .from('daily_entries')
     .upsert(
@@ -185,6 +191,7 @@ export async function upsertEntryStatus(
         entry_date: date,
         status,
         ...(note !== undefined ? { note: note?.trim() || null } : {}),
+        ...(withMood ? { mood } : {}),
       },
       { onConflict: 'user_id,entry_date' },
     )
@@ -445,6 +452,20 @@ function hasRunStartColumn(): Promise<boolean> {
   return runStartColumn;
 }
 
+/** Has migration 0008 (daily_entries.mood) been applied? Probed like run_start. */
+let moodColumn: Promise<boolean> | null = null;
+export function hasMoodColumn(): Promise<boolean> {
+  if (DEMO_DATA) return Promise.resolve(true);
+  moodColumn ??= (async () => {
+    const { error } = await supabase.from('daily_entries').select('mood').limit(1);
+    if (!error) return true;
+    if (error.code === '42703' || /mood/.test(error.message ?? '')) return false;
+    moodColumn = null;
+    throw error;
+  })();
+  return moodColumn;
+}
+
 /** Spend one banked freeze to protect a slip day (marks the day 'freeze'). */
 export async function useFreezeOnDay(
   userId: string,
@@ -492,7 +513,10 @@ export async function deleteAllDayPhotos(userId: string): Promise<void> {
     const del = await supabase
       .from('day_photos')
       .delete()
-      .in('id', chunk.map((r) => String(r.id)));
+      .in(
+        'id',
+        chunk.map((r) => String(r.id)),
+      );
     if (del.error) throw del.error;
   }
 }
@@ -504,15 +528,28 @@ export async function deleteAllDayPhotos(userId: string): Promise<void> {
  */
 export async function restoreBackupEntries(
   userId: string,
-  entries: { date: LocalDate; status: EntryStatus; note: string | null; drinks: DrinkInput[] }[],
+  entries: {
+    date: LocalDate;
+    status: EntryStatus;
+    note: string | null;
+    mood?: number | null;
+    drinks: DrinkInput[];
+  }[],
 ): Promise<number> {
+  const withMood = await hasMoodColumn();
   let restored = 0;
   for (let i = 0; i < entries.length; i += 200) {
     const chunk = entries.slice(i, i + 200);
     const { data, error } = await supabase
       .from('daily_entries')
       .upsert(
-        chunk.map((e) => ({ user_id: userId, entry_date: e.date, status: e.status, note: e.note })),
+        chunk.map((e) => ({
+          user_id: userId,
+          entry_date: e.date,
+          status: e.status,
+          note: e.note,
+          ...(withMood ? { mood: e.mood ?? null } : {}),
+        })),
         { onConflict: 'user_id,entry_date', ignoreDuplicates: true },
       )
       .select('id, entry_date');
@@ -598,7 +635,9 @@ export async function avatarSignedUrl(path: string): Promise<string> {
 /** Every file under the avatar folder, current or orphaned. Used at deletion. */
 export async function removeAllAvatarFiles(userId: string): Promise<void> {
   const folder = avatarFolder(userId);
-  const { data, error } = await supabase.storage.from(DAY_PHOTOS_BUCKET).list(folder, { limit: 100 });
+  const { data, error } = await supabase.storage
+    .from(DAY_PHOTOS_BUCKET)
+    .list(folder, { limit: 100 });
   if (error) throw error;
   const paths = (data ?? []).map((f) => `${folder}/${f.name}`);
   if (paths.length) {

@@ -8,6 +8,9 @@ Status checkboxes are for the owner; the engineering side is tracked in TODO.md.
       The two warnings (destructive operations, tables without RLS) are expected: it creates
       no new tables. Until it's run, *Take a break* and *Delete account* show an error.
 
+- [ ] Run `packages/db/migrations/0008_mood.sql` too (one column; until then the app just
+      doesn't save moods).
+
 ## 1. Domain
 Check which of these are free:
 - **sobr.app**: best fit for an app (~$14/yr)
@@ -20,7 +23,9 @@ Routing* that forwards `contact@yourdomain` to Gmail). **Porkbun** is a good, ch
 alternative. Skip GoDaddy (constant upsells). Needs an international card (e.g. a Nepal dollar
 card).
 
-- [ ] Buy the domain
+- [ ] Buy the domain (optional for the Play launch: Gmail works as the contact email and
+      Vercel's `*.vercel.app` URL works for the privacy/deletion links). No cPanel or
+      hosting is needed: Vercel hosts the site, Cloudflare Email Routing handles contact@.
 
 ## 2. Official email
 Use **contact@** (for users and Google) and **no-reply@** (for app emails).

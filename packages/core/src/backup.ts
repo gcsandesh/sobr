@@ -23,6 +23,8 @@ const backupEntrySchema = z.object({
   date: localDateSchema,
   status: entryStatusSchema,
   note: z.string().max(500).nullable(),
+  /** Added after v1 shipped; optional so older files still parse. */
+  mood: z.number().int().min(1).max(5).nullable().optional(),
   drinks: z.array(drinkInputSchema).max(100),
 });
 
@@ -67,6 +69,7 @@ export function buildBackup(
         date: e.entryDate,
         status: e.status,
         note: e.note ?? null,
+        mood: e.mood ?? null,
         drinks: e.drinks.map((d) => ({
           presetKey: d.presetKey,
           name: d.name,

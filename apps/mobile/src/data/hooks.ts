@@ -182,12 +182,14 @@ function writeOptimisticEntry(
   drinks: DrinkInput[],
   /** `undefined` keeps whatever note the day already has. */
   note: string | null | undefined,
+  /** `undefined` keeps whatever mood the day already has. */
+  mood?: number | null,
 ): EntrySnapshot {
   const prevAll = qc.getQueryData<DailyEntryWithDrinks[]>(keys.allEntries(uid));
   const prevEntry = qc.getQueryData<DailyEntryWithDrinks | null>(keys.entry(uid, date));
-  if (note === undefined) {
-    note = prevEntry?.note ?? prevAll?.find((e) => e.entryDate === date)?.note ?? null;
-  }
+  const prevDay = prevEntry ?? prevAll?.find((e) => e.entryDate === date);
+  if (note === undefined) note = prevDay?.note ?? null;
+  if (mood === undefined) mood = prevDay?.mood ?? null;
   const id = prevEntry?.id ?? `optimistic-${date}`;
   const entry: DailyEntryWithDrinks = {
     id,
@@ -195,6 +197,7 @@ function writeOptimisticEntry(
     entryDate: date,
     status,
     note,
+    mood,
     drinks: drinks.map((d, i) => ({
       id: `opt-${date}-${i}`,
       dailyEntryId: id,
@@ -234,9 +237,16 @@ export function useSaveDay() {
       status: EntryStatus;
       drinks: DrinkInput[];
       note?: string | null;
+      mood?: number | null;
     }) => {
       const u = requireUid(uid);
-      const entryId = await api.upsertEntryStatus(u, input.date, input.status, input.note);
+      const entryId = await api.upsertEntryStatus(
+        u,
+        input.date,
+        input.status,
+        input.note,
+        input.mood,
+      );
       await api.replaceDrinks(entryId, input.drinks);
       // Recompute streak from fresh history and reconcile freeze awards.
       const entries = await api.fetchAllEntries(u);
@@ -260,6 +270,7 @@ export function useSaveDay() {
         input.status,
         input.drinks,
         input.note,
+        input.mood,
       );
     },
     onError: (_e, input, ctx) => {
@@ -326,7 +337,8 @@ export function useUpdateSettings() {
       const prev = qc.getQueryData<UserSettings | null>(key);
       // Not for `onboarded`: that flips routing, and should only do so once
       // the server has actually saved it (onboarding shows the error if not).
-      if (prev && patch.onboarded === undefined) qc.setQueryData<UserSettings>(key, { ...prev, ...definedOnly(patch) });
+      if (prev && patch.onboarded === undefined)
+        qc.setQueryData<UserSettings>(key, { ...prev, ...definedOnly(patch) });
       return { prev };
     },
     onError: (_e, _patch, ctx) => {

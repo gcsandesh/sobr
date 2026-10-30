@@ -2,7 +2,7 @@
   "expo": {
     "name": "sobr",
     "slug": "sobr",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "scheme": "sobr",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -22,7 +22,7 @@
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "backgroundImage": "./assets/brand/adaptive-background.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png",
-        "backgroundColor": "#1F6F6B"
+        "backgroundColor": "#155A45"
       }
     },
     "web": {

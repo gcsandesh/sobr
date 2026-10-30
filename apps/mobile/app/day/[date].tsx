@@ -18,6 +18,7 @@ import {
   totalUnits,
   unitsForDrink,
 } from '@sobr/core';
+import { MoodPicker } from '../../src/components/MoodPicker';
 import { PresetPicker } from '../../src/components/PresetPicker';
 import { DayPhotos, type PendingPhoto } from '../../src/components/DayPhotos';
 import { PlusIcon, TargetIcon, TrashIcon } from '../../src/components/icons';
@@ -67,6 +68,7 @@ export default function DayLogger() {
   const [manualStatus, setManualStatus] = useState<'win' | 'slip'>('win');
   const [showCustom, setShowCustom] = useState(false);
   const [note, setNote] = useState('');
+  const [mood, setMood] = useState<number | null>(null);
   const [pendingPhotos, setPendingPhotos] = useState<PendingPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -93,6 +95,7 @@ export default function DayLogger() {
       );
       if (e.status === 'win' || e.status === 'slip') setManualStatus(e.status);
       setNote(e.note ?? '');
+      setMood(e.mood ?? null);
     }
     setHydrated(true);
   }, [hydrated, entryQ.isSuccess, entryQ.data]);
@@ -113,7 +116,14 @@ export default function DayLogger() {
       }
       return [
         ...prev,
-        { presetKey: p.key, name: p.name, volumeMl: p.volumeMl, abv: p.abv, cost: null, quantity: 1 },
+        {
+          presetKey: p.key,
+          name: p.name,
+          volumeMl: p.volumeMl,
+          abv: p.abv,
+          cost: null,
+          quantity: 1,
+        },
       ];
     });
   }
@@ -144,7 +154,7 @@ export default function DayLogger() {
 
   async function save() {
     setPhotoError(null);
-    const entryId = await saveDay.mutateAsync({ date: day, status, drinks, note });
+    const entryId = await saveDay.mutateAsync({ date: day, status, drinks, note, mood });
     if (pendingPhotos.length > 0) {
       setUploading(true);
       const failed = await uploadPending(entryId, pendingPhotos);
@@ -220,7 +230,10 @@ export default function DayLogger() {
                   <Txt variant="label">
                     {evalResult.withinLimit ? 'Within your limit' : 'Over your limit'}
                   </Txt>
-                  <Txt variant="title" className={evalResult.withinLimit ? 'text-win' : 'text-slip'}>
+                  <Txt
+                    variant="title"
+                    className={evalResult.withinLimit ? 'text-win' : 'text-slip'}
+                  >
                     {units} / {limit} units
                   </Txt>
                 </>
@@ -262,7 +275,10 @@ export default function DayLogger() {
         {/* line items: one divided list, matching the picker below */}
         {drinks.length > 0 && (
           <View className="mt-6">
-            <SectionHeader title={isToday ? "Today's drinks" : 'Logged that day'} className="mb-2" />
+            <SectionHeader
+              title={isToday ? "Today's drinks" : 'Logged that day'}
+              className="mb-2"
+            />
             <Card style={{ padding: 0 }}>
               {drinks.map((d, idx) => {
                 const glyph = (d.presetKey && presetByKey(d.presetKey)?.glyph) || '🥤';
@@ -280,7 +296,12 @@ export default function DayLogger() {
                     <Row className="items-center">
                       <View
                         className="items-center justify-center mr-3"
-                        style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: colors.bg }}
+                        style={{
+                          width: 42,
+                          height: 42,
+                          borderRadius: 12,
+                          backgroundColor: colors.bg,
+                        }}
                       >
                         <Txt style={{ fontSize: 21 }}>{glyph}</Txt>
                       </View>
@@ -289,8 +310,8 @@ export default function DayLogger() {
                           {presetChipLabel(d.name)}
                         </Txt>
                         <Txt variant="caption">
-                          {d.volumeMl >= 1000 ? `${d.volumeMl / 1000} L` : `${d.volumeMl} ml`} · {d.abv}% ·{' '}
-                          {lineUnits} {lineUnits === 1 ? 'unit' : 'units'}
+                          {d.volumeMl >= 1000 ? `${d.volumeMl / 1000} L` : `${d.volumeMl} ml`} ·{' '}
+                          {d.abv}% · {lineUnits} {lineUnits === 1 ? 'unit' : 'units'}
                         </Txt>
                       </View>
                       {/* compact stepper pill */}
@@ -358,10 +379,7 @@ export default function DayLogger() {
         )}
 
         {/* preset picker */}
-        <SectionHeader
-          title={isToday ? 'Add to today' : 'Add to this day'}
-          className="mt-6 mb-3"
-        />
+        <SectionHeader title={isToday ? 'Add to today' : 'Add to this day'} className="mt-6 mb-3" />
         <View className="mb-3">
           <PresetPicker
             onPick={(p) => addPreset(p)}
@@ -382,6 +400,14 @@ export default function DayLogger() {
           </Txt>
         </Pressable>
         {showCustom && <CustomForm onAdd={(d) => setDrinks((prev) => [...prev, d])} />}
+
+        {/* mood: optional, one tap, feeds the mood-vs-clear-days insight on Progress */}
+        <SectionHeader
+          title={isToday ? 'How does today feel?' : 'How did it feel?'}
+          caption="optional"
+          className="mt-6 mb-3"
+        />
+        <MoodPicker value={mood} onChange={setMood} />
 
         {/* reflection — optional, private, and never required to save */}
         <SectionHeader
@@ -451,11 +477,38 @@ function CustomForm({ onAdd }: { onAdd: (d: DrinkInput) => void }) {
   const field = 'bg-surface-raised border border-border rounded-lg px-3 py-3 text-text font-sans';
   return (
     <Card className="mt-3 gap-2">
-      <TextInput value={name} onChangeText={setName} placeholder="Name" placeholderTextColor={colors.textFaint} className={field} />
+      <TextInput
+        value={name}
+        onChangeText={setName}
+        placeholder="Name"
+        placeholderTextColor={colors.textFaint}
+        className={field}
+      />
       <Row className="gap-2">
-        <TextInput value={volume} onChangeText={setVolume} placeholder="ml" keyboardType="decimal-pad" placeholderTextColor={colors.textFaint} className={`${field} flex-1`} />
-        <TextInput value={abv} onChangeText={setAbv} placeholder="ABV %" keyboardType="decimal-pad" placeholderTextColor={colors.textFaint} className={`${field} flex-1`} />
-        <TextInput value={cost} onChangeText={setCost} placeholder="cost" keyboardType="decimal-pad" placeholderTextColor={colors.textFaint} className={`${field} flex-1`} />
+        <TextInput
+          value={volume}
+          onChangeText={setVolume}
+          placeholder="ml"
+          keyboardType="decimal-pad"
+          placeholderTextColor={colors.textFaint}
+          className={`${field} flex-1`}
+        />
+        <TextInput
+          value={abv}
+          onChangeText={setAbv}
+          placeholder="ABV %"
+          keyboardType="decimal-pad"
+          placeholderTextColor={colors.textFaint}
+          className={`${field} flex-1`}
+        />
+        <TextInput
+          value={cost}
+          onChangeText={setCost}
+          placeholder="cost"
+          keyboardType="decimal-pad"
+          placeholderTextColor={colors.textFaint}
+          className={`${field} flex-1`}
+        />
       </Row>
       <Button
         label="Add"

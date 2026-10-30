@@ -46,7 +46,7 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
       function, to send all auth mail through Resend with the app's own design. Not needed
       while you're the only user: Supabase's built-in mailer plus the template above works.
 - [ ] All migrations applied, in order: `0000_init` → `0001_grants` → `0002_email` →
-      `0003_email_visuals` → `0004_day_photos` → `0005_time_zone_guard` → `0006_freeze_per_run` → `0007_account_lifecycle`.
+      `0003_email_visuals` → `0004_day_photos` → `0005_time_zone_guard` → `0006_freeze_per_run` → `0007_account_lifecycle` → `0008_mood`.
       Verify grants: `select table_name, privilege_type from information_schema.role_table_grants where grantee='authenticated' and table_schema='public';`
       (every app table needs SELECT/INSERT/UPDATE/DELETE, or nothing saves).
 - [ ] Resend: until a domain is verified, `onboarding@resend.dev` only delivers to the
@@ -182,8 +182,10 @@ nothing needs typing into the dashboard.
       Deploy. The site is then at `https://<project>.vercel.app`.
 - [ ] Node version: Project → Settings → **Node.js Version 22.x or newer** (the build
       imports a `.ts` file and fails with a clear message on older Node).
-- Every push to `main` touching `site/`, `legal.ts`, the icon or `vercel.json` redeploys
-  (other pushes are skipped by `ignoreCommand`); branches get preview URLs.
+- Every push to `main` touching `site/`, `legal.ts`, the brand assets or `vercel.json`
+  redeploys; other pushes are skipped by `ignoreCommand`, which compares against the last
+  deployed commit (`VERCEL_GIT_PREVIOUS_SHA`) and always builds when there is none, such as
+  the first deploy or a manual redeploy. Branches get preview URLs.
 - [ ] Domain later: Project → Settings → **Domains** → add it, then set the DNS records
       Vercel shows (at Cloudflare: DNS only, grey cloud).
 - Local preview: `node site/build.mjs && npx serve site/dist` (clean URLs like `/privacy`

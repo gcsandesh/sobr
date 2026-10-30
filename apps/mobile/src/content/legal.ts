@@ -5,7 +5,7 @@
  * in the same commit. Review before each store submission (DEPLOY.md).
  */
 
-export const LEGAL_UPDATED = '29 October 2026';
+export const LEGAL_UPDATED = '30 October 2026';
 export const LEGAL_CONTACT_URL = 'https://github.com/gcsandesh/sobr/issues';
 /**
  * Support address for privacy and deletion requests (e.g. contact@<domain>).
@@ -28,7 +28,7 @@ export const PRIVACY: LegalSection[] = [
     body: [
       'Your email address and a password (stored hashed by our authentication provider, never readable by us).',
       'An optional display name and an optional profile photo.',
-      'What you check in: each day’s status, anything you log for it, optional costs, optional notes, and photos you choose to attach.',
+      'What you check in: each day’s status, anything you log for it, optional costs, an optional mood, optional notes, and photos you choose to attach.',
       'Your preferences: what counts as a win, daily limit, currency, time zone, and email settings.',
     ],
   },

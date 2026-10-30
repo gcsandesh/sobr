@@ -166,14 +166,14 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] _User step:_ add `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` repo secrets
 - [x] _User step:_ install the APK and sign in (build 7; password set via SQL on 2026-09-26)
 - [x] Password reset works from the default email's link (sobr://reset-password), no SMTP needed
-- [ ] _User step:_ add `sobr://reset-password` to Supabase → Authentication → URL Configuration → Redirect URLs
+- [x] _User step:_ add `sobr://reset-password` to Supabase → Authentication → URL Configuration → Redirect URLs
 - [ ] _Optional, later:_ wire + redeploy the `send-email` hook (Resend) once there are other users
 - [ ] _User step:_ phone smoke test (DEPLOY.md §4)
 - [x] Keyboard-aware screens on edge-to-edge Android; adaptive/themed + notification icons
 - [x] Never overwrite a day that failed to load (day screen, quick-add, one-tap win)
 - [x] Pull to refresh; ErrorBoundary; limit stepper; notification tap → today (CSV export came from main)
 - [ ] Dark mode (deferred: see PROGRESS → Phase 5 decisions)
-- [ ] Mood on check-in (needs a migration)
+- [x] Mood on check-in: migration 0008, day-screen picker, Home chip, Progress "How days feel", in CSV + backup
 
 ---
 
@@ -184,7 +184,7 @@ Legend: `[ ]` todo · `[x]` done · `[~]` in progress / partial.
 - [x] Photos can be added before the day's first save
 - [x] **Freeze grants per streak** (migration 0006 + app); legacy once-per-account rule only as a fallback
 - [x] UI pass: living flame, real snowflake, warm hero glow, streak chain on the calendar, +1 burst, gradient win button
-- [ ] _User step:_ run `sobr-update-freeze-and-import.sql` (migration 0006 + delete before Sep 16 + Drink Control import)
+- [x] _User step:_ run `sobr-update-freeze-and-import.sql` (migration 0006 + delete before Sep 16 + Drink Control import)
 - [x] Import from Drink Control (2026-10-09): one-off SQL generated from the owner's backup
       (173 days, Mar 29 to Sep 19), tested on PGlite; kept out of the repo (personal data)
 - [ ] In-app importer for Drink Control JSON (only if imports become a repeat need)
