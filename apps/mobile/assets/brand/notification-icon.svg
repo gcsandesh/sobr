@@ -1,5 +1,5 @@
 <svg width="1024" height="1024" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <!-- Status-bar icon: Android uses only the alpha channel, so a white silhouette. -->
-  <defs></defs>
-  <g transform="translate(32 32) scale(1.08) translate(-32 -32) translate(0 -1)"><path d="M51.32 27.82 A20 20 0 1 1 37.18 13.68" fill="none" stroke="#FFF" stroke-width="3.4" stroke-linecap="round"/><circle cx="46.14" cy="18.86" r="3.4" fill="#FFF"/><path d="M20.5 46 Q32 38.5 43.5 46 Z" fill="#FFF"/><path d="M32 43 L32 28.5" stroke="#FFF" stroke-width="3.6" stroke-linecap="round"/><path d="M32 28.5 C26.6 28.8 22.4 25.1 21.8 20.1 C27.1 19.7 31.2 23.1 32 28.5 Z" fill="#FFF"/><path d="M32 28.5 C32.7 22.5 37.4 18.9 43.2 19.5 C42.7 25.3 37.8 28.8 32 28.5 Z" fill="#FFF"/></g>
+  <defs><clipPath id="in"><circle cx="32" cy="32" r="21.9"/></clipPath></defs>
+  <g transform="translate(32 32) scale(1.18) translate(-32 -32)"><circle cx="32" cy="32" r="22.6" fill="none" stroke="#FFF" stroke-width="2.4"/><g clip-path="url(#in)"><path d="M4 52 C12 44 22 40.6 32 40.6 C42 40.6 52 44 60 52 V60 H4 Z" fill="#FFF"/></g><path d="M32 41 C32.3 37 31.9 33.5 31.7 29.6" fill="none" stroke="#FFF" stroke-width="2.4" stroke-linecap="round"/><path d="M31.7 31.2 C27 32 21 29.6 19.2 22.4 C25.6 21 30.6 24.6 31.7 31.2 Z" fill="#FFF"/><path d="M31.8 29.8 C32.2 23.4 37.2 18.4 45 18.8 C44.4 26 38.8 30.6 31.8 29.8 Z" fill="#FFF"/></g>
 </svg>
