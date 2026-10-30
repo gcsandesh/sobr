@@ -65,7 +65,7 @@ import { useRefresh } from '../../src/data/useRefresh';
  * The hero card's own mini-palette: a deep teal dusk. Deliberately darker than
  * anything else in the (otherwise cool-mist) app — one dominant surface that
  * carries the brand, per the frontend-design direction. Cool off-white text
- * (Fraunces numeral) clears WCAG AA against the deep teal.
+ * (display numeral) clears WCAG AA against the deep teal.
  */
 const HERO = {
   bgTop: '#2E9D95', // luminous teal at the top…

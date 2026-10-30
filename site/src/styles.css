@@ -1,5 +1,5 @@
 /* sobr site: shared by the marketing page and the legal pages.
-   Palette and type mirror packages/config/src/tokens.ts (Fraunces + Figtree,
+   Palette and type mirror packages/config/src/tokens.ts (Bricolage Grotesque + Figtree,
    mist canvas, deep teal accent, one warm flame family). */
 :root {
   --canvas: #F4F9F7;
@@ -27,7 +27,7 @@
   --flame-soft: #FFEDD5;
   --shadow: 0 14px 40px rgba(27, 58, 53, 0.09);
   --shadow-lg: 0 30px 80px rgba(20, 80, 77, 0.22);
-  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
   color-scheme: light;
 }
@@ -78,7 +78,7 @@ a { color: var(--accent); }
 
 /* ── Legal pages ─────────────────────────────────────────────────────── */
 .doc { width: min(720px, 100% - 32px); margin: 0 auto; padding: 48px 0 72px; }
-.doc h1 { font: 900 clamp(34px, 7vw, 52px)/1.05 var(--display); letter-spacing: -0.02em; margin: 0 0 10px; }
+.doc h1 { font: 800 clamp(34px, 7vw, 52px)/1.05 var(--display); letter-spacing: -0.02em; margin: 0 0 10px; }
 .doc h2 { font-size: 20px; margin: 36px 0 8px; }
 .doc p, .doc li { color: var(--muted); }
 .doc .meta { color: var(--faint); font-size: 14px; margin-bottom: 28px; }

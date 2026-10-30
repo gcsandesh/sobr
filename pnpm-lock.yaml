@@ -20,15 +20,15 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo-google-fonts/bricolage-grotesque':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo-google-fonts/caprasimo':
         specifier: ^0.4.0
         version: 0.4.0
       '@expo-google-fonts/figtree':
         specifier: ^0.4.1
         version: 0.4.1
-      '@expo-google-fonts/fraunces':
-        specifier: ^0.2.3
-        version: 0.2.3
       '@expo-google-fonts/manrope':
         specifier: ^0.2.3
         version: 0.2.3
@@ -1312,14 +1312,14 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@expo-google-fonts/bricolage-grotesque@0.4.1':
+    resolution: {integrity: sha512-uijLLg+thOrFgw+gXtYA3dQJTBqqqleabcNFpamaYXqUUcbFe0J18C+4nfL0CyGzSJUicxUBLY4Zv7jdHmTGMA==}
+
   '@expo-google-fonts/caprasimo@0.4.0':
     resolution: {integrity: sha512-rqD2czxcU20yT49A9h+QJUYCrcHD50Pp5USynATJxms3Knxx/83LgjnjwbvH567lg1O85FsGpLG7U6BprwTsnw==}
 
   '@expo-google-fonts/figtree@0.4.1':
     resolution: {integrity: sha512-6IQQddGeR3yZBSwiIjy2kd1gA+5s2esF8JAFw6M1qqU4RUlj4Zxkw9J+gixAtZFgd+QIS875EPHqeYlpaRcCRw==}
-
-  '@expo-google-fonts/fraunces@0.2.3':
-    resolution: {integrity: sha512-krgIGxViwYutW+egNHfSfc8u10ZpP+UL10MZHxbQ8C4LwEKA4HWuWLEiqSsbj1Kq3OoiXnbR+x9ERWgdhuoB1A==}
 
   '@expo-google-fonts/manrope@0.2.3':
     resolution: {integrity: sha512-2M9hzi5ku97ZbheGMyzqIdiIEmve0/ihBk9nVWRy2lVIchWqR2k2yIQPS7jKC/Az/e43tW3POLNeU6gQJQL9hw==}
@@ -5988,11 +5988,11 @@ snapshots:
   '@esbuild/win32-x64@0.28.1':
     optional: true
 
+  '@expo-google-fonts/bricolage-grotesque@0.4.1': {}
+
   '@expo-google-fonts/caprasimo@0.4.0': {}
 
   '@expo-google-fonts/figtree@0.4.1': {}
-
-  '@expo-google-fonts/fraunces@0.2.3': {}
 
   '@expo-google-fonts/manrope@0.2.3': {}
 

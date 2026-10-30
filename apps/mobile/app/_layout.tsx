@@ -9,7 +9,10 @@ import { StatusBar } from 'expo-status-bar';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { Fraunces_700Bold, Fraunces_900Black } from '@expo-google-fonts/fraunces';
+import {
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque';
 import {
   Figtree_400Regular,
   Figtree_500Medium,
@@ -166,8 +169,8 @@ function Gate() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Fraunces_700Bold,
-    Fraunces_900Black,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,
