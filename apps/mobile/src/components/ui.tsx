@@ -181,8 +181,9 @@ export function Card({
       // Cards sit on `surface`, one step LIGHTER than the canvas, and lift off
       // it with a soft shadow alone: no hairline border, which read as dated
       // and busy. A caller asking for a colored edge (border-win etc.) still
-      // gets one.
-      className={`relative overflow-hidden rounded-2xl bg-surface p-5 ${
+      // gets one. No overflow-hidden: on iOS it clips the card's own shadow,
+      // and the shadow is all that separates a card from the canvas.
+      className={`relative rounded-2xl bg-surface p-5 ${
         /\bborder-/.test(className ?? '') ? 'border' : ''
       } ${className ?? ''}`}
       style={[softShadow, style]}

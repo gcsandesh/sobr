@@ -78,7 +78,10 @@ export function MonthCalendar({
               className="min-h-[44px] px-3 rounded-lg items-center justify-center active:opacity-70"
               style={{ backgroundColor: colors.accentBg }}
             >
-              <Txt variant="label" style={{ color: colors.accent, fontFamily: 'Figtree_600SemiBold' }}>
+              <Txt
+                variant="label"
+                style={{ color: colors.accent, fontFamily: 'Figtree_600SemiBold' }}
+              >
                 Today
               </Txt>
             </Pressable>
@@ -155,7 +158,9 @@ export function MonthCalendar({
                   className="text-sm"
                   style={{
                     color: sc ? sc.fg : colors.textMuted,
-                    fontWeight: info ? '700' : '400',
+                    // name the weight's font file: iOS won't derive a bold from a
+                    // custom family plus fontWeight, it falls back to the system font
+                    fontFamily: info ? 'Figtree_700Bold' : 'Figtree_400Regular',
                   }}
                 >
                   {Number(d.slice(-2))}
@@ -168,7 +173,14 @@ export function MonthCalendar({
                 {inStreak ? (
                   <FlameIcon streak={5} size={11} />
                 ) : info?.status === 'win' && !info.hasDrinks ? (
-                  <Txt style={{ color: sc!.fg, fontSize: 9, lineHeight: 11, fontWeight: '700' }}>
+                  <Txt
+                    style={{
+                      color: sc!.fg,
+                      fontSize: 9,
+                      lineHeight: 11,
+                      fontFamily: 'Figtree_700Bold',
+                    }}
+                  >
                     ✓
                   </Txt>
                 ) : info?.hasDrinks ? (

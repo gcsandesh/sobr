@@ -86,11 +86,11 @@ export function PresetPicker({
         })}
       </View>
 
+      {/* shadow outside, clipping inside: iOS clips a clipping view's own shadow */}
       <View
         style={{
           borderRadius: 16,
           backgroundColor: colors.card,
-          overflow: 'hidden',
           shadowColor: '#1B3A35',
           shadowOpacity: 0.06,
           shadowRadius: 14,
@@ -98,101 +98,125 @@ export function PresetPicker({
           elevation: 2,
         }}
       >
-        {items.map((p, i) => {
-          const count = counts?.[p.key] ?? 0;
-          const units = roundUnits(unitsForDrink({ volumeMl: p.volumeMl, abv: p.abv, quantity: 1 }));
-          const ml = p.volumeMl >= 1000 ? `${p.volumeMl / 1000} L` : `${p.volumeMl} ml`;
-          return (
-            <PressableStyled
-              key={p.key}
-              onPress={() => onPick(p)}
-              disabled={disabled}
-              accessibilityRole="button"
-              accessibilityLabel={`Add ${p.name}, ${ml}, ${p.abv}%, ${units} units${count ? `, ${count} added` : ''}`}
-              accessibilityState={{ disabled }}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                minHeight: 64,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                borderTopWidth: i === 0 ? 0 : 1,
-                borderTopColor: colors.bg,
-                opacity: disabled ? 0.5 : 1,
-              }}
-              pressedStyle={{ backgroundColor: colors.accentBg }}
-            >
-              <View
+        <View style={{ borderRadius: 16, overflow: 'hidden' }}>
+          {items.map((p, i) => {
+            const count = counts?.[p.key] ?? 0;
+            const units = roundUnits(
+              unitsForDrink({ volumeMl: p.volumeMl, abv: p.abv, quantity: 1 }),
+            );
+            const ml = p.volumeMl >= 1000 ? `${p.volumeMl / 1000} L` : `${p.volumeMl} ml`;
+            return (
+              <PressableStyled
+                key={p.key}
+                onPress={() => onPick(p)}
+                disabled={disabled}
+                accessibilityRole="button"
+                accessibilityLabel={`Add ${p.name}, ${ml}, ${p.abv}%, ${units} units${count ? `, ${count} added` : ''}`}
+                accessibilityState={{ disabled }}
                 style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 12,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: colors.bg,
-                  marginRight: 12,
+                  minHeight: 64,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  borderTopWidth: i === 0 ? 0 : 1,
+                  borderTopColor: colors.bg,
+                  opacity: disabled ? 0.5 : 1,
                 }}
+                pressedStyle={{ backgroundColor: colors.accentBg }}
               >
-                <Text style={{ fontSize: 21 }}>{p.glyph ?? '•'}</Text>
-              </View>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ fontFamily: 'Figtree_600SemiBold', fontSize: 15.5, color: colors.text }}
+                <View
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: colors.bg,
+                    marginRight: 12,
+                  }}
                 >
-                  {presetChipLabel(p.name)}
-                </Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 6 }}>
-                  <Text style={{ fontFamily: 'Figtree_500Medium', fontSize: 12.5, color: colors.textFaint }}>
-                    {ml} · {p.abv}%
-                  </Text>
-                  <View
+                  <Text style={{ fontSize: 21 }}>{p.glyph ?? '•'}</Text>
+                </View>
+                <View style={{ flex: 1, marginRight: 10 }}>
+                  <Text
+                    numberOfLines={1}
                     style={{
-                      paddingHorizontal: 6,
-                      paddingVertical: 1,
-                      borderRadius: 5,
-                      backgroundColor: colors.bg,
+                      fontFamily: 'Figtree_600SemiBold',
+                      fontSize: 15.5,
+                      color: colors.text,
                     }}
                   >
-                    <Text style={{ fontFamily: 'Figtree_600SemiBold', fontSize: 11.5, color: colors.textMuted }}>
-                      {units} {units === 1 ? 'unit' : 'units'}
+                    {presetChipLabel(p.name)}
+                  </Text>
+                  <View
+                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 6 }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: 'Figtree_500Medium',
+                        fontSize: 12.5,
+                        color: colors.textFaint,
+                      }}
+                    >
+                      {ml} · {p.abv}%
                     </Text>
+                    <View
+                      style={{
+                        paddingHorizontal: 6,
+                        paddingVertical: 1,
+                        borderRadius: 5,
+                        backgroundColor: colors.bg,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: 'Figtree_600SemiBold',
+                          fontSize: 11.5,
+                          color: colors.textMuted,
+                        }}
+                      >
+                        {units} {units === 1 ? 'unit' : 'units'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-              {count > 0 ? (
-                <View
-                  style={{
-                    minWidth: 32,
-                    height: 32,
-                    paddingHorizontal: 8,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: colors.accent,
-                  }}
-                >
-                  <Text style={{ fontFamily: 'Figtree_700Bold', fontSize: 13.5, color: '#FFFFFF' }}>
-                    ×{count}
-                  </Text>
-                </View>
-              ) : (
-                <View
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: colors.accentBg,
-                  }}
-                >
-                  <PlusIcon color={colors.accent} size={17} />
-                </View>
-              )}
-            </PressableStyled>
-          );
-        })}
+                {count > 0 ? (
+                  <View
+                    style={{
+                      minWidth: 32,
+                      height: 32,
+                      paddingHorizontal: 8,
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: colors.accent,
+                    }}
+                  >
+                    <Text
+                      style={{ fontFamily: 'Figtree_700Bold', fontSize: 13.5, color: '#FFFFFF' }}
+                    >
+                      ×{count}
+                    </Text>
+                  </View>
+                ) : (
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: colors.accentBg,
+                    }}
+                  >
+                    <PlusIcon color={colors.accent} size={17} />
+                  </View>
+                )}
+              </PressableStyled>
+            );
+          })}
+        </View>
       </View>
     </View>
   );

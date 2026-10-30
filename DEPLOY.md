@@ -12,7 +12,8 @@ it does, and how to check it worked. Keep this current; it's the list you run ev
 | **Android APK (sideload)** | `.github/workflows/android-apk.yml` on every push to `main` / `claude/**` touching the app, or *Run workflow* by hand | GitHub **Releases** (tag `android-v<version>-<run>`) + a workflow artifact |
 | Android Play Store | `.github/workflows/android-aab.yml` (*Run workflow*), or EAS | Workflow artifact (`.aab`) → Play Console |
 | Website (marketing + legal) | Vercel, from `vercel.json` on push to `main` | `https://<project>.vercel.app` |
-| iOS | `eas build -p ios` (paid Apple Developer account required) | TestFlight |
+| iOS (compile check) | `.github/workflows/ios-build.yml` on app changes: unsigned Release build for the Simulator | Workflow artifact (`sobr.app`) |
+| iOS (App Store) | `eas build -p ios` (paid Apple Developer account, $99/yr) | TestFlight → App Store |
 | Web | `pnpm --filter @sobr/mobile export:web` → static `dist/` | Any static host (Vercel/Netlify/Cloudflare Pages) |
 | Backend | SQL in `packages/db/migrations/`, edge function in `supabase/functions/send-email` | Supabase project `uqozokfjfstsfuelgzcy` |
 
