@@ -8,13 +8,12 @@ This file is the "where are we right now"; **HANDOVER.md** is the deep project c
 
 - **main** has everything up to PR #11: Android fixes (centred tab bar, `PressableStyled`),
   iOS parity + CI iOS build, drinks UI, Play assets, mood on check-in, version **1.0.0**.
-- **PR #12 is open** on `claude/awesome-bohr-aos87s` (merge it once CI is green):
+- **PR #12 merged** (2026-10-30):
   - the owner's logo, redrawn as a vector: sapling with two leaves on a hill, inside a
     circle, dark green on cream; every icon variant, `Logo.tsx`, Play icon + feature graphic
   - **Bricolage Grotesque** replaces Fraunces for headings and numbers (app, site, store
     templates); body stays Figtree
-- **Not done yet after #12:** the 6 Play screenshots in `store/play/` still show the old
-  Fraunces font. Re-capture them with demo mode and re-compose (see `store/README.md`).
+- Play graphics in `store/play/` are current (new logo + font, re-captured 2026-10-30).
 
 ## Releases
 
@@ -63,7 +62,7 @@ submission (needs a $99/yr Apple Developer account).
 
 **Prompt for the new session:**
 
-> Continue work on sobr (gcsandesh/sobr). Read NEXT_SESSION.md, then HANDOVER.md. First:
-> merge PR #12 if its CI is green (fix it if not), re-capture the Play screenshots with the
-> new font, then help me through the Play Store launch checklist. Make decisions yourself,
+> Continue work on sobr (gcsandesh/sobr). Read NEXT_SESSION.md, then HANDOVER.md. First
+> check for open PRs and merge any that are green, then help me through the Play Store
+> launch checklist. Make decisions yourself,
 > open and merge PRs when green, keep replies short, and don't use em dashes.
