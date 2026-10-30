@@ -6,6 +6,7 @@ import {
   Pressable,
   PressableProps,
   RefreshControlProps,
+  StyleProp,
   StyleSheet,
   Switch,
   Text,
@@ -14,6 +15,7 @@ import {
   TextProps,
   View,
   ViewProps,
+  ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -60,6 +62,40 @@ export function Txt({
   ...props
 }: TextProps & { variant?: TxtVariant; className?: string }) {
   return <Text className={`${TXT[variant]} ${className ?? ''}`} {...props} />;
+}
+
+
+/**
+ * A Pressable with a pressed-state style. NativeWind's Pressable wrapper drops
+ * a function `style` on Android (the button rendered unstyled: invisible
+ * Remove, stacked drink rows), so the pressed state is tracked here and the
+ * style passed down is always a plain array.
+ */
+export function PressableStyled({
+  style,
+  pressedStyle,
+  onPressIn,
+  onPressOut,
+  ...props
+}: Omit<PressableProps, 'style'> & {
+  style?: StyleProp<ViewStyle>;
+  pressedStyle?: StyleProp<ViewStyle>;
+}) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <Pressable
+      {...props}
+      onPressIn={(e) => {
+        setPressed(true);
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        setPressed(false);
+        onPressOut?.(e);
+      }}
+      style={[style, pressed ? pressedStyle : null]}
+    />
+  );
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
@@ -664,21 +700,21 @@ export function GradientButton({
   shadow?: string;
 }) {
   return (
-    <Pressable
+    <PressableStyled
       onPress={onPress}
       disabled={loading}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ busy: loading }}
-      style={({ pressed }) => ({
-        transform: [{ scale: pressed ? 0.97 : 1 }],
+      style={{
         borderRadius: 18,
         shadowColor: shadow,
         shadowOpacity: 0.35,
         shadowRadius: 14,
         shadowOffset: { width: 0, height: 6 },
         elevation: 6,
-      })}
+      }}
+      pressedStyle={{ transform: [{ scale: 0.97 }] }}
     >
       <LinearGradient
         colors={stops}
@@ -705,6 +741,6 @@ export function GradientButton({
           </>
         )}
       </LinearGradient>
-    </Pressable>
+    </PressableStyled>
   );
 }

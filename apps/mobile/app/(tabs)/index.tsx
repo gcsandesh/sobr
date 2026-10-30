@@ -618,7 +618,15 @@ export default function Today() {
           </View>
         )}
         <View className="mb-3">
-          <PresetPicker onPick={(p) => quickAdd(p)} disabled={!todayEntry.isSuccess} />
+          <PresetPicker
+            onPick={(p) => quickAdd(p)}
+            disabled={!todayEntry.isSuccess}
+            counts={Object.fromEntries(
+              (todayEntry.data?.drinks ?? [])
+                .filter((d) => d.presetKey)
+                .map((d) => [d.presetKey as string, d.quantity]),
+            )}
+          />
         </View>
         <Button
           label="Custom amount, or edit today"

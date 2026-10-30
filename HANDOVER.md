@@ -261,6 +261,11 @@ Supabase account only has an unrelated project), so schema changes must be hande
     `src/data/demo.ts` from the read paths in `api.ts`. Writes still go to Supabase and fail.
     On web, a BottomSheet opened from inside a scrolling Screen is clipped (CSS transform
     ancestor); native Modals are unaffected.
+25. **Never `style={({ pressed }) => …}` on a Pressable.** NativeWind's Pressable wrapper drops
+    function styles on Android: the dialog's Remove button rendered with no background
+    (white text, invisible) and the drink rows lost `flexDirection: 'row'`. Web was fine,
+    so screenshots didn't catch it. Use `PressableStyled` (`style` + `pressedStyle`) from
+    `ui.tsx`, or `className="active:…"`.
 
 ---
 
