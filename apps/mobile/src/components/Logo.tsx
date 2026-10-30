@@ -3,8 +3,8 @@ import Svg, { Circle, Defs, G, LinearGradient, Path, RadialGradient, Rect, Stop 
 
 /**
  * sobr logo mark. An open circle (the journey, left open because you can
- * always begin again), an S drawn as a growing stem with two leaves (sobr, and
- * growth), and a sun rising in the opening (a new clear day). No drink imagery,
+ * always begin again), a sapling growing from the ground (each clear day grows
+ * something), and a sun rising in the opening (a new clear day). No drink imagery,
  * which can itself be a trigger. Mirrors assets/brand/logo.svg; keep the two in
  * step. Used at sign-in, onboarding, About and the 404 page.
  */
@@ -38,23 +38,16 @@ export function Logo({ size = 96 }: { size?: number }) {
           strokeLinecap="round"
         />
         <Circle cx={46.14} cy={18.86} r={3.4} fill={`url(#sun${id})`} />
-        <G transform="translate(32 34.5) scale(0.86) translate(-32 -34.5)">
-          <Path
-            d="M25 46 C31.5 48 39 44.8 38.6 39.3 C38.2 34 27.4 34.6 26.6 29.4 C26 25.6 28.6 24.4 31.6 24"
-            fill="none"
-            stroke="#F7F3E8"
-            strokeWidth={4.2}
-            strokeLinecap="round"
-          />
-          <Path
-            d="M31.6 24 C26.8 24.2 23 21 22.4 16.6 C27.2 16.2 30.9 19.2 31.6 24 Z"
-            fill="#A3D977"
-          />
-          <Path
-            d="M31.6 24 C32.2 18.7 36.4 15.4 41.6 16 C41.2 21.2 36.8 24.3 31.6 24 Z"
-            fill="#7CC25B"
-          />
-        </G>
+        <Path d="M20.5 46 Q32 38.5 43.5 46 Z" fill="#7CC25B" />
+        <Path d="M32 43 L32 28.5" stroke="#F7F3E8" strokeWidth={3.6} strokeLinecap="round" />
+        <Path
+          d="M32 28.5 C26.6 28.8 22.4 25.1 21.8 20.1 C27.1 19.7 31.2 23.1 32 28.5 Z"
+          fill="#A3D977"
+        />
+        <Path
+          d="M32 28.5 C32.7 22.5 37.4 18.9 43.2 19.5 C42.7 25.3 37.8 28.8 32 28.5 Z"
+          fill="#7CC25B"
+        />
       </G>
     </Svg>
   );

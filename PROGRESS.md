@@ -8,8 +8,9 @@ its task groups here.
 
 <a id="lifecycle"></a>
 ## Logo v3, 1.0.0, iOS parity, Play assets ✅ done (2026-10-30)
-- **Logo**: an open circle (the journey, open because you can always begin again), an S
-  drawn as a growing stem with two leaves, and a sun rising in the opening. Forest-green
+- **Logo**: an open circle (the journey, open because you can always begin again), a
+  sapling growing from a small mound, and a sun rising in the opening. (A first cut drew the
+  stem as an S; the owner preferred a plain sapling.) Forest-green
   icon; all brand assets, `Logo.tsx`, the site and the Play icon/feature graphic updated.
 - **Version 1.0.0** for the first Play release.
 - **Android fixes**: centred tab bar; `PressableStyled` replaces function styles, which
