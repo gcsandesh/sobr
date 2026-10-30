@@ -7,6 +7,20 @@ its task groups here.
 ---
 
 <a id="lifecycle"></a>
+## Logo v3, 1.0.0, iOS parity, Play assets ✅ done (2026-10-30)
+- **Logo**: an open circle (the journey, open because you can always begin again), an S
+  drawn as a growing stem with two leaves, and a sun rising in the opening. Forest-green
+  icon; all brand assets, `Logo.tsx`, the site and the Play icon/feature graphic updated.
+- **Version 1.0.0** for the first Play release.
+- **Android fixes**: centred tab bar; `PressableStyled` replaces function styles, which
+  NativeWind drops on Android (invisible Remove button, stacked drink rows).
+- **iOS parity**: shadows split from clipping, explicit bold font files, permission text,
+  `ios-build.yml` compiles a Simulator build in CI (first run green).
+- **Drinks UI**: segmented groups, units per option, count badges, one divided logged list.
+- **Play assets**: `store/play/` (6 screenshots, feature graphic, icon) and a launch-day
+  checklist in STORE_LISTING.md.
+- **Vercel**: first deploy no longer skipped by the ignore step.
+
 ## Design round 3: colour, forest, photo, logo ✅ done (2026-10-29)
 - **Spectrum palette** (`spectrum`, `stageHues`, `milestoneHues` in `@sobr/config` tokens):
   amber, lime, teal, sky, indigo, violet, rose, each with `fg`/`bg`/`solid`. Used for

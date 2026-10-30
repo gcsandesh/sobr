@@ -5,5 +5,5 @@
   "installCommand": "echo 'site needs no dependencies'",
   "framework": null,
   "cleanUrls": true,
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- site apps/mobile/src/content/legal.ts apps/mobile/assets/brand/icon.svg vercel.json"
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- site apps/mobile/src/content/legal.ts apps/mobile/assets/brand vercel.json"
 }

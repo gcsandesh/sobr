@@ -20,7 +20,9 @@ Routing* that forwards `contact@yourdomain` to Gmail). **Porkbun** is a good, ch
 alternative. Skip GoDaddy (constant upsells). Needs an international card (e.g. a Nepal dollar
 card).
 
-- [ ] Buy the domain
+- [ ] Buy the domain (optional for the Play launch: Gmail works as the contact email and
+      Vercel's `*.vercel.app` URL works for the privacy/deletion links). No cPanel or
+      hosting is needed: Vercel hosts the site, Cloudflare Email Routing handles contact@.
 
 ## 2. Official email
 Use **contact@** (for users and Google) and **no-reply@** (for app emails).

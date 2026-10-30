@@ -182,8 +182,10 @@ nothing needs typing into the dashboard.
       Deploy. The site is then at `https://<project>.vercel.app`.
 - [ ] Node version: Project → Settings → **Node.js Version 22.x or newer** (the build
       imports a `.ts` file and fails with a clear message on older Node).
-- Every push to `main` touching `site/`, `legal.ts`, the icon or `vercel.json` redeploys
-  (other pushes are skipped by `ignoreCommand`); branches get preview URLs.
+- Every push to `main` touching `site/`, `legal.ts`, the brand assets or `vercel.json`
+  redeploys; other pushes are skipped by `ignoreCommand`, which compares against the last
+  deployed commit (`VERCEL_GIT_PREVIOUS_SHA`) and always builds when there is none, such as
+  the first deploy or a manual redeploy. Branches get preview URLs.
 - [ ] Domain later: Project → Settings → **Domains** → add it, then set the DNS records
       Vercel shows (at Cloudflare: DNS only, grey cloud).
 - Local preview: `node site/build.mjs && npx serve site/dist` (clean URLs like `/privacy`
