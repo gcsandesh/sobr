@@ -6,11 +6,11 @@ const lines = (csv: string) => csv.split('\r\n');
 
 describe('entriesToCsv', () => {
   it('writes only the header for no entries', () => {
-    expect(entriesToCsv([])).toBe('date,status,units,drinks,cost,note\r\n');
+    expect(entriesToCsv([])).toBe('date,status,units,drinks,cost,note,mood\r\n');
   });
 
   it('puts the currency in the cost header when given', () => {
-    expect(lines(entriesToCsv([], 'NPR'))[0]).toBe('date,status,units,drinks,cost (NPR),note');
+    expect(lines(entriesToCsv([], 'NPR'))[0]).toBe('date,status,units,drinks,cost (NPR),note,mood');
   });
 
   it('sorts rows oldest first regardless of input order', () => {
@@ -24,7 +24,7 @@ describe('entriesToCsv', () => {
       mkDrink({ name: 'Beer — strong', volumeMl: 500, abv: 6.5, cost: 600, quantity: 2 }),
     ]);
     // 500 * 6.5 / 1000 * 2 = 6.5 units; 600 * 2 = 1200
-    expect(lines(entriesToCsv([e]))[1]).toBe('2026-09-06,slip,6.5,2× Beer — strong,1200,');
+    expect(lines(entriesToCsv([e]))[1]).toBe('2026-09-06,slip,6.5,2× Beer — strong,1200,,');
   });
 
   it('rounds cost to cents so float drift never reaches the file', () => {
@@ -37,8 +37,8 @@ describe('entriesToCsv', () => {
     const e = { ...mkEntry('2026-09-08', 'win'), note: 'Said "no thanks", then\nwent home' };
     // one logical row, even though it spans two physical lines
     expect(entriesToCsv([e])).toBe(
-      'date,status,units,drinks,cost,note\r\n' +
-        '2026-09-08,win,0,,0,"Said ""no thanks"", then\nwent home"\r\n',
+      'date,status,units,drinks,cost,note,mood\r\n' +
+        '2026-09-08,win,0,,0,"Said ""no thanks"", then\nwent home",\r\n',
     );
   });
 
@@ -48,5 +48,10 @@ describe('entriesToCsv', () => {
       mkDrink({ name: 'Raksi', quantity: 2 }),
     ]);
     expect(lines(entriesToCsv([e]))[1]!.split(',')[3]).toBe('1× Wine; 2× Raksi');
+  });
+
+  it('writes the mood as its 1-5 value, blank when none was logged', () => {
+    const e = { ...mkEntry('2026-09-10', 'win'), mood: 4 };
+    expect(lines(entriesToCsv([e]))[1]!.split(',').at(-1)).toBe('4');
   });
 });

@@ -11,7 +11,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { growthMetaForKey, type DrinkPreset } from '@sobr/config';
+import { growthMetaForKey, moodOption, type DrinkPreset } from '@sobr/config';
 import { type LocalDate, evaluateStatus, roundUnits, totalUnits } from '@sobr/core';
 import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { BottomSheet } from '../../src/components/BottomSheet';
@@ -488,7 +488,18 @@ export default function Today() {
             <Card>
               <Row className="justify-between">
                 <StatusPill status={dayEntry.data.status} />
-                <Txt variant="caption">{dayEntry.data.drinks.length > 0 ? 'logged' : ''}</Txt>
+                {moodOption(dayEntry.data.mood) ? (
+                  <Row
+                    className="gap-1.5 px-2.5 py-1 rounded-lg"
+                    style={{ backgroundColor: colors.bg }}
+                    accessibilityLabel={`Felt ${moodOption(dayEntry.data.mood)!.label}`}
+                  >
+                    <Txt style={{ fontSize: 15 }}>{moodOption(dayEntry.data.mood)!.emoji}</Txt>
+                    <Txt variant="caption">{moodOption(dayEntry.data.mood)!.label}</Txt>
+                  </Row>
+                ) : (
+                  <Txt variant="caption">{dayEntry.data.drinks.length > 0 ? 'logged' : ''}</Txt>
+                )}
               </Row>
               <Txt variant="body" className="mt-3">
                 {dayEntry.data.status === 'win'

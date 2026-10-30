@@ -23,12 +23,19 @@ const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 // then a slip ('s'). Ends in the live streak, so Home shows a growing tree and
 // the forest has a few trees of different sizes.
 const PATTERN = [
-  'w'.repeat(5), 's',
-  'w'.repeat(12), 's', 's',
-  'w'.repeat(4), 's',
-  'w'.repeat(20) + 'f' + 'w'.repeat(12), 's',
-  'w'.repeat(9), 's',
-  'w'.repeat(17), 's',
+  'w'.repeat(5),
+  's',
+  'w'.repeat(12),
+  's',
+  's',
+  'w'.repeat(4),
+  's',
+  'w'.repeat(20) + 'f' + 'w'.repeat(12),
+  's',
+  'w'.repeat(9),
+  's',
+  'w'.repeat(17),
+  's',
   'w'.repeat(23),
 ].join('');
 
@@ -52,6 +59,14 @@ export function demoEntries(): DailyEntryWithDrinks[] {
       entryDate: date,
       status,
       note: i === n - 1 ? 'Slow evening walk instead of the pub. Felt good.' : null,
+      // most days carry a mood, clear days a little brighter, so the
+      // Progress insight has something honest-looking to show
+      mood:
+        i % 5 === 3
+          ? null
+          : status === 'slip'
+            ? 2 + (i % 2)
+            : 3 + (i % 3 === 0 ? 0 : i % 2 ? 1 : 2),
       drinks:
         status === 'slip'
           ? [

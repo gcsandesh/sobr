@@ -52,4 +52,15 @@ describe('entriesToRestore', () => {
     expect(entriesToRestore(b, new Set(['2026-10-02'])).map((e) => e.date)).toEqual(['2026-10-01']);
     expect(entriesToRestore(b, new Set())).toHaveLength(2);
   });
+
+  it('carries the mood through a backup, and still reads files made before mood existed', () => {
+    const b = buildBackup([{ ...mkEntry('2026-10-02', 'win'), mood: 5 }], null, '2026-10-30T00:00:00Z');
+    const parsed = parseBackup(JSON.stringify(b));
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.backup.entries[0]!.mood).toBe(5);
+
+    const legacy = { ...b, entries: b.entries.map(({ mood: _m, ...rest }) => rest) };
+    const old = parseBackup(JSON.stringify(legacy));
+    expect(old.ok).toBe(true);
+  });
 });

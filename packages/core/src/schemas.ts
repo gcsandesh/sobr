@@ -55,6 +55,8 @@ export const dailyEntrySchema = z.object({
   entryDate: localDateSchema,
   status: entryStatusSchema,
   note: z.string().max(500).nullable().optional(),
+  /** How the day felt, 1 (rough) to 5 (great). Optional; migration 0008. */
+  mood: z.number().int().min(1).max(5).nullable().optional(),
   createdAt: z.string().datetime().optional(),
   updatedAt: z.string().datetime().optional(),
 });

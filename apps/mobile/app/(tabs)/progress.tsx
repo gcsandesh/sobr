@@ -2,8 +2,16 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { formatCurrency } from '@sobr/config';
-import { addDays, milestoneProgress, nextMilestone, roundUnits, todayInTz, totalUnits } from '@sobr/core';
+import { formatCurrency, moodOption } from '@sobr/config';
+import {
+  addDays,
+  milestoneProgress,
+  moodByDayType,
+  nextMilestone,
+  roundUnits,
+  todayInTz,
+  totalUnits,
+} from '@sobr/core';
 import { BookIcon, ChartIcon } from '../../src/components/icons';
 import {
   Card,
@@ -41,6 +49,7 @@ export default function Progress() {
     });
   }, [entriesQ.data, tz]);
 
+  const mood = useMemo(() => moodByDayType(entriesQ.data ?? []), [entriesQ.data]);
   const m = stats.monthly;
   const a = stats.allTime;
   const winRate = m.wins > 0 || m.totalUnits > 0 ? Math.round((m.wins / 30) * 100) : 0;
@@ -85,7 +94,11 @@ export default function Progress() {
           <View className="flex-row flex-wrap gap-3 mb-6">
             <Stat label="Clear wins" value={String(m.wins)} hue={spectrum.lime} />
             <Stat label="Units" value={String(roundUnits(m.totalUnits))} hue={spectrum.sky} />
-            <Stat label="Spent" value={formatCurrency(m.totalSpent, currency)} hue={spectrum.amber} />
+            <Stat
+              label="Spent"
+              value={formatCurrency(m.totalSpent, currency)}
+              hue={spectrum.amber}
+            />
             <Stat
               label="Avg units / day out"
               value={String(roundUnits(m.avgUnitsPerDrinkingDay))}
@@ -97,11 +110,21 @@ export default function Progress() {
           <View className="flex-row flex-wrap gap-3 mb-6">
             <Stat label="Longest streak" value={String(a.longestStreak)} hue={spectrum.rose} />
             <Stat label="Total clear days" value={String(a.totalWinDays)} hue={spectrum.teal} />
-            <Stat label="Total units" value={String(roundUnits(a.totalUnits))} hue={spectrum.indigo} />
-            <Stat label="Total spent" value={formatCurrency(a.totalSpent, currency)} hue={spectrum.amber} />
+            <Stat
+              label="Total units"
+              value={String(roundUnits(a.totalUnits))}
+              hue={spectrum.indigo}
+            />
+            <Stat
+              label="Total spent"
+              value={formatCurrency(a.totalSpent, currency)}
+              hue={spectrum.amber}
+            />
           </View>
         </>
       )}
+
+      {mood.clear.days + mood.slip.days > 0 && <MoodInsight split={mood} />}
 
       {!isEmpty && (
         <Card className="mb-6">
@@ -133,11 +156,7 @@ function Milestones({ totalWinDays }: { totalWinDays: number }) {
     <>
       <SectionHeader
         title="Milestones"
-        caption={
-          next
-            ? `${next.days - totalWinDays} to go`
-            : 'all reached'
-        }
+        caption={next ? `${next.days - totalWinDays} to go` : 'all reached'}
       />
       <Card>
         {items.map(({ milestone, reached }, i) => {
@@ -196,12 +215,18 @@ function Milestones({ totalWinDays }: { totalWinDays: number }) {
                   </Txt>
                   {reached ? (
                     <View className="px-2 py-0.5 rounded-md" style={{ backgroundColor: hue.bg }}>
-                      <Txt variant="caption" style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}>
+                      <Txt
+                        variant="caption"
+                        style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}
+                      >
                         reached
                       </Txt>
                     </View>
                   ) : isNext ? (
-                    <Txt variant="caption" style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}>
+                    <Txt
+                      variant="caption"
+                      style={{ color: hue.fg, fontFamily: 'Figtree_600SemiBold' }}
+                    >
                       next
                     </Txt>
                   ) : null}
@@ -296,4 +321,64 @@ function UnitsBars({ data }: { data: { date: string; units: number }[] }) {
 function weekdayOf(date: string): number {
   const [y, m, d] = date.split('-').map(Number) as [number, number, number];
   return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+/**
+ * How days feel, by kind of day: average mood on clear days against days with
+ * a slip. A mirror, not a lecture: the copy only states the difference, and
+ * waits for a few days on each side before drawing any comparison.
+ */
+function MoodInsight({ split }: { split: ReturnType<typeof moodByDayType> }) {
+  const enough = split.clear.days >= 3 && split.slip.days >= 3;
+  const diff =
+    enough && split.clear.avg !== null && split.slip.avg !== null
+      ? Math.round((split.clear.avg - split.slip.avg) * 10) / 10
+      : null;
+  const rows = [
+    { label: 'Clear days', side: split.clear, hue: spectrum.lime },
+    { label: 'Other days', side: split.slip, hue: spectrum.amber },
+  ];
+  return (
+    <>
+      <SectionHeader title="How days feel" caption="average mood" />
+      <Card className="mb-6">
+        {rows.map(({ label, side, hue }, i) => {
+          const option = moodOption(side.avg === null ? null : Math.round(side.avg));
+          return (
+            <View key={label} className={i > 0 ? 'mt-4' : ''}>
+              <Row className="justify-between mb-1.5">
+                <Txt variant="label">{label}</Txt>
+                <Txt variant="caption">
+                  {side.avg === null
+                    ? 'no moods yet'
+                    : `${option?.emoji ?? ''} ${side.avg} · ${side.days} ${side.days === 1 ? 'day' : 'days'}`}
+                </Txt>
+              </Row>
+              <View
+                className="h-2.5 rounded-full overflow-hidden"
+                style={{ backgroundColor: colors.bg }}
+              >
+                <View
+                  className="h-2.5 rounded-full"
+                  style={{
+                    width: `${side.avg === null ? 0 : (side.avg / 5) * 100}%`,
+                    backgroundColor: hue.solid,
+                  }}
+                />
+              </View>
+            </View>
+          );
+        })}
+        <Txt variant="caption" className="mt-4">
+          {diff === null
+            ? 'Add a mood when you check in. After a few of each kind of day, this shows how they compare.'
+            : diff > 0
+              ? `On clear days you feel about ${diff} ${diff === 1 ? 'point' : 'points'} better, on a 1 to 5 scale.`
+              : diff < 0
+                ? 'Lately, clear days have felt harder. That’s common early on, and it tends to shift.'
+                : 'Clear days and other days feel about the same so far.'}
+        </Txt>
+      </Card>
+    </>
+  );
 }
