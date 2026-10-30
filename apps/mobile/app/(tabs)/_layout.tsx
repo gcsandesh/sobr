@@ -32,9 +32,12 @@ export default function TabsLayout() {
           tabBarInactiveTintColor: colors.textFaint,
           tabBarStyle: {
             position: 'absolute',
-            left: side,
-            right: side,
-            width: barWidth,
+            // Equal margins inside a full-width box, not left/right offsets:
+            // Android's tab bar honoured `width` but dropped `left`, which pinned
+            // the pill to the left edge with all the gap on the right.
+            left: 0,
+            right: 0,
+            marginHorizontal: side,
             bottom: gap,
             height: BAR_HEIGHT,
             paddingTop: 0,

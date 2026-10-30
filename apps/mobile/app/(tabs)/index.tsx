@@ -11,10 +11,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  growthMetaForKey,
-  type DrinkPreset,
-} from '@sobr/config';
+import { growthMetaForKey, type DrinkPreset } from '@sobr/config';
 import { type LocalDate, evaluateStatus, roundUnits, totalUnits } from '@sobr/core';
 import { AnimatedNumber } from '../../src/components/AnimatedNumber';
 import { BottomSheet } from '../../src/components/BottomSheet';
@@ -228,9 +225,13 @@ export default function Today() {
         identity: glowing tree, oversized warm-white streak numeral, moss accents.
       */}
         <Animated.View entering={FadeInDown.delay(80).duration(500)}>
+          {/*
+            Two layers: iOS clips a view's own shadow when it clips its contents,
+            so the shadow lives on an outer view and the clipping on an inner one.
+          */}
           <View
-            className="p-5 rounded-2xl overflow-hidden"
             style={{
+              borderRadius: 20,
               backgroundColor: HERO.bg,
               shadowColor: HERO.bg,
               shadowOpacity: 0.35,
@@ -239,101 +240,99 @@ export default function Today() {
               elevation: 6,
             }}
           >
-            <LinearGradient
-              colors={[HERO.bgTop, HERO.bgMid, HERO.bg]}
-              locations={[0, 0.55, 1]}
-              style={StyleSheet.absoluteFill}
-              pointerEvents="none"
-            />
-            {/*
+            <View className="p-5 rounded-2xl overflow-hidden" style={{ backgroundColor: HERO.bg }}>
+              <LinearGradient
+                colors={[HERO.bgTop, HERO.bgMid, HERO.bg]}
+                locations={[0, 0.55, 1]}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
+              {/*
               Compact, two-column hero: the streak reads first (left, big and
               warm), the tree grows beside it. Half the height of the old
               stacked layout, so today's actions show without scrolling.
             */}
-            <View
-              className="absolute items-center justify-center"
-              style={{ right: -70, top: -60 }}
-              pointerEvents="none"
-            >
-              <Glow size={300} color="#8FD9CF" opacity={0.42} />
-            </View>
-            {stats.streak.current > 0 ? (
               <View
                 className="absolute items-center justify-center"
-                style={{ left: -80, top: -40 }}
+                style={{ right: -70, top: -60 }}
                 pointerEvents="none"
               >
-                <Glow
-                  size={280}
-                  color="#FBBF24"
-                  opacity={Math.min(0.5, 0.22 + stats.streak.current / 60)}
-                />
+                <Glow size={300} color="#8FD9CF" opacity={0.42} />
               </View>
-            ) : null}
-            <Row className="w-full items-center">
-              <View className="flex-1 pr-2">
-                <Txt variant="label" style={{ color: HERO.textMuted }}>
-                  {stats.streak.current === 0 ? 'Start a streak today' : 'Current streak'}
-                </Txt>
-                <Row className="items-center mt-1">
-                  <LiveFlame streak={stats.streak.current} size={40} />
-                  <AnimatedNumber
-                    value={stats.streak.current}
-                    variant="display"
-                    className="ml-1"
-                    style={{ color: HERO.text }}
+              {stats.streak.current > 0 ? (
+                <View
+                  className="absolute items-center justify-center"
+                  style={{ left: -80, top: -40 }}
+                  pointerEvents="none"
+                >
+                  <Glow
+                    size={280}
+                    color="#FBBF24"
+                    opacity={Math.min(0.5, 0.22 + stats.streak.current / 60)}
                   />
-                  <Txt variant="body" className="ml-2 mt-3" style={{ color: HERO.textMuted }}>
-                    {stats.streak.current === 1 ? 'day' : 'days'}
-                  </Txt>
-                </Row>
-                <View
-                  className="self-start mt-3 px-2.5 py-1 rounded-md"
-                  style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}
-                >
-                  <Txt variant="caption" style={{ color: HERO.text }}>
-                    {meta.label}
-                  </Txt>
                 </View>
-              </View>
-              <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={136} />
-            </Row>
-            <Txt
-              variant="caption"
-              className="mt-3 w-full"
-              style={{ color: HERO.textMuted }}
-            >
-              {meta.blurb}
-            </Txt>
-            {stats.streak.current === 0 && stats.forest[0] ? (
-              <Txt variant="caption" className="mt-1 w-full" style={{ color: HERO.textFaint }}>
-                Your {stats.forest[0].length}-day tree is planted in your forest. A new seed is in
-                the ground.
-              </Txt>
-            ) : null}
-
-            {/* progress to the next stage */}
-            {stats.progress.winDaysToNext !== null && (
-              <View className="w-full mt-4">
-                <View
-                  className="h-2 rounded-full overflow-hidden"
-                  style={{ backgroundColor: HERO.track }}
-                  accessibilityLabel={`${Math.round(stats.progress.progressToNext * 100)}% to the next stage`}
-                >
+              ) : null}
+              <Row className="w-full items-center">
+                <View className="flex-1 pr-2">
+                  <Txt variant="label" style={{ color: HERO.textMuted }}>
+                    {stats.streak.current === 0 ? 'Start a streak today' : 'Current streak'}
+                  </Txt>
+                  <Row className="items-center mt-1">
+                    <LiveFlame streak={stats.streak.current} size={40} />
+                    <AnimatedNumber
+                      value={stats.streak.current}
+                      variant="display"
+                      className="ml-1"
+                      style={{ color: HERO.text }}
+                    />
+                    <Txt variant="body" className="ml-2 mt-3" style={{ color: HERO.textMuted }}>
+                      {stats.streak.current === 1 ? 'day' : 'days'}
+                    </Txt>
+                  </Row>
                   <View
-                    className="h-2 rounded-full"
-                    style={{
-                      width: `${Math.max(4, stats.progress.progressToNext * 100)}%`,
-                      backgroundColor: HERO.fill,
-                    }}
-                  />
+                    className="self-start mt-3 px-2.5 py-1 rounded-md"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}
+                  >
+                    <Txt variant="caption" style={{ color: HERO.text }}>
+                      {meta.label}
+                    </Txt>
+                  </View>
                 </View>
-                <Txt variant="caption" className="mt-2" style={{ color: HERO.textFaint }}>
-                  {stats.progress.winDaysToNext} more{' '}
-                  {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} in a row to grow further
+                <Tree stage={stats.stage} progress={stats.progress.progressToNext} size={136} />
+              </Row>
+              <Txt variant="caption" className="mt-3 w-full" style={{ color: HERO.textMuted }}>
+                {meta.blurb}
+              </Txt>
+              {stats.streak.current === 0 && stats.forest[0] ? (
+                <Txt variant="caption" className="mt-1 w-full" style={{ color: HERO.textFaint }}>
+                  Your {stats.forest[0].length}-day tree is planted in your forest. A new seed is in
+                  the ground.
                 </Txt>
-              </View>
-            )}
+              ) : null}
+
+              {/* progress to the next stage */}
+              {stats.progress.winDaysToNext !== null && (
+                <View className="w-full mt-4">
+                  <View
+                    className="h-2 rounded-full overflow-hidden"
+                    style={{ backgroundColor: HERO.track }}
+                    accessibilityLabel={`${Math.round(stats.progress.progressToNext * 100)}% to the next stage`}
+                  >
+                    <View
+                      className="h-2 rounded-full"
+                      style={{
+                        width: `${Math.max(4, stats.progress.progressToNext * 100)}%`,
+                        backgroundColor: HERO.fill,
+                      }}
+                    />
+                  </View>
+                  <Txt variant="caption" className="mt-2" style={{ color: HERO.textFaint }}>
+                    {stats.progress.winDaysToNext} more{' '}
+                    {stats.progress.winDaysToNext === 1 ? 'day' : 'days'} in a row to grow further
+                  </Txt>
+                </View>
+              )}
+            </View>
           </View>
         </Animated.View>
 
@@ -618,7 +617,15 @@ export default function Today() {
           </View>
         )}
         <View className="mb-3">
-          <PresetPicker onPick={(p) => quickAdd(p)} disabled={!todayEntry.isSuccess} />
+          <PresetPicker
+            onPick={(p) => quickAdd(p)}
+            disabled={!todayEntry.isSuccess}
+            counts={Object.fromEntries(
+              (todayEntry.data?.drinks ?? [])
+                .filter((d) => d.presetKey)
+                .map((d) => [d.presetKey as string, d.quantity]),
+            )}
+          />
         </View>
         <Button
           label="Custom amount, or edit today"

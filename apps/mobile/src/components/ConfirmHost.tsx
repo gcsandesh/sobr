@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { Easing, FadeIn, Keyframe } from 'react-native-reanimated';
 import { HomeLeafIcon as LeafIcon, TrashIcon } from './icons';
-import { Txt } from './ui';
+import { PressableStyled, Txt } from './ui';
 import { colors } from '../theme';
 
 /**
@@ -180,20 +180,21 @@ function DialogButton({
   disabled?: boolean;
 }) {
   return (
-    <Pressable
+    <PressableStyled
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
-      style={({ pressed }) => ({
+      style={{
         flex: 1,
         minHeight: 46,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: danger ? colors.slip : calm ? colors.accent : colors.cardRaised,
-        opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
-      })}
+        opacity: disabled ? 0.4 : 1,
+      }}
+      pressedStyle={disabled ? null : { opacity: 0.85 }}
     >
       <Text
         style={{
@@ -204,6 +205,6 @@ function DialogButton({
       >
         {label}
       </Text>
-    </Pressable>
+    </PressableStyled>
   );
 }

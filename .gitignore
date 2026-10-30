@@ -43,3 +43,4 @@ pnpm-debug.log*
 # local agent config (machine-specific)
 .claude/
 site/dist/
+store/raw/

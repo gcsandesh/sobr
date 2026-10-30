@@ -51,12 +51,12 @@ Data safety answers below change in the same PR.
 **Website:** https://<project>.vercel.app (later https://<domain>)
 **Privacy policy URL:** https://<project>.vercel.app/privacy (later https://<domain>/privacy)
 
-### Graphics
-- App icon 512×512 PNG: export `apps/mobile/assets/brand/icon.svg` at 512.
-- Feature graphic 1024×500: teal gradient, the sprouting-check logo, "Clear days, counted."
-- Phone screenshots (2 to 8, 9:16): Home with a streak, the day logger, the
-  calendar, Progress, the forest on Profile, Steady. Use a real account with a
-  few weeks of data; avoid showing drink-heavy days first.
+### Graphics (ready: `store/play/`)
+- App icon: `icon-512.png`
+- Feature graphic: `feature-graphic.png`
+- Phone screenshots, in this order: `01-home` (Clear days, counted), `02-calendar`,
+  `03-log`, `04-milestones`, `05-forest`, `06-steady`. Sample data only. How to
+  regenerate: `store/README.md`.
 
 ## App content (Policy → App content)
 
@@ -99,3 +99,29 @@ Processed ephemerally: no. Data is stored in the user's account until they delet
 3. Enrol in **Play App Signing** (default) and upload the `.aab` to **Closed testing**.
 4. Add the 12 testers' Gmail addresses; keep the test running 14 days.
 5. Apply for production access with the forms above complete.
+
+## Launch day checklist (account bought ~Nov 1)
+
+Do these in order; the bracketed ones can start before the account exists.
+
+1. **Create the developer account** at play.google.com/console: *personal* account, pay the
+   $25, verify your identity (government ID) and your Android phone through the Play
+   Console app. Verification can take a few days, so start here.
+2. **[before]** Website live on Vercel (DEPLOY.md §6b) so the privacy and deletion URLs work.
+3. **[before]** Upload key + four secrets, then run **Actions → Android AAB (Play Store)**
+   and download the `.aab` (DEPLOY.md §5).
+4. **[before]** A public contact email. Gmail is fine until the domain's contact@ exists;
+   set the same address as `LEGAL_CONTACT_EMAIL` in `legal.ts`.
+5. **[before]** A reviewer account in the app (email + password) with a couple of weeks of
+   sample days, for *App access*.
+6. **Create app**: name `sobr: Clear days, counted`, default language English, App, Free.
+7. **Store listing**: paste the text above; upload everything in `store/play/`.
+8. **App content**: work through every form using the table above (privacy policy, app
+   access, ads, content rating, target audience 18+, health apps, data safety, account
+   deletion).
+9. **Testing → Closed testing**: create a track, upload the `.aab`, add the 12+ testers'
+   Gmail addresses (or a Google Group), and send them the opt-in link. Each tester must
+   accept and install it.
+10. **Wait 14 days** with the testers opted in, then **apply for production access** in
+    the dashboard. Google reviews the application (usually a few days).
+11. Promote the build to **Production** once approved.

@@ -5,6 +5,8 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   currencyByCode,
   formatCurrency,
+  presetByKey,
+  presetChipLabel,
   type DrinkPreset,
 } from '@sobr/config';
 import {
@@ -14,10 +16,11 @@ import {
   todayInTz,
   totalCost,
   totalUnits,
+  unitsForDrink,
 } from '@sobr/core';
 import { PresetPicker } from '../../src/components/PresetPicker';
 import { DayPhotos, type PendingPhoto } from '../../src/components/DayPhotos';
-import { PlusIcon, TargetIcon } from '../../src/components/icons';
+import { PlusIcon, TargetIcon, TrashIcon } from '../../src/components/icons';
 import {
   Button,
   CONTENT_MAX_WIDTH,
@@ -256,54 +259,101 @@ export default function DayLogger() {
           </Txt>
         </Card>
 
-        {/* line items */}
+        {/* line items: one divided list, matching the picker below */}
         {drinks.length > 0 && (
           <View className="mt-6">
             <SectionHeader title={isToday ? "Today's drinks" : 'Logged that day'} className="mb-2" />
-            <View className="gap-2">
-            {drinks.map((d, idx) => (
-              <Card key={`${d.presetKey ?? 'custom'}-${idx}`} className="py-3">
-                <Row className="justify-between">
-                  <View className="flex-1 pr-2">
-                    <Txt variant="body">{d.name}</Txt>
-                    <Txt variant="caption">
-                      {d.volumeMl}ml · {d.abv}%
-                    </Txt>
+            <Card style={{ padding: 0 }}>
+              {drinks.map((d, idx) => {
+                const glyph = (d.presetKey && presetByKey(d.presetKey)?.glyph) || '🥤';
+                const lineUnits = roundUnits(unitsForDrink(d));
+                return (
+                  <View
+                    key={`${d.presetKey ?? 'custom'}-${idx}`}
+                    style={{
+                      paddingHorizontal: 14,
+                      paddingVertical: 12,
+                      borderTopWidth: idx === 0 ? 0 : 1,
+                      borderTopColor: colors.bg,
+                    }}
+                  >
+                    <Row className="items-center">
+                      <View
+                        className="items-center justify-center mr-3"
+                        style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: colors.bg }}
+                      >
+                        <Txt style={{ fontSize: 21 }}>{glyph}</Txt>
+                      </View>
+                      <View className="flex-1 pr-2">
+                        <Txt variant="body" className="font-semibold" numberOfLines={1}>
+                          {presetChipLabel(d.name)}
+                        </Txt>
+                        <Txt variant="caption">
+                          {d.volumeMl >= 1000 ? `${d.volumeMl / 1000} L` : `${d.volumeMl} ml`} · {d.abv}% ·{' '}
+                          {lineUnits} {lineUnits === 1 ? 'unit' : 'units'}
+                        </Txt>
+                      </View>
+                      {/* compact stepper pill */}
+                      <Row
+                        className="items-center"
+                        style={{ borderRadius: 20, backgroundColor: colors.bg, padding: 3 }}
+                      >
+                        <Pressable
+                          onPress={() => setQty(idx, -1)}
+                          accessibilityRole="button"
+                          accessibilityLabel={
+                            d.quantity === 1 ? `Remove ${d.name}` : `Remove one ${d.name}`
+                          }
+                          hitSlop={6}
+                          className="w-9 h-9 rounded-full bg-surface items-center justify-center active:opacity-70"
+                        >
+                          {d.quantity === 1 ? (
+                            <TrashIcon color={colors.slip} size={16} />
+                          ) : (
+                            <Txt variant="heading" style={{ lineHeight: 22 }}>
+                              −
+                            </Txt>
+                          )}
+                        </Pressable>
+                        <Txt variant="heading" className="text-center" style={{ minWidth: 30 }}>
+                          {d.quantity}
+                        </Txt>
+                        <Pressable
+                          onPress={() => setQty(idx, 1)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Add one ${d.name}`}
+                          hitSlop={6}
+                          className="w-9 h-9 rounded-full bg-accent items-center justify-center active:opacity-70"
+                        >
+                          <PlusIcon color="#FFFFFF" size={16} />
+                        </Pressable>
+                      </Row>
+                    </Row>
+                    <Row className="mt-2 items-center gap-2" style={{ marginLeft: 54 }}>
+                      <View
+                        className="flex-row items-center px-3 rounded-lg"
+                        style={{ backgroundColor: colors.bg, minHeight: 34 }}
+                      >
+                        <Txt variant="caption" className="mr-1.5">
+                          {currencyByCode(currency).symbol}
+                        </Txt>
+                        <TextInput
+                          value={d.costText ?? (d.cost === null ? '' : String(d.cost))}
+                          onChangeText={(v) => setCost(idx, v)}
+                          keyboardType="decimal-pad"
+                          placeholder="price each"
+                          placeholderTextColor={colors.textFaint}
+                          accessibilityLabel={`Price of each ${d.name}, optional`}
+                          className="text-text font-sans text-sm py-1"
+                          style={{ minWidth: 80 }}
+                        />
+                      </View>
+                      <Txt variant="caption">optional</Txt>
+                    </Row>
                   </View>
-                  <Row className="gap-2 items-center">
-                    <Pressable
-                      onPress={() => setQty(idx, -1)}
-                      accessibilityLabel={`Remove one ${d.name}`}
-                      className="w-11 h-11 rounded-full bg-surface-raised items-center justify-center active:opacity-70"
-                    >
-                      <Txt variant="heading">−</Txt>
-                    </Pressable>
-                    <Txt variant="heading" className="w-6 text-center">
-                      {d.quantity}
-                    </Txt>
-                    <Pressable
-                      onPress={() => setQty(idx, 1)}
-                      accessibilityLabel={`Add one ${d.name}`}
-                      className="w-11 h-11 rounded-full bg-surface-raised items-center justify-center active:opacity-70"
-                    >
-                      <Txt variant="heading">+</Txt>
-                    </Pressable>
-                  </Row>
-                </Row>
-                <Row className="mt-2 items-center gap-2">
-                  <Txt variant="caption">{currencyByCode(currency).symbol}</Txt>
-                  <TextInput
-                    value={d.costText ?? (d.cost === null ? '' : String(d.cost))}
-                    onChangeText={(v) => setCost(idx, v)}
-                    keyboardType="decimal-pad"
-                    placeholder="cost (optional)"
-                    placeholderTextColor={colors.textFaint}
-                    className="flex-1 text-text font-sans text-sm py-1"
-                  />
-                </Row>
-              </Card>
-            ))}
-            </View>
+                );
+              })}
+            </Card>
           </View>
         )}
 
@@ -313,7 +363,12 @@ export default function DayLogger() {
           className="mt-6 mb-3"
         />
         <View className="mb-3">
-          <PresetPicker onPick={(p) => addPreset(p)} />
+          <PresetPicker
+            onPick={(p) => addPreset(p)}
+            counts={Object.fromEntries(
+              drinks.filter((d) => d.presetKey).map((d) => [d.presetKey as string, d.quantity]),
+            )}
+          />
         </View>
 
         <Pressable

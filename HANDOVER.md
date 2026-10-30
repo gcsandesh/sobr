@@ -261,6 +261,17 @@ Supabase account only has an unrelated project), so schema changes must be hande
     `src/data/demo.ts` from the read paths in `api.ts`. Writes still go to Supabase and fail.
     On web, a BottomSheet opened from inside a scrolling Screen is clipped (CSS transform
     ancestor); native Modals are unaffected.
+25. **Never `style={({ pressed }) => …}` on a Pressable.** NativeWind's Pressable wrapper drops
+    function styles on Android: the dialog's Remove button rendered with no background
+    (white text, invisible) and the drink rows lost `flexDirection: 'row'`. Web was fine,
+    so screenshots didn't catch it. Use `PressableStyled` (`style` + `pressedStyle`) from
+    `ui.tsx`, or `className="active:…"`.
+26. **iOS: shadow and clipping can't share a view.** iOS clips a view's own shadow when it
+    has `overflow: hidden`. Put the shadow on an outer view and the clipping on an inner
+    one (Home hero, PresetPicker), and keep `Card` unclipped. Also name weighted fonts by
+    file (`Figtree_700Bold`) rather than `fontWeight` on a custom family; iOS falls back to
+    the system font. `ios-build.yml` compiles a Simulator build on every app change, so
+    iOS breakage shows up in CI before anyone has an iPhone build.
 
 ---
 

@@ -1,0 +1,79 @@
+# Compiles the iOS app on GitHub's macOS runners, so a change that breaks iOS
+# shows up even though nobody is testing on an iPhone yet. It builds a Release
+# app for the iOS Simulator: that needs no Apple developer account and no
+# signing, but compiles every native module and bundles the JS exactly as a
+# device build would. The .app is attached to the run (drag it onto a
+# Simulator to try it). App Store builds will go through EAS with a paid Apple
+# account; see DEPLOY.md.
+
+name: iOS build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'claude/**']
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/ios-build.yml'
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    name: iOS Simulator build
+    runs-on: macos-15
+    timeout-minutes: 75
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      EXPO_NO_TELEMETRY: '1'
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate native iOS project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform ios --no-install --clean
+
+      - name: Install CocoaPods
+        working-directory: apps/mobile/ios
+        run: pod install
+
+      - name: Build for the iOS Simulator (Release, unsigned)
+        working-directory: apps/mobile/ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace sobr.xcworkspace \
+            -scheme sobr \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build | tail -n 200
+
+      - name: Package the app
+        run: |
+          cd apps/mobile/ios/build/Build/Products/Release-iphonesimulator
+          zip -qry "$GITHUB_WORKSPACE/sobr-ios-simulator.zip" sobr.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sobr-ios-simulator
+          path: sobr-ios-simulator.zip
+          retention-days: 14
