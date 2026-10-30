@@ -3,7 +3,7 @@
  *
  * "Organic": cool mist background, deep teal as the single brand accent, forest
  * green for the positive/growth state. Adapted from the Sobr.dc.html prototype's
- * visual language (palette + Fraunces/Figtree type) — the underlying product
+ * visual language (palette + Bricolage Grotesque/Figtree type) — the underlying product
  * model (daily win/slip streak, freeze tokens) and non-triggering copy are
  * unchanged; only the look moved. Slips stay a muted, non-alarming clay tone —
  * the UI must never feel punitive.
@@ -166,14 +166,14 @@ export const radii = {
 } as const;
 
 /**
- * Type scale. Fraunces (soft serif, bold + black) for headers + big numbers;
+ * Type scale. Bricolage Grotesque (warm grotesk, bold + extra bold) for headers + big numbers;
  * Figtree (clean grotesk) for UI text. Family names match the loaded font keys.
  * Only the static instances are loaded, so the SOFT/WONK axes are fixed at their
  * defaults — switch to the variable font if those ever need tuning.
  */
 export const fonts = {
-  display: 'Fraunces_700Bold',
-  displayItalic: 'Fraunces_900Black',
+  display: 'BricolageGrotesque_700Bold',
+  displayItalic: 'BricolageGrotesque_800ExtraBold',
   body: 'Figtree',
   bodyMedium: 'Figtree-Medium',
   bodySemibold: 'Figtree-SemiBold',

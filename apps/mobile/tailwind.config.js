@@ -33,8 +33,10 @@ module.exports = {
         'flame-bg': '#FFEDD5',
       },
       fontFamily: {
-        display: ['Fraunces_900Black'],
-        'display-bold': ['Fraunces_900Black'],
+        // Bricolage Grotesque: a warm grotesk for headings and big numbers
+        // (replaced Fraunces, the serif that every AI-built app now uses)
+        display: ['BricolageGrotesque_800ExtraBold'],
+        'display-bold': ['BricolageGrotesque_800ExtraBold'],
         sans: ['Figtree_400Regular'],
         medium: ['Figtree_500Medium'],
         semibold: ['Figtree_600SemiBold'],

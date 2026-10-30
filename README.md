@@ -11,7 +11,7 @@ long-term progress. Built mobile-first (Expo) with a web companion view.
 > **Picking up the project?** Start with **[HANDOVER.md](./HANDOVER.md)** — the single entry point
 > (status, decisions, gotchas, how to verify, where to continue). Then **[PROJECT.md](./PROJECT.md)**
 > (what/why), **[PLAN.md](./PLAN.md)** (architecture), **[TODO.md](./TODO.md)** (tasks), and
-> **[PROGRESS.md](./PROGRESS.md)** (chronological log). Shipping a build: **[DEPLOY.md](./DEPLOY.md)**. Launch plan (domain, email, Play): **[LAUNCH.md](./LAUNCH.md)**. Play forms: **[STORE_LISTING.md](./STORE_LISTING.md)**.
+> **[PROGRESS.md](./PROGRESS.md)** (chronological log). Picking up the work: **[NEXT_SESSION.md](./NEXT_SESSION.md)**. Shipping a build: **[DEPLOY.md](./DEPLOY.md)**. Launch plan (domain, email, Play): **[LAUNCH.md](./LAUNCH.md)**. Play forms: **[STORE_LISTING.md](./STORE_LISTING.md)**.
 
 ## Monorepo layout
 
